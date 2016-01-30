@@ -300,7 +300,7 @@ std::string Crypto::HexStringToString(const std::string &hexString)
     std::ostringstream oss;
 
     for (std::vector<std::string>::iterator it = bytes.begin(); it != bytes.end(); ++it) {
-        oss << strtol(it->c_str(), NULL, 16);
+        oss << (char)strtol(it->c_str(), NULL, 16);
     }
 
     return oss.str();
@@ -314,7 +314,7 @@ std::wstring Crypto::HexStringToWString(const std::wstring &hexString)
     std::wostringstream woss;
 
     for (std::vector<std::wstring>::iterator it = bytes.begin(); it != bytes.end(); ++it) {
-        woss << wcstol(it->c_str(), NULL, 16);
+        woss << (wchar_t)wcstol(it->c_str(), NULL, 16);
     }
 
     return woss.str();
