@@ -46,6 +46,13 @@
 #include <CoreLib/System.hpp>
 #include "CgiEnv.hpp"
 #include "Cms.hpp"
+#include "Cms.hpp"
+#include "CmsChangeEmail.hpp"
+#include "CmsChangePassword.hpp"
+#include "CmsContacts.hpp"
+#include "CmsDashboard.hpp"
+#include "CmsNewsletter.hpp"
+#include "CmsSubscribers.hpp"
 #include "Div.hpp"
 #include "Pool.hpp"
 #include "SysMon.hpp"
@@ -107,12 +114,12 @@ WWidget *Cms::Layout()
         WText *dashboard = new WText(
                     WString("<div><a href=\"javascript:;\"><i class=\"fa fa-dashboard fa-lg\"></i> {1}</a></div>")
                     .arg(tr("cms-dashboard")), TextFormat::XHTMLUnsafeText);
-        WText *news = new WText(
+        WText *newsletter = new WText(
                     WString("<div><a href=\"javascript:;\"><i class=\"fa fa-newspaper-o fa-lg\"></i> {1}</a></div>")
-                    .arg(tr("cms-dashboard-news")), TextFormat::XHTMLUnsafeText);
-        WText *pageManager = new WText(
+                    .arg(tr("cms-dashboard-newsletter")), TextFormat::XHTMLUnsafeText);
+        WText *subscribers = new WText(
                     WString("<div><a href=\"javascript:;\"><i class=\"fa fa-file-text-o fa-lg\"></i> {1}</a></div>")
-                    .arg(tr("cms-dashboard-page-manager")), TextFormat::XHTMLUnsafeText);
+                    .arg(tr("cms-dashboard-subscribers")), TextFormat::XHTMLUnsafeText);
         WText *contacts = new WText(
                     WString("<div><a href=\"javascript:;\"><i class=\"fa fa-envelope-o fa-lg\"></i> {1}</a></div>")
                     .arg(tr("cms-dashboard-contacts")), TextFormat::XHTMLUnsafeText);
@@ -133,8 +140,8 @@ WWidget *Cms::Layout()
                     .arg(tr("cms-dashboard-exit")), TextFormat::XHTMLUnsafeText);
 
         dashboard->setId("menu-item-dashboard");
-        news->setId("menu-item-news");
-        pageManager->setId("menu-item-page-manager");
+        newsletter->setId("menu-item-newsletter");
+        subscribers->setId("menu-item-subscribers");
         contacts->setId("menu-item-contacts");
         changeEmail->setId("menu-item-change-email");
         changePassword->setId("menu-item-change-password");
@@ -143,8 +150,8 @@ WWidget *Cms::Layout()
         exit->setId("menu-item-exit");
 
         tmpl->bindWidget("dashboard", dashboard);
-        tmpl->bindWidget("news", news);
-        tmpl->bindWidget("page-manager", pageManager);
+        tmpl->bindWidget("newsletter", newsletter);
+        tmpl->bindWidget("subscribers", subscribers);
         tmpl->bindWidget("contacts", contacts);
         tmpl->bindWidget("admin", new WText(tr("cms-dashboard-admin")));
         tmpl->bindWidget("change-email", changeEmail);
@@ -161,8 +168,8 @@ WWidget *Cms::Layout()
         WSignalMapper<WText *, WStackedWidget *> *menuItemSignalMapper = new WSignalMapper<WText *, WStackedWidget *>(m_pimpl.get());
         menuItemSignalMapper->mapped().connect(m_pimpl.get(), &Cms::Impl::OnMenuItemPressed);
         menuItemSignalMapper->mapConnect(dashboard->clicked(), dashboard);
-        menuItemSignalMapper->mapConnect(news->clicked(), news);
-        menuItemSignalMapper->mapConnect(pageManager->clicked(), pageManager);
+        menuItemSignalMapper->mapConnect(newsletter->clicked(), newsletter);
+        menuItemSignalMapper->mapConnect(subscribers->clicked(), subscribers);
         menuItemSignalMapper->mapConnect(contacts->clicked(), contacts);
         menuItemSignalMapper->mapConnect(changeEmail->clicked(), changeEmail);
         menuItemSignalMapper->mapConnect(changePassword->clicked(), changePassword);
@@ -199,9 +206,9 @@ void Cms::Impl::OnMenuItemPressed(WText *sender)
 
     if (sender->id() == "menu-item-dashboard") {
         Contents->setCurrentIndex(0);
-    } else if (sender->id() == "menu-item-news") {
+    } else if (sender->id() == "menu-item-newsletter") {
         Contents->setCurrentIndex(1);
-    } else if (sender->id() == "menu-item-page-manager") {
+    } else if (sender->id() == "menu-item-subscribers") {
         Contents->setCurrentIndex(2);
     } else if (sender->id() == "menu-item-contacts") {
         Contents->setCurrentIndex(3);

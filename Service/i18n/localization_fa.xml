@@ -1,5 +1,126 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <messages>
-
+    <message id="home-page-title">پنل مدیریت سرویس اشتراک وبلاگ</message>
+    <message id="no-script">
+        <noscript>
+            <div class="no-script">
+                کاربر گرامی به نظر می رسد که جاوا اسکریپت در مرورگر شما غیر فعال می باشد و یا مرورگر شما از جاوا اسکریپت پشتیبانی نمی نماید. متاسفانه در صورت عدم برطرف شدن این مشکل برخی از قابلیت های وب سایت به درستی کار نمی کند.
+            </div>
+        </noscript>
+    </message>
+    <message id="root-login-page-title">ورود مدیر</message>
+    <message id="root-login-username">نام کاربری</message>
+    <message id="root-login-username-placeholder">نام کاربری</message>
+    <message id="root-login-password">کلمه عبور</message>
+    <message id="root-login-password-placeholder">کلمه عبور</message>
+    <message id="root-login-captcha">کد امنیتی</message>
+    <message id="root-login-captcha-hint">مثال: ۲۵ = ۵ × ۵</message>
+    <message id="root-login-remember-me">مرا به خاطر بسپار</message>
+    <message id="root-login-sign-in">ورود</message>
+    <message id="root-login-forgot-password">کلمه عبور را فراموش کرده ام</message>
+    <message id="root-login-password-recovery-email">پست الکترونیکی</message>
+    <message id="root-login-password-recovery-email-placeholder">پست الکترونیکی</message>
+    <message id="root-login-password-recovery-recover">بازیابی</message>
+    <message id="root-login-fail">نام کاربری یا کلمه عبور نامعتبر می باشد.</message>
+    <message id="root-login-password-recovery-fail">پست الکترونیکی نامعتبر می باشد.</message>
+    <message id="root-login-password-recovery-success">کلمه عبور با موفقیت بازیابی شد، لطفا صندوق پست الکترونیکی خود را چک نمائید.</message>
+    <message id="root-login-alert-email-subject">[%1%] هشدار: ورود کاربر %2%</message>
+    <message id="root-login-password-recovery-email-subject">[%1%] درخواست بازیابی کلمه ی عبور برای %2%</message>
+    <message id="root-logout-page-title">خروج موفق</message>
+    <message id="root-logout-message">با موفقیت خارج شدید.</message>
+    <message id="root-logout-go-to-home-page">صفحه اصلی سایت</message>
+    <message id="root-logout-sign-in-again">ورود مجدد</message>
+    <message id="cms-page-title">پنل مدیریت</message>
+    <message id="cms-dashboard">داشبورد</message>
+    <message id="cms-dashboard-newsletter">خبرنامه</message>
+    <message id="cms-dashboard-subscribers">مشترکین</message>
+    <message id="cms-dashboard-contacts">تماس ها</message>
+    <message id="cms-dashboard-admin">مدیر سیستم</message>
+    <message id="cms-dashboard-admin-change-email">تغییر پست الکترونیکی</message>
+    <message id="cms-dashboard-admin-change-password">تغییر کلمه عبور</message>
+    <message id="cms-dashboard-system-monitor">وضعیت سیستم</message>
+    <message id="cms-dashboard-switch-language">English</message>
+    <message id="cms-dashboard-exit">خروج</message>
+    <message id="cms-dashboard-welcome-message">خوش آمدید!</message>
+    <message id="cms-dashboard-last-login-info-title">آخرین ورود</message>
+    <message id="cms-dashboard-last-login-info-ip">شناسه اینترنتی</message>
+    <message id="cms-dashboard-last-login-info-location">مکان</message>
+    <message id="cms-dashboard-last-login-info-user-agent">شناسه مرورگر</message>
+    <message id="cms-dashboard-last-login-info-referer">ارجاع دهنده</message>
+    <message id="cms-dashboard-last-login-info-time">زمان</message>
+    <message id="cms-change-password-page-title">تغییر کلمه عبور مدیر سیستم</message>
+    <message id="cms-change-password-current-pwd">کلمه عبور فعلی</message>
+    <message id="cms-change-password-current-pwd-placeholder">کلمه عبور فعلی</message>
+    <message id="cms-change-password-new-pwd">کلمه عبور جدید</message>
+    <message id="cms-change-password-new--pwdplaceholder">کلمه عبور جدید</message>
+    <message id="cms-change-password-confirm-pwd">تائید کلمه عبور</message>
+    <message id="cms-change-password-confirm-pwd-placeholder">تائید کلمه عبور</message>
+    <message id="cms-change-password-change-pwd">اعمال تغییرات</message>
+    <message id="cms-change-password-success-message">کلمه عبور با موفقیت تغییر یافت.</message>
+    <message id="cms-change-password-invalid-pwd-error">کلمه عبور فعلی نامعتبر می باشد!</message>
+    <message id="cms-change-password-same-pwd-error">کلمه عبور جدید بایستی با کلمه عبور فعلی متفاوت باشد!</message>
+    <message id="cms-change-password-confirm-pwd-error">لطفا کلمه عبور جدید را تائید نمائید!</message>
+    <message id="cms-change-email-page-title">تغییر پست الکترونیکی مدیر سیستم</message>
+    <message id="cms-change-email-mailbox">پست الکترونیکی</message>
+    <message id="cms-change-email-mailbox-placeholder">آدرس پست الکترونیکی</message>
+    <message id="cms-change-email-password">کلمه عبور</message>
+    <message id="cms-change-email-password-placeholder">کلمه عبور</message>
+    <message id="cms-change-email-change-mailbox">اعمال تغییرات</message>
+    <message id="cms-change-email-success-message">آدرس پست الکترونیکی با موفقیت تغییر یافت.</message>
+    <message id="cms-change-email-invalid-pwd-error">کلمه عبور نامعتبر می باشد!</message>
+    <message id="system-monitor-cpu-percents">CPU Percents</message>
+    <message id="system-monitor-cpu-percents-user">User</message>
+    <message id="system-monitor-cpu-percents-kernel">Kernel</message>
+    <message id="system-monitor-cpu-percents-idle">Idle</message>
+    <message id="system-monitor-cpu-percents-iowait">IOWait</message>
+    <message id="system-monitor-cpu-percents-swap">Swap</message>
+    <message id="system-monitor-cpu-percents-nice">Nice</message>
+    <message id="system-monitor-memory-stats">Memory Statistics</message>
+    <message id="system-monitor-memory-stats-total">Total</message>
+    <message id="system-monitor-memory-stats-free">Free</message>
+    <message id="system-monitor-memory-stats-used">Used</message>
+    <message id="system-monitor-memory-stats-cache">Cache</message>
+    <message id="system-monitor-swap-stats">Swap Statistics</message>
+    <message id="system-monitor-swap-stats-total">Total</message>
+    <message id="system-monitor-swap-stats-used">Used</message>
+    <message id="system-monitor-swap-stats-free">Free</message>
+    <message id="system-monitor-virtual-memory-stats">Virtual Memory Statistics</message>
+    <message id="system-monitor-virtual-memory-stats-total">Total</message>
+    <message id="system-monitor-virtual-memory-stats-used">Used</message>
+    <message id="system-monitor-virtual-memory-stats-free">Free</message>
+    <message id="system-monitor-host-info">Host Info</message>
+    <message id="system-monitor-host-info-os-name">OS Name</message>
+    <message id="system-monitor-host-info-os-release">OS Release</message>
+    <message id="system-monitor-host-info-os-version">OS Version</message>
+    <message id="system-monitor-host-info-platform">Platform</message>
+    <message id="system-monitor-host-info-hostname">Hostname</message>
+    <message id="system-monitor-host-info-bitwidth">Bitwidth</message>
+    <message id="system-monitor-host-info-host-state">Host State</message>
+    <message id="system-monitor-host-info-host-state-unknown-configuration">Unknown Configuration</message>
+    <message id="system-monitor-host-info-host-state-physical-host">Physical Host</message>
+    <message id="system-monitor-host-info-host-state-virtual-machine">Virtual Machine</message>
+    <message id="system-monitor-host-info-host-state-paravirtual-machine">Paravirtual Machine</message>
+    <message id="system-monitor-host-info-host-state-hardware-virtualized">Hardware Virtualized</message>
+    <message id="system-monitor-host-info-ncpus">Number of CPUs</message>
+    <message id="system-monitor-host-info-maxcpus">Maximum CPUs</message>
+    <message id="system-monitor-host-info-uptime">Uptime</message>
+    <message id="system-monitor-host-info-systime">Systime</message>
+    <message id="system-monitor-disk-io-stats">Disk IO Statistics</message>
+    <message id="system-monitor-disk-io-stats-disk-name">Disk Name</message>
+    <message id="system-monitor-disk-io-stats-read-bytes">Read</message>
+    <message id="system-monitor-disk-io-stats-write-bytes">Write</message>
+    <message id="system-monitor-disk-io-stats-systime">Systime</message>
+    <message id="system-monitor-disk-io-stats-total">Total</message>
+    <message id="system-monitor-network-io-stats">Network IO Statistics</message>
+    <message id="system-monitor-network-io-stats-interface_name"></message>
+    <message id="system-monitor-network-io-stats-tx">TX</message>
+    <message id="system-monitor-network-io-stats-rx">RX</message>
+    <message id="system-monitor-network-io-stats-ipackets">In Packets</message>
+    <message id="system-monitor-network-io-stats-opackets">Out Packets</message>
+    <message id="system-monitor-network-io-stats-ierrors">In Errors</message>
+    <message id="system-monitor-network-io-stats-oerrors">Out Errors</message>
+    <message id="system-monitor-network-io-stats-collisions">Collisions</message>
+    <message id="system-monitor-network-io-stats-systime">Systime</message>
+    <message id="system-monitor-network-io-stats-total">Total</message>
 </messages>

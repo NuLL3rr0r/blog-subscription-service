@@ -21,7 +21,7 @@
 #  THE SOFTWARE.
 
 
-# WARNING: YOU MUST CHANGE THESE VALUES
+# WARNING: YOU MUST CHANGE THESE VALUES !!
 # ASCII to HEX converter  :  http://www.dolcevie.com/js/converter.html
 # Random string generator :  https://strongpasswordgenerator.com/
 # ROOT_USERNAME: 4 to 16 chars

@@ -1,5 +1,126 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <messages>
-
+    <message id="home-page-title">‌Blog Subscription Service Control Panel</message>
+    <message id="no-script">
+        <noscript>
+            <div class="no-script">
+                Sorry, it looks like that either you have turned off your browser's JavaScript or your browser originally did not support JavaScript at all. Unfortunately, this website won't function properly without JavaScript unless you fix this issue first.
+            </div>
+        </noscript>
+    </message>
+    <message id="root-login-page-title">Admin Login</message>
+    <message id="root-login-username">Username</message>
+    <message id="root-login-username-placeholder">Your user name</message>
+    <message id="root-login-password">Password</message>
+    <message id="root-login-password-placeholder">Your password</message>
+    <message id="root-login-captcha">Captcha</message>
+    <message id="root-login-captcha-hint">e.g. 5 x 5 = 25</message>
+    <message id="root-login-remember-me">Remember Me</message>
+    <message id="root-login-sign-in">Sign In</message>
+    <message id="root-login-forgot-password">Forgot Password</message>
+    <message id="root-login-password-recovery-email">Email</message>
+    <message id="root-login-password-recovery-email-placeholder">Your Email</message>
+    <message id="root-login-password-recovery-recover">Recover</message>
+    <message id="root-login-fail">Invalid username or password.</message>
+    <message id="root-login-password-recovery-fail">Invalid email.</message>
+    <message id="root-login-password-recovery-success">Your password has been successfully recovered, please check your email.</message>
+    <message id="root-login-alert-email-subject">[%1%] ALERT: Access from %2%</message>
+    <message id="root-login-password-recovery-email-subject">[%1%] Password recovery request for %2%</message>
+    <message id="root-logout-page-title">Successful Logout</message>
+    <message id="root-logout-message">Successfully loged out.</message>
+    <message id="root-logout-go-to-home-page">Home Page</message>
+    <message id="root-logout-sign-in-again">Sign In</message>
+    <message id="cms-page-title">Control Panel</message>
+    <message id="cms-dashboard">Dashboard</message>
+    <message id="cms-dashboard-newsletter">Newsletter</message>
+    <message id="cms-dashboard-subscribers">Subscribers</message>
+    <message id="cms-dashboard-contacts">Contacts</message>
+    <message id="cms-dashboard-admin">Admin</message>
+    <message id="cms-dashboard-admin-change-email">Change Email</message>
+    <message id="cms-dashboard-admin-change-password">Change Password</message>
+    <message id="cms-dashboard-system-monitor">System Monitor</message>
+    <message id="cms-dashboard-switch-language">فارسی</message>
+    <message id="cms-dashboard-exit">Exit</message>
+    <message id="cms-dashboard-welcome-message">W E L C O M E !!</message>
+    <message id="cms-dashboard-last-login-info-title">Last Login</message>
+    <message id="cms-dashboard-last-login-info-ip">IP</message>
+    <message id="cms-dashboard-last-login-info-location">Location</message>
+    <message id="cms-dashboard-last-login-info-user-agent">User Agent</message>
+    <message id="cms-dashboard-last-login-info-referer">Referer</message>
+    <message id="cms-dashboard-last-login-info-time">Time</message>
+    <message id="cms-change-password-page-title">Change Password</message>
+    <message id="cms-change-password-current-pwd">Current Password</message>
+    <message id="cms-change-password-current-pwd-placeholder">Your current password</message>
+    <message id="cms-change-password-new-pwd">New Password</message>
+    <message id="cms-change-password-new--pwdplaceholder">A new password</message>
+    <message id="cms-change-password-confirm-pwd">Confirm Password</message>
+    <message id="cms-change-password-confirm-pwd-placeholder">Confirm the new password</message>
+    <message id="cms-change-password-change-pwd">Change Password</message>
+    <message id="cms-change-password-success-message">Password changed successfully.</message>
+    <message id="cms-change-password-invalid-pwd-error">Invalid password!</message>
+    <message id="cms-change-password-same-pwd-error">Your new password must be different from your current password!</message>
+    <message id="cms-change-password-confirm-pwd-error">Please confirm the new password!</message>
+    <message id="cms-change-email-page-title">Change Email</message>
+    <message id="cms-change-email-mailbox">Email</message>
+    <message id="cms-change-email-mailbox-placeholder">Your email address</message>
+    <message id="cms-change-email-password">Password</message>
+    <message id="cms-change-email-password-placeholder">Your password</message>
+    <message id="cms-change-email-change-mailbox">Change Email</message>
+    <message id="cms-change-email-success-message">Email changed successfully.</message>
+    <message id="cms-change-email-invalid-pwd-error">Invalid password!</message>
+    <message id="system-monitor-cpu-percents">CPU Percents</message>
+    <message id="system-monitor-cpu-percents-user">User</message>
+    <message id="system-monitor-cpu-percents-kernel">Kernel</message>
+    <message id="system-monitor-cpu-percents-idle">Idle</message>
+    <message id="system-monitor-cpu-percents-iowait">IOWait</message>
+    <message id="system-monitor-cpu-percents-swap">Swap</message>
+    <message id="system-monitor-cpu-percents-nice">Nice</message>
+    <message id="system-monitor-memory-stats">Memory Statistics</message>
+    <message id="system-monitor-memory-stats-total">Total</message>
+    <message id="system-monitor-memory-stats-free">Free</message>
+    <message id="system-monitor-memory-stats-used">Used</message>
+    <message id="system-monitor-memory-stats-cache">Cache</message>
+    <message id="system-monitor-swap-stats">Swap Statistics</message>
+    <message id="system-monitor-swap-stats-total">Total</message>
+    <message id="system-monitor-swap-stats-used">Used</message>
+    <message id="system-monitor-swap-stats-free">Free</message>
+    <message id="system-monitor-virtual-memory-stats">Virtual Memory Statistics</message>
+    <message id="system-monitor-virtual-memory-stats-total">Total</message>
+    <message id="system-monitor-virtual-memory-stats-used">Used</message>
+    <message id="system-monitor-virtual-memory-stats-free">Free</message>
+    <message id="system-monitor-host-info">Host Info</message>
+    <message id="system-monitor-host-info-os-name">OS Name</message>
+    <message id="system-monitor-host-info-os-release">OS Release</message>
+    <message id="system-monitor-host-info-os-version">OS Version</message>
+    <message id="system-monitor-host-info-platform">Platform</message>
+    <message id="system-monitor-host-info-hostname">Hostname</message>
+    <message id="system-monitor-host-info-bitwidth">Bitwidth</message>
+    <message id="system-monitor-host-info-host-state">Host State</message>
+    <message id="system-monitor-host-info-host-state-unknown-configuration">Unknown Configuration</message>
+    <message id="system-monitor-host-info-host-state-physical-host">Physical Host</message>
+    <message id="system-monitor-host-info-host-state-virtual-machine">Virtual Machine</message>
+    <message id="system-monitor-host-info-host-state-paravirtual-machine">Paravirtual Machine</message>
+    <message id="system-monitor-host-info-host-state-hardware-virtualized">Hardware Virtualized</message>
+    <message id="system-monitor-host-info-ncpus">Number of CPUs</message>
+    <message id="system-monitor-host-info-maxcpus">Maximum CPUs</message>
+    <message id="system-monitor-host-info-uptime">Uptime</message>
+    <message id="system-monitor-host-info-systime">Systime</message>
+    <message id="system-monitor-disk-io-stats">Disk IO Statistics</message>
+    <message id="system-monitor-disk-io-stats-disk-name">Disk Name</message>
+    <message id="system-monitor-disk-io-stats-read-bytes">Read</message>
+    <message id="system-monitor-disk-io-stats-write-bytes">Write</message>
+    <message id="system-monitor-disk-io-stats-systime">Systime</message>
+    <message id="system-monitor-disk-io-stats-total">Total</message>
+    <message id="system-monitor-network-io-stats">Network IO Statistics</message>
+    <message id="system-monitor-network-io-stats-interface_name"></message>
+    <message id="system-monitor-network-io-stats-tx">TX</message>
+    <message id="system-monitor-network-io-stats-rx">RX</message>
+    <message id="system-monitor-network-io-stats-ipackets">In Packets</message>
+    <message id="system-monitor-network-io-stats-opackets">Out Packets</message>
+    <message id="system-monitor-network-io-stats-ierrors">In Errors</message>
+    <message id="system-monitor-network-io-stats-oerrors">Out Errors</message>
+    <message id="system-monitor-network-io-stats-collisions">Collisions</message>
+    <message id="system-monitor-network-io-stats-systime">Systime</message>
+    <message id="system-monitor-network-io-stats-total">Total</message>
 </messages>
