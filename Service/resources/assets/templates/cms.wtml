@@ -1,0 +1,57 @@
+<div class="nav-side-menu">
+    <div class="brand">${brand-title}</div>
+    <i class="fa fa-bars fa-2x toggle-btn" data-toggle="collapse" data-target="#menu-content"></i>
+
+    <div class="menu-list">
+        <ul id="menu-content" class="menu-content collapse out">
+            <li>
+                ${dashboard}
+            </li>
+
+            <li>
+                ${news}
+            </li>
+
+            <li>
+                ${page-manager}
+            </li>
+
+            <li>
+                ${contacts}
+            </li>
+
+            <li data-toggle="collapse" data-target="#admin" class="collapsed">
+                <a href="javascript:;">
+                    <i class="fa fa-lock fa-lg"></i> ${admin} <span class="arrow"></span>
+                </a>
+            </li>
+            <ul class="sub-menu collapse" id="admin">
+                <li>
+                    ${change-email}
+                </li>
+                <li>
+                    ${change-password}
+                </li>
+            </ul>
+
+            <li>
+                ${system-monitor}
+            </li>
+
+            <li>
+                ${switch-language}
+            </li>
+
+            <li>
+                ${exit}
+            </li>
+        </ul>
+    </div>
+</div>
+
+<div class="contents col-xs-12">
+    ${stcked-widget}
+</div>
+
+<div class="clearfix"></div>
+

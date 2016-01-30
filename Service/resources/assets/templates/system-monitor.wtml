@@ -1,0 +1,67 @@
+<div class="system-monitor">
+    <div class="text-center>
+        <div class="text-center">
+            <center>${host-info-title}</center>
+        </div>
+        <div class="text-center">
+            ${host-info}
+        </div>
+    </div>
+
+    <div class="text-center col-lg-6">
+        <div class="text-center">
+            ${cpu-info-title}
+        </div>
+        <div class="text-center">
+            ${cpu-info}
+        </div>
+    </div>
+
+    <div class="text-center col-lg-6">
+        <div class="text-center">
+            ${memory-info-title}
+        </div>
+        <div class="text-center">
+            ${memory-info}
+        </div>
+    </div>
+
+    <div class="text-center col-lg-6">
+        <div class="text-center">
+            ${swap-info-title}
+        </div>
+        <div class="text-center">
+            ${swap-info}
+        </div>
+    </div>
+
+    <div class="text-center col-lg-6">
+        <div class="text-center">
+            ${virtual-memory-info-title}
+        </div>
+        <div class="text-center">
+            ${virtual-memory-info}
+        </div>
+    </div>
+
+    <div class="text-center col-lg-8">
+        <div class="text-center">
+            ${network-info-title}
+        </div>
+        <div class="text-center">
+            ${network-info}
+        </div>
+    </div>
+
+    <div class="text-center col-lg-4">
+        <div class="text-center">
+            ${disk-info-title}
+        </div>
+        <div class="text-center">
+            ${disk-info}
+        </div>
+    </div>
+
+    <div class="clearfix"></div>
+</div>
+

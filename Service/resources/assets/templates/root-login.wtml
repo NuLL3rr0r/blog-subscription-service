@@ -1,0 +1,65 @@
+<div class="root-login-box">
+    <div class="panel panel-default">
+        <div class="form-group">
+            <label for="${username-input-id}" class="col-sm-2 control-label">${username-label-text}</label>
+            <div class="col-sm-9 col-sm-offset-1">
+                ${username-input}
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label for="${password-input-id}" class="col-sm-2 control-label">${password-label-text}</label>
+            <div class="col-sm-9 col-sm-offset-1">
+                ${password-input}
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label for="${captcha-input-id}" class="col-sm-2 control-label">${captcha-label-text}</label>
+            <div class="col-sm-9 col-sm-offset-1">
+                ${captcha-input}
+            </div>
+        </div>
+
+        <div class="clearfix"></div>
+
+        <div class="form-group">
+            <div class="col-sm-9 col-sm-offset-3">
+                <div class="checkbox">
+                    <label>
+                        ${remember-me-input} ${remember-me-text}
+                    </label>
+                </div>
+            </div>
+        </div>
+
+        <div class="clearfix"></div>
+
+        <div class="text-center">
+            ${captcha-image}
+        </div>
+
+        <div class="text-center message-area">
+            ${message-area}
+        </div>
+
+        <div class="text-center">
+            ${sign-in-button}
+        </div>
+
+        <div class="extra">
+            <div class="pull-left">
+                <a href="?lang=fa&root">FA</a>
+            </div>
+
+            <div class="pull-right">
+                ${forgot-password-link}
+            </div>
+        </div>
+
+        <div class="clearfix"></div>
+
+        ${password-recovery-div}
+    </div>
+</div>
+

@@ -1,0 +1,61 @@
+<div style="direction: rtl; font-family: Tahoma; font-size: 11px; font-weight: bold; color: #203070; letter-spacing: 1px; line-height: 17px;">
+    <blockquote>
+        <br />
+        <h3>دسترسی موفقیت آمیز از: ${username}</h3>
+        <blockquote>
+            <table>
+                <tr valign="top">
+                    <td>آدرس اینترنتی</td>
+                    <td width="32" style="text-align:center;">-</td>
+                    <td>
+                        <span style="color: #900; font-weight: normal;">
+                            ${client-ip}
+                        </span>
+                    </td>
+                </tr>
+
+                <tr valign="top">
+                    <td>محل</td>
+                    <td width="32" style="text-align:center;">-</td>
+                    <td>
+                        <span style="color: #900; font-weight: normal;">
+                            ${client-location}
+                        </span>
+                    </td>
+                </tr>
+
+                <tr valign="top">
+                    <td>مرورگر</td>
+                    <td width="32" style="text-align:center;">-</td>
+                    <td>
+                        <span style="color: #900; font-weight: normal;">
+                            ${client-user-agent}
+                        </span>
+                    </td>
+                </tr>
+
+                <tr valign="top">
+                    <td>ارجاع دهنده</td>
+                    <td width="32" style="text-align:center;">-</td>
+                    <td>
+                        <span style="color: #900; font-weight: normal;">
+                            ${client-referer}
+                        </span>
+                    </td>
+                </tr>
+
+                <tr valign="top">
+                    <td>زمان</td>
+                    <td width="32" style="text-align:center;">-</td>
+                    <td>
+                        <span style="color: #900; font-weight: normal;">
+                            ${time}
+                        </span>
+                    </td>
+                </tr>
+            </table>
+        </blockquote>
+        <br />
+    </blockquote>
+</div>
+

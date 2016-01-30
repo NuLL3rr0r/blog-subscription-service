@@ -1,0 +1,90 @@
+<div class="dashboard-contents text-center">
+    <div class="text-center">
+        <h3>${welcome-message}</h3>
+    </div>
+
+    <br />
+
+    <div class="last-login-info col-xs-12 col-md-6 col-md-offset-3">
+        <h3>
+            ${last-login-title}
+        </h3>
+
+        <blockquote>
+            <table>
+                <tr valign="top">
+                    <td width="85">
+                        ${last-login-ip-label}
+                    </td>
+                    <td width="15">
+                        -
+                    </td>
+                    <td>
+                        <span style="color: #900; font-weight: normal;">
+                            ${last-login-ip}
+                        </span>
+                    </td>
+                </tr>
+
+                <tr valign="top">
+                    <td width="85">
+                        ${last-login-location-label}
+                    </td>
+                    <td width="15">
+                        -
+                    </td>
+                    <td>
+                        <span style="color: #900; font-weight: normal;">
+                            ${last-login-location}
+                        </span>
+                    </td>
+                </tr>
+
+                <tr valign="top">
+                    <td width="85">
+                        ${last-login-user-agent-label}
+                    </td>
+                    <td width="15">
+                        -
+                    </td>
+                    <td>
+                        <span style="color: #900; font-weight: normal;">
+                            ${last-login-user-agent}
+                        </span>
+                    </td>
+                </tr>
+
+                <tr valign="top">
+                    <td width="85">
+                        ${last-login-referer-label}
+                    </td>
+                    <td width="15">
+                        -
+                    </td>
+                    <td>
+                        <span style="color: #900; font-weight: normal;">
+                            ${last-login-referer}
+                        </span>
+                    </td>
+                </tr>
+
+                <tr valign="top">
+                    <td width="85">
+                        ${last-login-time-label}
+                    </td>
+                    <td width="15">
+                        -
+                    </td>
+                    <td>
+                        <span style="color: #900; font-weight: normal;">
+                            ${last-login-time-gdate}, ${last-login-time-jdate}
+                            <br />
+                            ${last-login-time}
+                        </span>
+                    </td>
+                </tr>
+            </table>
+        </blockquote>
+    </div>
+</div>
+
