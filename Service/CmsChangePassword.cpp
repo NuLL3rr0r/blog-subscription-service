@@ -239,7 +239,7 @@ void CmsChangePassword::Impl::TryPasswordChange()
 
         guard.commit();
 
-        m_parent->HtmlError(tr("cms-change-password-success-message"), ChangePasswordMessageArea);
+        m_parent->HtmlInfo(tr("cms-change-password-success-message"), ChangePasswordMessageArea);
 
         return;
     }

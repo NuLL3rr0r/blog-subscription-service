@@ -207,7 +207,7 @@ void CmsChangeEmail::Impl::TryEmailChange()
 
         guard.commit();
 
-        m_parent->HtmlError(tr("cms-change-email-success-message"), ChangeEmailMessageArea);
+        m_parent->HtmlInfo(tr("cms-change-email-success-message"), ChangeEmailMessageArea);
 
         return;
     }
