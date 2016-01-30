@@ -1,0 +1,25 @@
+1 VERSIONINFO
+FILEVERSION     @SERVICE_PRODUCT_VERSION_MAJOR@,@SERVICE_PRODUCT_VERSION_MINOR@,@SERVICE_PRODUCT_VERSION_PATCH@,0
+PRODUCTVERSION  @SERVICE_PRODUCT_VERSION_MAJOR@,@SERVICE_PRODUCT_VERSION_MINOR@,@SERVICE_PRODUCT_VERSION_PATCH@,0
+BEGIN
+    BLOCK "StringFileInfo"
+    BEGIN
+        BLOCK "040904E4"
+        BEGIN
+            VALUE "CompanyName", "@PRODUCT_COMPANY_NAME@"
+            VALUE "FileDescription", "@SERVICE_PRODUCT_DESCRIPTION@"
+            VALUE "FileVersion", "@SERVICE_PRODUCT_VERSION@"
+            VALUE "InternalName", "@SERVICE_PRODUCT_INTERNAL_NAME@"
+            VALUE "LegalCopyright", "@PRODUCT_COPYRIGHT@"
+            VALUE "OriginalFilename", "@SERVICE_BIN_NAME@.exe"
+            VALUE "ProductName", "@SERVICE_PRODUCT_NAME@"
+            VALUE "ProductVersion", "@SERVICE_PRODUCT_VERSION@"
+        END
+    END
+    BLOCK "VarFileInfo"
+    BEGIN
+        VALUE "Translation", 0x409, 1252
+    END
+END
+2 ICON "app-icon.ico"
+

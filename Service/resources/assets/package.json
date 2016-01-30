@@ -1,0 +1,14 @@
+{
+  "name": "gulp-tasks",
+  "version": "0.0.0",
+  "private": true,
+  "dependencies": {
+    "gulp": "*",
+    "gulp-autoprefixer": "*",
+    "gulp-imagemin": "*",
+    "gulp-minify-css": "*",
+    "gulp-minify-html": "*",
+    "gulp-sass": "*",
+    "gulp-uglify": "*"
+  }
+}
