@@ -46,7 +46,6 @@
 #include <CoreLib/System.hpp>
 #include "CgiEnv.hpp"
 #include "Cms.hpp"
-#include "Cms.hpp"
 #include "CmsChangeEmail.hpp"
 #include "CmsChangePassword.hpp"
 #include "CmsContacts.hpp"
@@ -161,6 +160,12 @@ WWidget *Cms::Layout()
         tmpl->bindWidget("exit", exit);
 
         m_pimpl->Contents = new Wt::WStackedWidget();
+        m_pimpl->Contents->addWidget(new CmsDashboard(m_cgiRoot));
+        m_pimpl->Contents->addWidget(new CmsNewsletter(m_cgiRoot));
+        m_pimpl->Contents->addWidget(new CmsSubscribers(m_cgiRoot));
+        m_pimpl->Contents->addWidget(new CmsContacts(m_cgiRoot));
+        m_pimpl->Contents->addWidget(new CmsChangeEmail(m_cgiRoot));
+        m_pimpl->Contents->addWidget(new CmsChangePassword(m_cgiRoot));
         m_pimpl->SystemMonitor = new SysMon(m_cgiRoot);
         m_pimpl->Contents->addWidget(m_pimpl->SystemMonitor);
         tmpl->bindWidget("stcked-widget", m_pimpl->Contents);
