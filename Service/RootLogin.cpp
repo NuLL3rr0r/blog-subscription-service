@@ -269,10 +269,11 @@ WWidget *RootLogin::Layout()
         m_pimpl->CaptchaImage = m_pimpl->Captcha->Generate();
         m_pimpl->CaptchaImage->setAlternateText(tr("root-login-captcha-hint"));
 
+        int captchaResult = (int)m_pimpl->Captcha->GetResult();
+
         m_pimpl->CaptchaLineEdit = new WLineEdit();
         m_pimpl->CaptchaLineEdit->setPlaceholderText(tr("root-login-captcha-hint"));
-        m_pimpl->CaptchaValidator = new WIntValidator((int)m_pimpl->Captcha->GetResult(),
-                                                      (int)m_pimpl->Captcha->GetResult());
+        m_pimpl->CaptchaValidator = new WIntValidator(captchaResult, captchaResult);
         m_pimpl->CaptchaValidator->setMandatory(true);
         m_pimpl->CaptchaLineEdit->setValidator(m_pimpl->CaptchaValidator);
 
@@ -525,10 +526,12 @@ void RootLogin::Impl::LogutSignInAgain()
 void RootLogin::Impl::GenerateCaptcha()
 {
     CaptchaImage->setImageRef(Captcha->Generate()->imageRef());
-    CaptchaValidator->setRange((int)Captcha->GetResult(), (int)Captcha->GetResult());
+    int captchaResult = (int)Captcha->GetResult();
+
+    CaptchaValidator->setRange(captchaResult, captchaResult);
 
     if (PasswordRecoveryFormFlag) {
-        ForgotPassword_CaptchaValidator->setRange((int)Captcha->GetResult(), (int)Captcha->GetResult());
+        ForgotPassword_CaptchaValidator->setRange(captchaResult, captchaResult);
     }
 }
 
@@ -560,10 +563,11 @@ void RootLogin::Impl::PasswordRecoveryForm()
         emailValidator->setMandatory(true);
         ForgotPassword_EmailLineEdit->setValidator(emailValidator);
 
+        int captchaResult = (int)Captcha->GetResult();
+
         ForgotPassword_CaptchaLineEdit = new WLineEdit();
         ForgotPassword_CaptchaLineEdit->setPlaceholderText(tr("root-login-captcha-hint"));
-        ForgotPassword_CaptchaValidator = new WIntValidator((int)Captcha->GetResult(),
-                                                            (int)Captcha->GetResult());
+        ForgotPassword_CaptchaValidator = new WIntValidator(captchaResult, captchaResult);
         ForgotPassword_CaptchaValidator->setMandatory(true);
         ForgotPassword_CaptchaLineEdit->setValidator(ForgotPassword_CaptchaValidator);
 
