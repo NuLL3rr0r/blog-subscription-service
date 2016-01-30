@@ -118,7 +118,7 @@ WWidget *Cms::Layout()
                     WString("<div><a href=\"javascript:;\"><i class=\"fa fa-newspaper-o fa-lg\"></i> {1}</a></div>")
                     .arg(tr("cms-dashboard-newsletter")), TextFormat::XHTMLUnsafeText);
         WText *subscribers = new WText(
-                    WString("<div><a href=\"javascript:;\"><i class=\"fa fa-file-text-o fa-lg\"></i> {1}</a></div>")
+                    WString("<div><a href=\"javascript:;\"><i class=\"fa fa-users fa-lg\"></i> {1}</a></div>")
                     .arg(tr("cms-dashboard-subscribers")), TextFormat::XHTMLUnsafeText);
         WText *contacts = new WText(
                     WString("<div><a href=\"javascript:;\"><i class=\"fa fa-envelope-o fa-lg\"></i> {1}</a></div>")
