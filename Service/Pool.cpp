@@ -67,8 +67,8 @@ std::unique_ptr<Pool::Impl> Pool::s_pimpl = std::make_unique<Pool::Impl>();
 const int &Pool::StorageStruct::LanguageCookieLifespan() const
 {
     // 365 Days * 24 Hours * 60 Minutes * 60 Seconds = Number of Days in Seconds
-    static constexpr int duration = 365 * 24 * 60 * 60;
-    return duration;
+    static constexpr int DURATION = 365 * 24 * 60 * 60;
+    return DURATION;
 }
 
 const std::string &Pool::StorageStruct::RootUsername() const
@@ -104,8 +104,8 @@ const std::string &Pool::StorageStruct::RootInitialEmail() const
 const int &Pool::StorageStruct::RootSessionLifespan() const
 {
     // 7 Days * 24 Hours * 60 Minutes * 60 Seconds = Number of Days in Seconds
-    static constexpr int duration = 7 * 24 * 60 * 60;
-    return duration;
+    static constexpr int DURATION = 7 * 24 * 60 * 60;
+    return DURATION;
 }
 
 const std::string &Pool::StorageStruct::RegexEmail() const
@@ -116,26 +116,26 @@ const std::string &Pool::StorageStruct::RegexEmail() const
 
 const int &Pool::StorageStruct::MinUsernameLength() const
 {
-    static constexpr int len = 4;
-    return len;
+    static constexpr int LENGTH = 4;
+    return LENGTH;
 }
 
 const int &Pool::StorageStruct::MaxUsernameLength() const
 {
-    static constexpr int len = 16;
-    return len;
+    static constexpr int LENGTH = 16;
+    return LENGTH;
 }
 
 const int &Pool::StorageStruct::MinPasswordLength() const
 {
-    static constexpr int len = 8;
-    return len;
+    static constexpr int LENGTH = 8;
+    return LENGTH;
 }
 
 const int &Pool::StorageStruct::MaxPasswordLength() const
 {
-    static constexpr int len = 24;
-    return len;
+    static constexpr int LENGTH = 24;
+    return LENGTH;
 }
 
 Pool::StorageStruct *Pool::Storage()
