@@ -45,7 +45,6 @@ class Database;
 }
 
 namespace Service {
-class Captcha;
 class Pool;
 }
 
