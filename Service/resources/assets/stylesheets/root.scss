@@ -1,0 +1,256 @@
+@charset "utf-8";
+
+.no-script {
+    letter-spacing: 1px;
+    padding: 5px;
+    text-align: center;
+    border: 1px solid #f00;
+    background: #ffa4a4;
+}
+
+.link {
+    text-decoration: none;
+    cursor: pointer;
+    color: #00f;
+}
+
+.boldText {
+    font-weight: bold;
+    color: #203070;
+}
+
+.boldTextErr {
+    font-weight: bold;
+    color: #900;
+}
+
+.root-login-box, .root-logout-box {
+    position: relative;
+    margin: 0 auto;
+    top: 99px;
+    max-width: 500px;
+    min-width: 100px;
+    letter-spacing: 1px;
+    font: bold 1em "Comic Sans MS";
+
+    .panel {
+        padding: 25px;
+    }
+
+    .form-group {
+        padding: 16px 0 !important;
+    }
+
+    .captcha {
+        margin: 12px;
+    }
+
+    button {
+        margin: 12px;
+    }
+
+    .pull-right {
+        white-space: nowrap;
+    }
+
+    .password-recovery {
+        .message-area {
+            margin-top: 12px;
+        }
+    }
+
+    .extra {
+        a, .link {
+            font-size: 0.8em !important;
+            color: #000 !important;
+            text-decoration: none !important;
+        }
+    }
+}
+
+
+/*
+    DASHBOARD MENU - START
+*/
+
+.nav-side-menu {
+    overflow: auto;
+    font-family: verdana;
+    font-size: 12px;
+    font-weight: 200;
+    background-color: #2e353d;
+    position: fixed;
+    top: 0;
+    width: 300px;
+    height: 100%;
+    color: #e1ffff;
+
+    .brand {
+        background-color: #23282e;
+        line-height: 50px;
+        display: block;
+        text-align: center;
+        font-size: 14px;
+    }
+
+    .toggle-btn {
+        display: none;
+    }
+
+    ul, li {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+        line-height: 35px;
+        cursor: pointer;
+
+        .collapsed {
+            .arrow {
+                &:before {
+                    font-family: FontAwesome;
+                    display: inline-block;
+                    vertical-align: middle;
+                }
+            }
+        }
+
+        :not(collapsed) {
+            .arrow {
+                &:before {
+                    font-family: FontAwesome;
+                    content: "\f078";
+                    display: inline-block;
+                    vertical-align: middle;
+                }
+            }
+        }
+
+        .active {
+            background-color: #4f5b69;
+        }
+
+        .sub-menu {
+            li.active {
+                color: #d19b3d;
+
+                a {
+                    color: #d19b3d;
+                }
+            }
+
+            li {
+                background-color: #181c20;
+                border: none;
+                line-height: 28px;
+                border-bottom: 1px solid #23282e;
+
+                &:hover {
+                    background-color: #020203;
+                }
+
+                &:before {
+                    font-family: FontAwesome;
+                    display: inline-block;
+                    vertical-align: middle;
+                }
+            }
+        }
+    }
+
+    li {
+        border-bottom: 1px solid #23282e;
+
+        a {
+            text-decoration: none;
+            color: #e1ffff;
+
+            i {
+                width: 20px;
+            }
+        }
+
+        &:hover {
+            background-color: #4f5b69;
+            -webkit-transition: all 1s ease;
+            -moz-transition: all 1s ease;
+            -o-transition: all 1s ease;
+            -ms-transition: all 1s ease;
+            transition: all 1s ease;
+        }
+    }
+
+    @media (max-width: 767px) {
+        position: relative;
+        width: 100%;
+        margin-bottom: 10px;
+
+        .toggle-btn {
+            display: block;
+            cursor: pointer;
+            position: absolute;
+            top: 10px;
+            z-index: 10 !important;
+            padding: 3px;
+            background-color: #ffffff;
+            color: #000;
+            width: 40px;
+            text-align: center;
+        }
+
+        .brand {
+            font-size: 22px;
+            line-height: 50px !important;
+        }
+    }
+
+    @media (min-width: 767px) {
+        .menu-list {
+            .menu-content {
+                display: block;
+            }
+        }
+    }
+}
+
+body {
+    margin: 0;
+    padding: 0;
+}
+
+/*
+    DASHBOARD MENU - END
+*/
+
+
+.dashboard-contents {
+    font-family: 'Bitstream Vera Sans', arial, helvetica, sans-serif;
+    font-size: 11px;
+    font-weight: bold;
+    color: #203070;
+    letter-spacing: 1px;
+    line-height: 17px;
+    text-align: center;
+}
+
+@media (min-width: 768px) {
+    .dashboard-contents, .change-email, .change-password {
+        margin-top: 75px;
+    }
+}
+
+.last-login-info td {
+    padding: 0.75em;
+}
+
+.change-email, .change-password {
+    letter-spacing: 1px;
+
+    .form-group {
+        padding: 16px 0 !important;
+    }
+
+    button {
+        margin: 12px;
+    }
+}
+
