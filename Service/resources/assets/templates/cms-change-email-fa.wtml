@@ -28,6 +28,8 @@
 
         <div class="clearfix"></div>
 
+        <br />
+
         <div class="text-center">
             ${change-email-button}
         </div>

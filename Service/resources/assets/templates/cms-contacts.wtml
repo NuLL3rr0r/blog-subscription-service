@@ -1,0 +1,68 @@
+<div class="contacts">
+    <div class="col-xs-12 col-md-6 col-md-offset-3">
+        <div class="text-center">
+            <h3>${edit-contacts-title}</h3>
+        </div>
+
+        <div class="form-group">
+            <label for="${recipient-en-input-id}" class="col-sm-4 control-label">
+                ${recipient-en-label-text}
+            </label>
+            <div class="col-sm-8">
+                ${recipient-en-input}
+            </div>
+        </div>
+
+        <div class="clearfix"></div>
+
+        <div class="form-group">
+            <label for="${recipient-fa-input-id}" class="col-sm-4 control-label">
+                ${recipient-fa-label-text}
+            </label>
+            <div class="col-sm-8">
+                ${recipient-fa-input}
+            </div>
+        </div>
+
+        <div class="clearfix"></div>
+
+        <div class="form-group">
+            <label for="${email-input-id}" class="col-sm-4 control-label">
+                ${email-label-text}
+            </label>
+            <div class="col-sm-8">
+                ${email-input}
+            </div>
+        </div>
+
+        <div class="clearfix"></div>
+
+        <br />
+
+        <div class="text-center">
+            <div class="btn-group">
+                ${add-button}
+                ${cancel-button}
+            </div>
+        </div>
+
+        <div class="clearfix"></div>
+
+        <br />
+
+        <div class="text-center message-area">
+            ${edit-contacts-message-area}
+        </div>
+
+        <div class="clearfix"></div>
+
+        <br />
+
+        <div class="text-center">
+            ${contacts-table}
+        </div>
+    </div>
+</div>
+
+<div class="clearfix"></div>
+

@@ -9,11 +9,11 @@
             </li>
 
             <li>
-                ${news}
+                ${newsletter}
             </li>
 
             <li>
-                ${page-manager}
+                ${subscribers}
             </li>
 
             <li>

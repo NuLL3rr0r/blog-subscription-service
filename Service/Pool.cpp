@@ -138,6 +138,60 @@ const int &Pool::StorageStruct::MaxPasswordLength() const
     return LENGTH;
 }
 
+const int &Pool::StorageStruct::MinEmailRecipientNameLength() const
+{
+    static constexpr int LENGTH = 1;
+    return LENGTH;
+}
+
+const int &Pool::StorageStruct::MaxEmailRecipientNameLength() const
+{
+    static constexpr int LENGTH = 64;
+    return LENGTH;
+}
+
+const int &Pool::StorageStruct::MinEmailSenderNameLength() const
+{
+    static constexpr int LENGTH = 1;
+    return LENGTH;
+}
+
+const int &Pool::StorageStruct::MaxEmailSenderNameLength() const
+{
+    static constexpr int LENGTH = 24;
+    return LENGTH;
+}
+
+const int &Pool::StorageStruct::MinEmailSubjectLength() const
+{
+    static constexpr int LENGTH = 1;
+    return LENGTH;
+}
+
+const int &Pool::StorageStruct::MaxEmailSubjectLength() const
+{
+    static constexpr int LENGTH = 48; // RFC says its 78. But, we need those extra chracters.
+    return LENGTH;
+}
+
+const int &Pool::StorageStruct::MaxEmailSubjectLength_RFC() const
+{
+    static constexpr int LENGTH = 78;
+    return LENGTH;
+}
+
+const int &Pool::StorageStruct::MinEmailBodyLength() const
+{
+    static constexpr int LENGTH = 1;
+    return LENGTH;
+}
+
+const int &Pool::StorageStruct::MaxEmailBodyLength() const
+{
+    static constexpr int LENGTH = 2048;
+    return LENGTH;
+}
+
 Pool::StorageStruct *Pool::Storage()
 {
     lock_guard<mutex> lock(s_pimpl->StorageMutex);

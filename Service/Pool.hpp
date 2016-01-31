@@ -66,6 +66,16 @@ public:
         const int &MinPasswordLength() const;
         const int &MaxPasswordLength() const;
 
+        const int &MinEmailRecipientNameLength() const;
+        const int &MaxEmailRecipientNameLength() const;
+        const int &MinEmailSenderNameLength() const;
+        const int &MaxEmailSenderNameLength() const;
+        const int &MinEmailSubjectLength() const;
+        const int &MaxEmailSubjectLength() const;
+        const int &MaxEmailSubjectLength_RFC() const;
+        const int &MinEmailBodyLength() const;
+        const int &MaxEmailBodyLength() const;
+
         std::string AppPath;
     };
 

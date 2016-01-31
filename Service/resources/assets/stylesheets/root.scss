@@ -233,7 +233,7 @@ body {
 }
 
 @media (min-width: 768px) {
-    .dashboard-contents, .change-email, .change-password {
+    .dashboard-contents, .contacts, .change-email, .change-password {
         margin-top: 75px;
     }
 }
@@ -242,7 +242,7 @@ body {
     padding: 0.75em;
 }
 
-.change-email, .change-password {
+.contacts, .change-email, .change-password {
     letter-spacing: 1px;
 
     .form-group {
