@@ -301,12 +301,14 @@ IF ( BUILD_SERVICE )
                 "${CMAKE_CURRENT_SOURCE_DIR}/resources/assets" "${GULP_DIR}"
             COMMAND ${CMAKE_COMMAND} -E copy_directory
                 "${WT_RESOURCES_DIR}" "${GULP_DIR}/resources"
+            COMMAND ${CMAKE_COMMAND} -E copy_directory
+                "${CMAKE_CURRENT_SOURCE_DIR}/resources/tinymce" "${GULP_DIR}/resources/tinymce"
             COMMAND ${GULP_EXECUTABLE} default
                 WORKING_DIRECTORY "${GULP_DIR}"
         )
 
         INSTALL ( DIRECTORY
-            "${GULP_DIR}/templates"
+            "${GULP_DIR}/output/templates"
             DESTINATION "${APP_ROOT_DIR}"
             FILE_PERMISSIONS
             OWNER_READ
