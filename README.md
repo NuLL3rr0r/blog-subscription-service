@@ -6,6 +6,11 @@ A multilingual blog subscription service written in C++ on top of Wt webtoolkit 
 I developed this subscription service based on my own requirements, for my [English](http://www.babaei.net) and [Farsi](http://fa.babaei.net) blogs. It should work elsewhere on other websites or blogs out of the box, without any hassle.
 
 
+## Documentation
+
+Comes when the first release is ready.
+
+
 ## License
 
 (The MIT License)
