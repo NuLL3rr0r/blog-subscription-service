@@ -44,9 +44,9 @@
                 ${add-button}
                 ${cancel-button}
             </div>
-        </div>
 
-        <div class="clearfix"></div>
+            <div class="clearfix"></div>
+        </div>
 
         <br />
 

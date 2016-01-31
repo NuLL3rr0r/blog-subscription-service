@@ -1,0 +1,29 @@
+<div class="subscribers">
+    <div class="col-xs-12 col-md-6 col-md-offset-3">
+        <div class="text-center">
+            <h3>${subscribers-title}</h3>
+        </div>
+
+        <br />
+
+        <div class="text-center">
+            <div class="btn-group">
+                ${farsi-subscribers-button}
+                ${english-subscribers-button}
+                ${english-farsi-subscribers-button}
+                ${all-subscribers-button}
+            </div>
+
+            <div class="clearfix"></div>
+        </div>
+
+        <br />
+
+        <div class="text-center">
+            ${subscribers-table}
+        </div>
+    </div>
+</div>
+
+<div class="clearfix"></div>
+
