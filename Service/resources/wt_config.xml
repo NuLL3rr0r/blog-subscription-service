@@ -9,7 +9,7 @@
 
     The path should be as configured in the Wt build process, where it
     defaults to /etc/wt/wt_config.xml. It can be overridden in the environment
-    variable WT_CONFIG_XML, or with the -c startup option of wthttpd.
+    variable WT_CONFIG_XML, or with the -c startup option of wthttp.
 
     The values listed here are the default values, which are used when the
     declaration is missing or no configuration file is used.
@@ -32,11 +32,8 @@
 	       session requires a seperate process, it is also an easy target
 	       for DoS attacks if not shielded by access control.
 
-               It is also a convenient mode during development, as it is easy
-	       to enable disable debugging using valgrind, and it always starts
-	       the latest deployed executable for a new session.
-	   
-	       Note: currently only supported using the FastCGI connector
+	       Note: currently only supported by the wtfcgi and wthttp
+	       connectors.
               -->
 
 	    <!--
@@ -62,7 +59,8 @@
 	       suffers far less from DoS attacks than dedicated-process mode.
 	       Use it for non-critical and well-debugged web applications.
 
-	       Note: wthttpd always uses exactly one process
+	       Note: the wthttp connector will ignore the num-processes
+	       setting and use only process.
               -->
 	    <shared-process>
 	        <num-processes>1</num-processes>
@@ -73,6 +71,11 @@
 	       Possible values:
 		 Auto: cookies is available, otherwise URL rewriting
 		 URL:  only URL rewriting
+
+               It is recommended to stick to URL rewriting for session
+	       tracking as this is more secure (it avoids the risk of attacks
+	       like CSRF or BREACH), and also provides proper support for
+	       concurrent sessions in a single browser.
 	      -->
 	    <tracking>URL</tracking>
 
@@ -106,7 +109,7 @@
 
 	<!-- Settings that apply only to the FastCGI connector.
 
-	   To configure the wthttpd connector, use command line options, or
+	   To configure the wthttp connector, use command line options, or
 	   configure default options in /etc/wt/wthttpd
 	  -->
 	<connector-fcgi>
@@ -146,13 +149,13 @@
 
                The default value is 1.
 	      -->
-	    <num-threads>2</num-threads>
+	    <num-threads>1</num-threads>
 
 	</connector-fcgi>
 
 	<!-- Settings that apply only to the MS IIS ISAPI connector.
 
-	   To configure the wthttpd connector, use command line options, or
+	   To configure the wthttp connector, use command line options, or
 	   configure default options in /etc/wt/wthttpd
 	  -->
 	<connector-isapi>
@@ -210,12 +213,15 @@
         <!-- Javascript debug options
 
 	     Values:
-	     - true: JavaScript errors are not caught but the browser
-	             built-in debug options are used
-	     - stack: JavaScript errors are caught but also a stack trace
-                      is printed, useful for diagnosing a problem in production
+	     - naked: JavaScript errors are not caught at all
 	     - false: JavaScript errors are caught and a simple error message
 	              is printed to indicate that something is terribly wrong
+	     - stack: equivalent to 'false'
+	     - true: JavaScript errors are rethrown after server-side logging
+
+             Unless the value is 'naked',
+	     WApplication::handleJavaScriptError() is called which by
+	     default logs the error and terminates the session.
 	  -->
 	<debug>false</debug>
 
@@ -266,7 +272,7 @@
            Maximum size of an incoming POST request. This value must be
            increased when the user is allowed to upload files.
          -->
-	<max-request-size>8192</max-request-size>
+	<max-request-size>128</max-request-size>
 
 	<!-- Session id length (number of characters) -->
 	<session-id-length>16</session-id-length>
@@ -339,7 +345,19 @@
            still a draft. Wt implements up to version 17 of the draft
 	   (latest as of November 2011).
 	  -->
-	<web-sockets>true</web-sockets>
+	<web-sockets>false</web-sockets>
+
+	<!-- Enables the detection of webgl-capabilites.
+
+	     When this is enabled, the browser will try to create a
+	     webgl-context when loading to verify that it is possible. This
+	     is neccesary when using WGLWidget.
+
+	     This can take up some load time. When your application does not
+	     use WGLWidget, this option can be set to false. It will improve
+	     the initial loading time of the web-application.
+	-->
+	<webgl-detection>true</webgl-detection>
 
 	<!-- Redirect message shown for browsers without JavaScript support
 
@@ -360,8 +378,11 @@
 	   When deployed behind a reverse proxy (such as Apache or Squid),
 	   the server location is not read from the "Host" header,
 	   but from the X-Forwarded-For header, if present.
+
+           This option is required to make e.g. clientAddress() return the
+           correct address.
 	  -->
-	<behind-reverse-proxy>true</behind-reverse-proxy>
+	<behind-reverse-proxy>false</behind-reverse-proxy>
 
 	<!-- Whether inline CSS is allowed.
 
@@ -456,7 +477,7 @@
 
            (Not to be confused with the Twitter Bootstrap theme)
 	  -->
-	<progressive-bootstrap>true</progressive-bootstrap>
+	<progressive-bootstrap>false</progressive-bootstrap>
 
 	<!-- Set session-ID cookie
 
@@ -487,8 +508,20 @@
          By default, Wt will test for cookie support using JavaScript.
 	 Because cookie manipulation from JavaScript is a common security
 	 risk vector, some prefer to disable these checks.
-	-->
+
+	 -->
 	<cookie-checks>true</cookie-checks>
+
+	<!-- Configure meta headers
+
+         The user-agent allows optional filtering based on the
+         user-agent, using a regular expression. You can have multiple
+         set-meta-headers definitions.
+
+	 -->
+	<meta-headers user-agent=".*MSIE.*">
+	  <meta name="robots" content="noindex" />
+	</meta-headers>
 
 	<!-- Runtime Properties
      
