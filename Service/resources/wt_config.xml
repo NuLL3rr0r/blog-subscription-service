@@ -592,6 +592,10 @@
 	       entry point by passing a location to WServer::addEntryPoint().
 	      -->
 	    <!-- <property name="favicon">images/favicon.ico</property> -->
+
+	    <property name="tinyMCEVersion">4</property>
+	    <property name="tinyMCEBaseURL">/tinymce</property>
+	    <property name="tinyMCEURL">/resources/tinymce/tinymce.min.js</property>
 	</properties>
 
     </application-settings>
