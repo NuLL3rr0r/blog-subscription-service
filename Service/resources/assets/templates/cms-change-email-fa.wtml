@@ -7,23 +7,23 @@
         <br />
 
         <div class="form-group">
-            <label for="${email-input-id}" class="col-sm-4 control-label">
-                ${email-label-text}
-            </label>
             <div class="col-sm-8">
                 ${email-input}
             </div>
+            <label for="${email-input-id}" class="col-sm-4 control-label">
+                ${email-label-text}
+            </label>
         </div>
 
         <div class="clearfix"></div>
 
         <div class="form-group">
-            <label for="${password-input-id}" class="col-sm-4 control-label">
-                ${password-label-text}
-            </label>
             <div class="col-sm-8">
                 ${password-input}
             </div>
+            <label for="${password-input-id}" class="col-sm-4 control-label">
+                ${password-label-text}
+            </label>
         </div>
 
         <div class="clearfix"></div>

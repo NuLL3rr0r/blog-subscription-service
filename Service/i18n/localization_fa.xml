@@ -82,6 +82,7 @@
     <message id="cms-contacts-erase-confirm-ok">تائید</message>
     <message id="cms-contacts-erase-confirm-cancel">لغو</message>
     <message id="cms-contacts-duplicate-contact-error">تماس مورد نظر قبلا ایجاد شده است!</message>
+    <message id="cms-change-password-page-title">تغییر کلمه عبور مدیر سیستم</message>
     <message id="cms-change-password-current-pwd">کلمه عبور فعلی</message>
     <message id="cms-change-password-current-pwd-placeholder">کلمه عبور فعلی</message>
     <message id="cms-change-password-new-pwd">کلمه عبور جدید</message>

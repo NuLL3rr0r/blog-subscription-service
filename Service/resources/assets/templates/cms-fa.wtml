@@ -1,4 +1,4 @@
-<div class="nav-side-menu container-fluid col-lg-3 col-md-3 col-sm-12 col-xs-12">
+<div class="nav-side-menu container-fluid col-lg-2 col-lg-offset-2 col-md-2 col-md-offset-2 col-sm-12 col-xs-12">
     <div class="brand">${brand-title}</div>
     <i class="fa fa-bars fa-2x toggle-btn" data-toggle="collapse" data-target="#menu-content"></i>
 
@@ -49,7 +49,9 @@
     </div>
 </div>
 
-<div class="contents container-fluid col-lg-9 col-lg-offset-3 col-md-9 col-md-offset-3 col-sm-12 col-xs-12">
+<div class="contents container-fluid col-lg-10 ol-md-10 col-sm-12 col-xs-12">
     ${stcked-widget}
 </div>
+
+<div class="clearfix"></div>
 
