@@ -142,61 +142,68 @@ RootLogin::RootLogin(CgiRoot *cgi) :
             std::string token(m_cgiRoot->environment().getCookie("cms-session-token"));
             Pool::Crypto()->Decrypt(user, user);
             Pool::Crypto()->Decrypt(token, token);
-            std::time_t rawTime = boost::lexical_cast<time_t>(token);
 
-            CDate::Now n;
-            if (rawTime + Pool::Storage()->RootSessionLifespan() >= n.RawTime) {
-                cppdb::transaction guard(Service::Pool::Database()->Sql());
+            try {
+                std::time_t rawTime = boost::lexical_cast<time_t>(token);
 
-                try {
-                    result r = Pool::Database()->Sql()
-                            << (boost::format("SELECT username, email,"
-                                              " last_login_ip, last_login_location,"
-                                              " last_login_rawtime,"
-                                              " last_login_gdate, last_login_jdate,"
-                                              " last_login_time,"
-                                              " last_login_user_agent, last_login_referer"
-                                              " FROM %1% WHERE username=?;")
-                                % Pool::Database()->GetTableName("ROOT")).str()
-                            << user << row;
+                CDate::Now n;
+                if (rawTime + Pool::Storage()->RootSessionLifespan() >= n.RawTime) {
+                    cppdb::transaction guard(Service::Pool::Database()->Sql());
 
-                    if (!r.empty()) {
-                        r >> m_cgiEnv->SignedInUser.Username
-                                >> m_cgiEnv->SignedInUser.Email
-                                >> m_cgiEnv->SignedInUser.LastLogin.IP
-                                >> m_cgiEnv->SignedInUser.LastLogin.Location
-                                >> m_cgiEnv->SignedInUser.LastLogin.LoginRawTime
-                                >> m_cgiEnv->SignedInUser.LastLogin.LoginGDate
-                                >> m_cgiEnv->SignedInUser.LastLogin.LoginJDate
-                                >> m_cgiEnv->SignedInUser.LastLogin.LoginTime
-                                >> m_cgiEnv->SignedInUser.LastLogin.UserAgent
-                                >> m_cgiEnv->SignedInUser.LastLogin.Referer;
+                    try {
+                        result r = Pool::Database()->Sql()
+                                << (boost::format("SELECT username, email,"
+                                                  " last_login_ip, last_login_location,"
+                                                  " last_login_rawtime,"
+                                                  " last_login_gdate, last_login_jdate,"
+                                                  " last_login_time,"
+                                                  " last_login_user_agent, last_login_referer"
+                                                  " FROM %1% WHERE username=?;")
+                                    % Pool::Database()->GetTableName("ROOT")).str()
+                                << user << row;
 
-                        m_pimpl->PreserveSessionData(n, m_cgiEnv->SignedInUser.Username, true);
-                        m_pimpl->SendLoginAlertEmail(m_cgiEnv->SignedInUser.Email,
-                                                     m_cgiEnv->SignedInUser.Username,
-                                                     n);
+                        if (!r.empty()) {
+                            r >> m_cgiEnv->SignedInUser.Username
+                                    >> m_cgiEnv->SignedInUser.Email
+                                    >> m_cgiEnv->SignedInUser.LastLogin.IP
+                                    >> m_cgiEnv->SignedInUser.LastLogin.Location
+                                    >> m_cgiEnv->SignedInUser.LastLogin.LoginRawTime
+                                    >> m_cgiEnv->SignedInUser.LastLogin.LoginGDate
+                                    >> m_cgiEnv->SignedInUser.LastLogin.LoginJDate
+                                    >> m_cgiEnv->SignedInUser.LastLogin.LoginTime
+                                    >> m_cgiEnv->SignedInUser.LastLogin.UserAgent
+                                    >> m_cgiEnv->SignedInUser.LastLogin.Referer;
 
-                        hasValidSession = true;
+                            m_pimpl->PreserveSessionData(n, m_cgiEnv->SignedInUser.Username, true);
+                            m_pimpl->SendLoginAlertEmail(m_cgiEnv->SignedInUser.Email,
+                                                         m_cgiEnv->SignedInUser.Username,
+                                                         n);
+
+                            hasValidSession = true;
+                        }
+
+                        guard.commit();
                     }
 
-                    guard.commit();
-                }
+                    catch (boost::exception &ex) {
+                        LOG_ERROR(boost::diagnostic_information(ex));
+                        guard.rollback();
+                    }
 
-                catch (boost::exception &ex) {
-                    LOG_ERROR(boost::diagnostic_information(ex));
-                    guard.rollback();
-                }
+                    catch (std::exception &ex) {
+                        LOG_ERROR(ex.what());
+                        guard.rollback();
+                    }
 
-                catch (std::exception &ex) {
-                    LOG_ERROR(ex.what());
-                    guard.rollback();
+                    catch (...) {
+                        LOG_ERROR(UNKNOWN_ERROR);
+                        guard.rollback();
+                    }
                 }
+            }
 
-                catch (...) {
-                    LOG_ERROR(UNKNOWN_ERROR);
-                    guard.rollback();
-                }
+            catch (...) {
+                /// Invalid session!
             }
         }
     }
@@ -380,7 +387,7 @@ void RootLogin::Impl::TryLogin()
             Pool::Database()->Update("ROOT",
                                      "username", user,
                                      "recovery_pwd=?",
-                                     { "" });
+            { "" });
         }
 
         if (r.empty()) {
@@ -489,7 +496,7 @@ void RootLogin::Impl::TryPassowrdRecovery()
         Pool::Database()->Update("ROOT",
                                  "email", email,
                                  "recovery_pwd=?",
-                                 { encryptedPwd });
+        { encryptedPwd });
 
         SendPasswordRecoveryEmail(email, user, pwd, n);
 
@@ -612,7 +619,7 @@ void RootLogin::Impl::PreserveSessionData(const CDate::Now &n, const std::string
                                  " last_login_time=?,"
                                  " last_login_user_agent=?,"
                                  " last_login_referer=?",
-                                 {
+        {
                                      m_parent->m_cgiEnv->GetClientInfo(CgiEnv::ClientInfo::IP),
                                      m_parent->m_cgiEnv->GetClientInfo(CgiEnv::ClientInfo::Location),
                                      boost::lexical_cast<std::string>(n.RawTime),
@@ -626,11 +633,15 @@ void RootLogin::Impl::PreserveSessionData(const CDate::Now &n, const std::string
         std::string user;
         std::string token;
 
+        string err;
+
         if (saveLocally) {
-            Pool::Crypto()->Encrypt(boost::lexical_cast<std::string>(username),
-                                    user);
+            Pool::Crypto()->Encrypt(username, user, err);
+            LOG_ERROR(err);
             Pool::Crypto()->Encrypt(boost::lexical_cast<std::string>(n.RawTime),
-                                    token);
+                                    token, err);
+            LOG_ERROR(err);
+            LOG_ERROR(CRYPTO_IV);
         }
 
         if (m_parent->m_cgiRoot->environment().supportsCookies()) {

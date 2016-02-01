@@ -116,23 +116,25 @@ WWidget *CmsNewsletter::Layout()
             subjectValidator->setMandatory(true);
             m_pimpl->SubjectLineEdit->setValidator(subjectValidator);
 
+            /// Do not call
+            /// 'setPlaceholderText' on 'm_pimpl->BodyTextEdit'
+            /// or, it will throw.
             m_pimpl->BodyTextEdit = new WTextEdit();
-            m_pimpl->BodyTextEdit->setPlaceholderText(tr("cms-newsletter-body-placeholder"));
             WLengthValidator *bodyValidator = new WLengthValidator(Pool::Storage()->MinEmailSubjectLength(),
                                                                    Pool::Storage()->MaxEmailSubjectLength_RFC());
             bodyValidator->setMandatory(true);
             //m_pimpl->BodyTextEdit->
             m_pimpl->BodyTextEdit->setValidator(bodyValidator);
 
-            m_pimpl->SendPushButton = new WPushButton("cms-newsletter-send");
+            m_pimpl->SendPushButton = new WPushButton(tr("cms-newsletter-send"));
             m_pimpl->SendPushButton->setStyleClass("btn btn-default");
 
-            m_pimpl->ClearPushButton = new WPushButton("cms-newsletter-clear");
+            m_pimpl->ClearPushButton = new WPushButton(tr("cms-newsletter-clear"));
             m_pimpl->ClearPushButton->setStyleClass("btn btn-default");
 
             m_pimpl->NewsletterMessageArea = new WText();
 
-            tmpl->bindWidget("newsletter-title", new WText(tr("newsletter-page-title")));
+            tmpl->bindWidget("newsletter-title", new WText(tr("cms-newsletter-page-title")));
 
             tmpl->bindString("recipients-input-id", m_pimpl->RecipientsComboBox->id());
             tmpl->bindString("subject-input-id", m_pimpl->SubjectLineEdit->id());
@@ -144,9 +146,9 @@ WWidget *CmsNewsletter::Layout()
 
             tmpl->bindWidget("recipients-input", m_pimpl->RecipientsComboBox);
             tmpl->bindWidget("subject-input", m_pimpl->SubjectLineEdit);
-            tmpl->bindWidget("body-input", m_pimpl->BodyTextEdit);
+            tmpl->bindWidget("body-textarea", m_pimpl->BodyTextEdit);
 
-            tmpl->bindWidget("add-button", m_pimpl->SendPushButton);
+            tmpl->bindWidget("send-button", m_pimpl->SendPushButton);
             tmpl->bindWidget("clear-button", m_pimpl->ClearPushButton);
 
             tmpl->bindWidget("newsletter-message-area", m_pimpl->NewsletterMessageArea);
