@@ -634,9 +634,8 @@ void RootLogin::Impl::PreserveSessionData(const CDate::Now &n, const std::string
         std::string token;
 
         if (saveLocally) {
-            Pool::Crypto()->Encrypt(username, user, err);
-            Pool::Crypto()->Encrypt(boost::lexical_cast<std::string>(n.RawTime),
-                                    token, err);
+            Pool::Crypto()->Encrypt(username, user);
+            Pool::Crypto()->Encrypt(boost::lexical_cast<std::string>(n.RawTime), token);
         }
 
         if (m_parent->m_cgiRoot->environment().supportsCookies()) {
