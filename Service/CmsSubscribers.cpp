@@ -33,17 +33,35 @@
  */
 
 
+#include <boost/exception/diagnostic_information.hpp>
+#include <boost/format.hpp>
+#include <cppdb/frontend.h>
+#include <Wt/WPushButton>
+#include <Wt/WString>
+#include <Wt/WTemplate>
+#include <Wt/WText>
+#include <Wt/WWidget>
+#include <CoreLib/Crypto.hpp>
+#include <CoreLib/Database.hpp>
+#include <CoreLib/FileSystem.hpp>
+#include <CoreLib/Log.hpp>
+#include "CgiEnv.hpp"
 #include "CmsSubscribers.hpp"
 #include "Div.hpp"
+#include "Pool.hpp"
 
 using namespace std;
 using namespace Wt;
 using namespace Service;
 
+#define         UNKNOWN_ERROR       "Unknown error!"
+
 struct CmsSubscribers::Impl : public Wt::WObject
 {
 public:
     CmsSubscribers *m_parent;
+
+    WContainerWidget *SubscribersTableContainer;
 
 public:
     explicit Impl(CmsSubscribers *parent);
@@ -63,9 +81,62 @@ CmsSubscribers::CmsSubscribers(CgiRoot *cgi) :
 
 WWidget *CmsSubscribers::Layout()
 {
-    Div *container = new Div("CmsSubscribers", "container");
+    Div *container = new Div("CmsSubscribers", "container-fluid");
+
+    try {
+        std::string htmlData;
+        std::string file;
+        if (m_cgiEnv->GetCurrentLanguage() == CgiEnv::Language::Fa) {
+            file = "../templates/cms-subscribers-fa.wtml";
+        } else {
+            file = "../templates/cms-subscribers.wtml";
+        }
+
+        if (CoreLib::FileSystem::Read(file, htmlData)) {
+            /// Fill the template
+            WTemplate *tmpl = new WTemplate(container);
+            tmpl->setTemplateText(WString(htmlData), TextFormat::XHTMLUnsafeText);
+
+            WPushButton *allSubscribersPushButton = new WPushButton(tr("cms-subscribers-all"));
+            allSubscribersPushButton->setStyleClass("btn btn-default");
+
+            WPushButton *englishFarsiSubscribersPushButton = new WPushButton(tr("cms-subscribers-english-farsi"));
+            englishFarsiSubscribersPushButton->setStyleClass("btn btn-default");
+
+            WPushButton *englishSubscribersPushButton = new WPushButton(tr("cms-subscribers-english"));
+            englishSubscribersPushButton->setStyleClass("btn btn-default");
+
+            WPushButton *farsiPushButton = new WPushButton(tr("cms-subscribers-farsi"));
+            farsiPushButton->setStyleClass("btn btn-default");
+
+            m_pimpl->SubscribersTableContainer = new Div("SubscribersTableContainer", "subscribers-table-container");
+
+            tmpl->bindWidget("subscribers-title", new WText(tr("cms-subscribers-page-title")));
+
+            tmpl->bindWidget("subscribers-table", m_pimpl->SubscribersTableContainer);
+
+            tmpl->bindWidget("all-subscribers-button", allSubscribersPushButton);
+            tmpl->bindWidget("english-farsi-subscribers-button", englishFarsiSubscribersPushButton);
+            tmpl->bindWidget("english-subscribers-button", englishSubscribersPushButton);
+            tmpl->bindWidget("farsi-subscribers-button", farsiPushButton);
 
 
+
+            allSubscribersPushButton->setFocus();
+        }
+    }
+
+    catch (boost::exception &ex) {
+        LOG_ERROR(boost::diagnostic_information(ex));
+    }
+
+    catch (std::exception &ex) {
+        LOG_ERROR(ex.what());
+    }
+
+    catch (...) {
+        LOG_ERROR(UNKNOWN_ERROR);
+    }
 
     return container;
 }

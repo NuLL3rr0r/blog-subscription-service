@@ -1,5 +1,9 @@
 @charset "utf-8";
 
+html, body {
+    height: 100%;
+}
+
 .no-script {
     letter-spacing: 1px;
     padding: 5px;
@@ -24,12 +28,37 @@
     color: #900;
 }
 
-.root-login-box, .root-logout-box {
-    position: relative;
+.full-width {
+    width: 100%;
+}
+
+.full-height {
+    height: 100%;
+}
+
+.container-table {
+    display: table;
+    table-layout: fixed;
+    width: 100%;
+    height: 100%;
+}
+
+.h-center {
     margin: 0 auto;
-    top: 99px;
-    max-width: 500px;
-    min-width: 100px;
+    float: none;
+    clear: both;
+}
+
+.v-center {
+    display: table-cell;
+    table-layout: fixed;
+    width: auto;
+    vertical-align: middle;
+    float: none;
+    clear: both;
+}
+
+.root-login-box, .root-logout-box {
     letter-spacing: 1px;
     font: bold 1em "Comic Sans MS";
 
@@ -68,12 +97,16 @@
     }
 }
 
+.cms-page, .cms-layout {
+    padding: 0 !important;
+}
 
 /*
     DASHBOARD MENU - START
 */
 
 .nav-side-menu {
+    padding: 0;
     overflow: auto;
     font-family: verdana;
     font-size: 12px;
@@ -81,7 +114,6 @@
     background-color: #2e353d;
     position: fixed;
     top: 0;
-    width: 300px;
     height: 100%;
     color: #e1ffff;
 
@@ -179,7 +211,7 @@
         }
     }
 
-    @media (max-width: 767px) {
+    @media (max-width: 991px) {
         position: relative;
         width: 100%;
         margin-bottom: 10px;
@@ -203,7 +235,7 @@
         }
     }
 
-    @media (min-width: 767px) {
+    @media (min-width: 992px) {
         .menu-list {
             .menu-content {
                 display: block;
@@ -232,7 +264,7 @@ body {
     text-align: center;
 }
 
-@media (min-width: 768px) {
+@media (min-width: 992px) {
     .dashboard-contents, .newsletter, .subscribers, .contacts, .change-email, .change-password {
         margin-top: 75px;
     }

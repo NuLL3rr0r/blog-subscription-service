@@ -218,12 +218,14 @@ RootLogin::RootLogin(CgiRoot *cgi) :
             m_cgiRoot->setTitle(tr("root-logout-page-title"));
             this->clear();
             this->setId("RootLogoutPage");
+            this->setStyleClass("root-logout-page full-width full-height");
             this->addWidget(m_pimpl->LogoutPage());
         } else {
             m_cgiRoot->setTitle(tr("root-login-page-title"));
 
             this->clear();
             this->setId("RootLoginPage");
+            this->setStyleClass("root-login-page full-width full-height");
             this->addWidget(Layout());
         }
     } else {
@@ -234,7 +236,7 @@ RootLogin::RootLogin(CgiRoot *cgi) :
 
 WWidget *RootLogin::Layout()
 {
-    Div *container = new Div("RootLogin", "container");
+    Div *container = new Div("RootLogin", "root-login-layout full-width full-height");
     Div *noScript = new Div(container);
     noScript->addWidget(new WText(tr("no-script")));
 
@@ -248,6 +250,7 @@ WWidget *RootLogin::Layout()
 
     if (CoreLib::FileSystem::Read(file, htmlData)) {
         WTemplate *tmpl = new WTemplate(container);
+        tmpl->setStyleClass("container-table");
         tmpl->setTemplateText(WString(htmlData), TextFormat::XHTMLUnsafeText);
 
         m_pimpl->UsernameLineEdit = new WLineEdit();
@@ -741,7 +744,7 @@ Wt::WWidget *RootLogin::Impl::LogoutPage()
     } catch (...) {
     }
 
-    Div *container = new Div("RootLogout", "container");
+    Div *container = new Div("RootLogout", "root-logout-layout full-width full-height");
     Div *noScript = new Div(container);
     noScript->addWidget(new WText(tr("no-script")));
 
@@ -755,6 +758,7 @@ Wt::WWidget *RootLogin::Impl::LogoutPage()
 
     if (CoreLib::FileSystem::Read(file, htmlData)) {
         WTemplate *tmpl = new WTemplate(container);
+        tmpl->setStyleClass("container-table");
         tmpl->setTemplateText(WString(htmlData), TextFormat::XHTMLUnsafeText);
 
         WPushButton *homePagePushButton = new WPushButton(tr("root-logout-go-to-home-page"));

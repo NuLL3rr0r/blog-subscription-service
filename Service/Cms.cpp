@@ -86,6 +86,7 @@ Cms::Cms(CgiRoot *cgi) :
     m_htmlRoot->clear();
     this->clear();
     this->setId("CmsPage");
+    this->setStyleClass("cms-page container-fluid");
     this->addWidget(Layout());
     m_htmlRoot->addWidget(this);
 }
@@ -93,6 +94,7 @@ Cms::Cms(CgiRoot *cgi) :
 WWidget *Cms::Layout()
 {
     Div *container = new Div("Cms", "container");
+    container->setStyleClass("cms-layout container-fluid");
     Div *noScript = new Div(container);
     noScript->addWidget(new WText(tr("no-script")));
 

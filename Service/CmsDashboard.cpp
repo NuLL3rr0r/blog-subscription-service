@@ -76,7 +76,7 @@ CmsDashboard::CmsDashboard(CgiRoot *cgi) :
 
 WWidget *CmsDashboard::Layout()
 {
-    Div *container = new Div("CmsDashboard", "container");
+    Div *container = new Div("CmsDashboard", "container-fluid");
 
     try {
         std::string htmlData;

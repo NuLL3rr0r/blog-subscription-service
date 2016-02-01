@@ -88,7 +88,7 @@ CmsChangePassword::CmsChangePassword(CgiRoot *cgi) :
 
 WWidget *CmsChangePassword::Layout()
 {
-    Div *container = new Div("CmsChangePassword", "container");
+    Div *container = new Div("CmsChangePassword", "container-fluid");
 
     try {
         std::string htmlData;

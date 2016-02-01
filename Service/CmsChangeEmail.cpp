@@ -88,7 +88,7 @@ CmsChangeEmail::CmsChangeEmail(CgiRoot *cgi) :
 
 WWidget *CmsChangeEmail::Layout()
 {
-    Div *container = new Div("CmsChangeEmail", "container");
+    Div *container = new Div("CmsChangeEmail", "container-fluid");
 
     try {
         std::string htmlData;

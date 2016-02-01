@@ -1,11 +1,11 @@
-<div class="dashboard-contents text-center">
+<div class="dashboard-contents row">
     <div class="text-center">
         <h3>${welcome-message}</h3>
     </div>
 
     <br />
 
-    <div class="last-login-info col-xs-12 col-md-6 col-md-offset-3">
+    <div class="last-login-info col-xs-12 col-sm-12 col-md-6 col-lg-6 h-center">
         <h3>
             ${last-login-title}
         </h3>
@@ -87,4 +87,6 @@
         </blockquote>
     </div>
 </div>
+
+<div class="clearfix"></div>
 

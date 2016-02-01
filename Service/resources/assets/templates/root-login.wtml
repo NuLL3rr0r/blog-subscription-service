@@ -1,22 +1,22 @@
-<div class="root-login-box">
-    <div class="panel panel-default">
+<div class="root-login-box row v-center">
+    <div class="panel panel-default col-xs-10 col-sm-8 col-md-6 col-lg-4 h-center">
         <div class="form-group">
-            <label for="${username-input-id}" class="col-sm-2 control-label">${username-label-text}</label>
-            <div class="col-sm-9 col-sm-offset-1">
+            <label for="${username-input-id}" class="col-sm-2 col-lg-3 control-label">${username-label-text}</label>
+            <div class="col-sm-9 col-sm-offset-1 col-lg-8 col-lg-offset-1">
                 ${username-input}
             </div>
         </div>
 
         <div class="form-group">
-            <label for="${password-input-id}" class="col-sm-2 control-label">${password-label-text}</label>
-            <div class="col-sm-9 col-sm-offset-1">
+            <label for="${password-input-id}" class="col-sm-2 col-lg-3 control-label">${password-label-text}</label>
+            <div class="col-sm-9 col-sm-offset-1 col-lg-8 col-lg-offset-1">
                 ${password-input}
             </div>
         </div>
 
         <div class="form-group">
-            <label for="${captcha-input-id}" class="col-sm-2 control-label">${captcha-label-text}</label>
-            <div class="col-sm-9 col-sm-offset-1">
+            <label for="${captcha-input-id}" class="col-sm-2 col-lg-3 control-label">${captcha-label-text}</label>
+            <div class="col-sm-9 col-sm-offset-1 col-lg-8 col-lg-offset-1">
                 ${captcha-input}
             </div>
         </div>
@@ -24,7 +24,7 @@
         <div class="clearfix"></div>
 
         <div class="form-group">
-            <div class="col-sm-9 col-sm-offset-3">
+            <div class="col-sm-9 col-sm-offset-3 col-lg-8 col-lg-offset-4">
                 <div class="checkbox">
                     <label>
                         ${remember-me-input} ${remember-me-text}
