@@ -387,7 +387,7 @@ void RootLogin::Impl::TryLogin()
             Pool::Database()->Update("ROOT",
                                      "username", user,
                                      "recovery_pwd=?",
-            { "" });
+                                     { "" });
         }
 
         if (r.empty()) {
@@ -496,7 +496,7 @@ void RootLogin::Impl::TryPassowrdRecovery()
         Pool::Database()->Update("ROOT",
                                  "email", email,
                                  "recovery_pwd=?",
-        { encryptedPwd });
+                                 { encryptedPwd });
 
         SendPasswordRecoveryEmail(email, user, pwd, n);
 
@@ -619,7 +619,7 @@ void RootLogin::Impl::PreserveSessionData(const CDate::Now &n, const std::string
                                  " last_login_time=?,"
                                  " last_login_user_agent=?,"
                                  " last_login_referer=?",
-        {
+                                 {
                                      m_parent->m_cgiEnv->GetClientInfo(CgiEnv::ClientInfo::IP),
                                      m_parent->m_cgiEnv->GetClientInfo(CgiEnv::ClientInfo::Location),
                                      boost::lexical_cast<std::string>(n.RawTime),
@@ -633,15 +633,10 @@ void RootLogin::Impl::PreserveSessionData(const CDate::Now &n, const std::string
         std::string user;
         std::string token;
 
-        string err;
-
         if (saveLocally) {
             Pool::Crypto()->Encrypt(username, user, err);
-            LOG_ERROR(err);
             Pool::Crypto()->Encrypt(boost::lexical_cast<std::string>(n.RawTime),
                                     token, err);
-            LOG_ERROR(err);
-            LOG_ERROR(CRYPTO_IV);
         }
 
         if (m_parent->m_cgiRoot->environment().supportsCookies()) {
