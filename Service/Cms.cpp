@@ -93,8 +93,7 @@ Cms::Cms(CgiRoot *cgi) :
 
 WWidget *Cms::Layout()
 {
-    Div *container = new Div("Cms", "container");
-    container->setStyleClass("cms-layout container-fluid");
+    Div *container = new Div("Cms", "cms-layout container-fluid");
     Div *noScript = new Div(container);
     noScript->addWidget(new WText(tr("no-script")));
 

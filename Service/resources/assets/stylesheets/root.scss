@@ -2,6 +2,8 @@
 
 html, body {
     height: 100%;
+    margin: 0;
+    padding: 0;
 }
 
 .no-script {
@@ -34,6 +36,10 @@ html, body {
 
 .full-height {
     height: 100%;
+}
+
+.no-padding {
+    padding: 0 !important;
 }
 
 .container-table {
@@ -97,8 +103,12 @@ html, body {
     }
 }
 
-.cms-page, .cms-layout {
+.cms-page {
     padding: 0 !important;
+
+    .cms-layout {
+        padding: 0 !important;
+    }
 }
 
 /*
@@ -242,11 +252,6 @@ html, body {
             }
         }
     }
-}
-
-body {
-    margin: 0;
-    padding: 0;
 }
 
 /*

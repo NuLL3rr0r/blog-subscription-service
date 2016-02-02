@@ -124,7 +124,8 @@ public:
     std::list<VirtualMemoryInstant> VirtualMemoryUsageCache;
     Wt::WStandardItemModel *VirtualMemoryUsageModel;
 
-    Wt::WContainerWidget *HostInfoDiv;
+    Wt::WContainerWidget *HostInfoHorizontalDiv;
+    Wt::WContainerWidget *HostInfoVerticalDiv;
     Wt::WContainerWidget *DiskInfoDiv;
     Wt::WContainerWidget *NetworkInfoDiv;
 
@@ -168,7 +169,7 @@ void SysMon::Resume()
 
 WWidget *SysMon::Layout()
 {
-    Div *container = new Div("SysMon", "container");
+    Div *container = new Div("SysMon", "container-fluid");
 
 
     std::string htmlData;
@@ -186,7 +187,8 @@ WWidget *SysMon::Layout()
 
 
     /// Host Info
-    m_pimpl->HostInfoDiv = new Div(container, "HostInfoDiv");
+    m_pimpl->HostInfoHorizontalDiv = new Div(container, "HostInfoHorizontalDiv");
+    m_pimpl->HostInfoVerticalDiv = new Div(container, "HostInfoVerticalDiv");
 
 
     /// CPU Model
@@ -345,7 +347,8 @@ WWidget *SysMon::Layout()
     WTemplate *tmpl = new WTemplate(container);
     tmpl->setTemplateText(WString(htmlData), TextFormat::XHTMLUnsafeText);
 
-    tmpl->bindWidget("host-info", m_pimpl->HostInfoDiv);
+    tmpl->bindWidget("host-info-horizontal", m_pimpl->HostInfoHorizontalDiv);
+    tmpl->bindWidget("host-info-vertical", m_pimpl->HostInfoVerticalDiv);
     tmpl->bindWidget("cpu-info", cpuUsageChart);
     tmpl->bindWidget("memory-info", memoryUsageChart);
     tmpl->bindWidget("swap-info", swapUsageChart);
@@ -403,35 +406,64 @@ void SysMon::Impl::RefreshResourceUsage()
 
     /// Get the host info
     if ((hostInfo = sg_get_host_info(&hostInfoEntries)) != NULL) {
-        HostInfoDiv->clear();
+        HostInfoHorizontalDiv->clear();
+        HostInfoVerticalDiv->clear();
 
-        WTable *hostTable = new WTable(HostInfoDiv);
-        hostTable->setStyleClass("table table-hover");
-        hostTable->setHeaderCount(1, Orientation::Horizontal);
+        WTable *horizontalHostInfoTable = new WTable(HostInfoHorizontalDiv);
+        horizontalHostInfoTable->setStyleClass("table table-hover");
+        horizontalHostInfoTable->setHeaderCount(1, Orientation::Horizontal);
 
-        hostTable->elementAt(0, 0)->addWidget(new WText(tr("system-monitor-host-info-os-name")));
-        hostTable->elementAt(0, 1)->addWidget(new WText(tr("system-monitor-host-info-os-release")));
-        hostTable->elementAt(0, 2)->addWidget(new WText(tr("system-monitor-host-info-os-version")));
-        hostTable->elementAt(0, 3)->addWidget(new WText(tr("system-monitor-host-info-platform")));
-        hostTable->elementAt(0, 4)->addWidget(new WText(tr("system-monitor-host-info-hostname")));
-        hostTable->elementAt(0, 5)->addWidget(new WText(tr("system-monitor-host-info-bitwidth")));
-        hostTable->elementAt(0, 6)->addWidget(new WText(tr("system-monitor-host-info-host-state")));
-        hostTable->elementAt(0, 7)->addWidget(new WText(tr("system-monitor-host-info-ncpus")));
-        hostTable->elementAt(0, 8)->addWidget(new WText(tr("system-monitor-host-info-maxcpus")));
-        hostTable->elementAt(0, 9)->addWidget(new WText(tr("system-monitor-host-info-uptime")));
-        hostTable->elementAt(0, 10)->addWidget(new WText(tr("system-monitor-host-info-systime")));
+        WTable *verticalHostInfoTable = new WTable(HostInfoVerticalDiv);
+        verticalHostInfoTable->setStyleClass("table table-hover");
+        verticalHostInfoTable->setHeaderCount(1, Orientation::Vertical);
 
-        hostTable->elementAt(1, 0)->addWidget(new WText(WString(hostInfo->os_name)));
-        hostTable->elementAt(1, 1)->addWidget(new WText(WString(hostInfo->os_release)));
-        hostTable->elementAt(1, 2)->addWidget(new WText(WString(hostInfo->os_version)));
-        hostTable->elementAt(1, 3)->addWidget(new WText(WString(hostInfo->platform)));
-        hostTable->elementAt(1, 4)->addWidget(new WText(WString(hostInfo->hostname)));
-        hostTable->elementAt(1, 5)->addWidget(new WText(lexical_cast<string>(hostInfo->bitwidth)));
-        hostTable->elementAt(1, 6)->addWidget(new WText(lexical_cast<string>(HostState[hostInfo->host_state])));
-        hostTable->elementAt(1, 7)->addWidget(new WText(lexical_cast<string>(hostInfo->ncpus)));
-        hostTable->elementAt(1, 8)->addWidget(new WText(lexical_cast<string>(hostInfo->maxcpus)));
-        hostTable->elementAt(1, 9)->addWidget(new WText(lexical_cast<string>(hostInfo->uptime)));
-        hostTable->elementAt(1, 10)->addWidget(new WText(lexical_cast<string>(hostInfo->systime)));
+        horizontalHostInfoTable->elementAt(0, 0)->addWidget(new WText(tr("system-monitor-host-info-os-name")));
+        horizontalHostInfoTable->elementAt(0, 1)->addWidget(new WText(tr("system-monitor-host-info-os-release")));
+        horizontalHostInfoTable->elementAt(0, 2)->addWidget(new WText(tr("system-monitor-host-info-os-version")));
+        horizontalHostInfoTable->elementAt(0, 3)->addWidget(new WText(tr("system-monitor-host-info-platform")));
+        horizontalHostInfoTable->elementAt(0, 4)->addWidget(new WText(tr("system-monitor-host-info-hostname")));
+        horizontalHostInfoTable->elementAt(0, 5)->addWidget(new WText(tr("system-monitor-host-info-bitwidth")));
+        horizontalHostInfoTable->elementAt(0, 6)->addWidget(new WText(tr("system-monitor-host-info-host-state")));
+        horizontalHostInfoTable->elementAt(0, 7)->addWidget(new WText(tr("system-monitor-host-info-ncpus")));
+        horizontalHostInfoTable->elementAt(0, 8)->addWidget(new WText(tr("system-monitor-host-info-maxcpus")));
+        horizontalHostInfoTable->elementAt(0, 9)->addWidget(new WText(tr("system-monitor-host-info-uptime")));
+        horizontalHostInfoTable->elementAt(0, 10)->addWidget(new WText(tr("system-monitor-host-info-systime")));
+
+        verticalHostInfoTable->elementAt(0, 0)->addWidget(new WText(tr("system-monitor-host-info-os-name")));
+        verticalHostInfoTable->elementAt(1, 0)->addWidget(new WText(tr("system-monitor-host-info-os-release")));
+        verticalHostInfoTable->elementAt(2, 0)->addWidget(new WText(tr("system-monitor-host-info-os-version")));
+        verticalHostInfoTable->elementAt(3, 0)->addWidget(new WText(tr("system-monitor-host-info-platform")));
+        verticalHostInfoTable->elementAt(4, 0)->addWidget(new WText(tr("system-monitor-host-info-hostname")));
+        verticalHostInfoTable->elementAt(5, 0)->addWidget(new WText(tr("system-monitor-host-info-bitwidth")));
+        verticalHostInfoTable->elementAt(6, 0)->addWidget(new WText(tr("system-monitor-host-info-host-state")));
+        verticalHostInfoTable->elementAt(7, 0)->addWidget(new WText(tr("system-monitor-host-info-ncpus")));
+        verticalHostInfoTable->elementAt(8, 0)->addWidget(new WText(tr("system-monitor-host-info-maxcpus")));
+        verticalHostInfoTable->elementAt(9, 0)->addWidget(new WText(tr("system-monitor-host-info-uptime")));
+        verticalHostInfoTable->elementAt(10, 0)->addWidget(new WText(tr("system-monitor-host-info-systime")));
+
+        horizontalHostInfoTable->elementAt(1, 0)->addWidget(new WText(WString(hostInfo->os_name)));
+        horizontalHostInfoTable->elementAt(1, 1)->addWidget(new WText(WString(hostInfo->os_release)));
+        horizontalHostInfoTable->elementAt(1, 2)->addWidget(new WText(WString(hostInfo->os_version)));
+        horizontalHostInfoTable->elementAt(1, 3)->addWidget(new WText(WString(hostInfo->platform)));
+        horizontalHostInfoTable->elementAt(1, 4)->addWidget(new WText(WString(hostInfo->hostname)));
+        horizontalHostInfoTable->elementAt(1, 5)->addWidget(new WText(lexical_cast<string>(hostInfo->bitwidth)));
+        horizontalHostInfoTable->elementAt(1, 6)->addWidget(new WText(lexical_cast<string>(HostState[hostInfo->host_state])));
+        horizontalHostInfoTable->elementAt(1, 7)->addWidget(new WText(lexical_cast<string>(hostInfo->ncpus)));
+        horizontalHostInfoTable->elementAt(1, 8)->addWidget(new WText(lexical_cast<string>(hostInfo->maxcpus)));
+        horizontalHostInfoTable->elementAt(1, 9)->addWidget(new WText(lexical_cast<string>(hostInfo->uptime)));
+        horizontalHostInfoTable->elementAt(1, 10)->addWidget(new WText(lexical_cast<string>(hostInfo->systime)));
+
+        verticalHostInfoTable->elementAt(0, 1)->addWidget(new WText(WString(hostInfo->os_name)));
+        verticalHostInfoTable->elementAt(1, 1)->addWidget(new WText(WString(hostInfo->os_release)));
+        verticalHostInfoTable->elementAt(2, 1)->addWidget(new WText(WString(hostInfo->os_version)));
+        verticalHostInfoTable->elementAt(3, 1)->addWidget(new WText(WString(hostInfo->platform)));
+        verticalHostInfoTable->elementAt(4, 1)->addWidget(new WText(WString(hostInfo->hostname)));
+        verticalHostInfoTable->elementAt(5, 1)->addWidget(new WText(lexical_cast<string>(hostInfo->bitwidth)));
+        verticalHostInfoTable->elementAt(6, 1)->addWidget(new WText(lexical_cast<string>(HostState[hostInfo->host_state])));
+        verticalHostInfoTable->elementAt(7, 1)->addWidget(new WText(lexical_cast<string>(hostInfo->ncpus)));
+        verticalHostInfoTable->elementAt(8, 1)->addWidget(new WText(lexical_cast<string>(hostInfo->maxcpus)));
+        verticalHostInfoTable->elementAt(9, 1)->addWidget(new WText(lexical_cast<string>(hostInfo->uptime)));
+        verticalHostInfoTable->elementAt(10, 1)->addWidget(new WText(lexical_cast<string>(hostInfo->systime)));
     }
 
     /// Shift and fill the CPU usage cache and model
