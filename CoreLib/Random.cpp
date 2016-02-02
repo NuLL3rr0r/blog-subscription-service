@@ -59,14 +59,20 @@ public:
 
 std::unique_ptr<Random::Impl> Random::s_pimpl = std::make_unique<Random::Impl>();
 
+boost::random::mt19937 &Random::GetEngine()
+{
+    static boost::random_device rd;
+    static boost::random::mt19937 rng(rd);
+    return rng;
+}
+
 void Random::Characters(const Character &type, const size_t length, std::string &out_chars)
 {
-    boost::random::random_device rng;
     boost::random::uniform_int_distribution<> index_dist(0, (int)s_pimpl->LookupTable[type].size() - 1);
 
     out_chars.clear();
     for (size_t i = 0; i < length; ++i) {
-        out_chars += s_pimpl->LookupTable[type][(size_t)index_dist(rng)];
+        out_chars += s_pimpl->LookupTable[type][(size_t)index_dist(GetEngine())];
     }
 }
 

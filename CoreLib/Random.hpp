@@ -71,16 +71,16 @@ private:
     static std::unique_ptr<Impl> s_pimpl;
 
 public:
+    static boost::random::mt19937 &GetEngine();
+
     static void Characters(const Character &type, const size_t length, std::string &out_chars);
     static std::string Characters(const Character &type, const size_t length);
 
     template <typename Type>
     static Type Number(Type lowerBound, Type upperBound)
     {
-        boost::random::mt19937 generator;
-        generator.seed(static_cast<const unsigned int>(System::RandSeed()));
         boost::random::uniform_int_distribution<> dist(lowerBound, upperBound);
-        return dist(generator);
+        return dist(GetEngine());
     }
 };
 
