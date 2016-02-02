@@ -1,23 +1,23 @@
 <div class="newsletter row">
-    <div class="col-xs-12 col-sm-10 col-md-8 col-lg-8 h-center">
+    <div class="col-xs-12 col-sm-12 col-md-12 col-lg-12 h-center">
         <div class="text-center">
             <h3>${newsletter-title}</h3>
         </div>
 
         <div class="form-group">
-            <label for="${recipients-input-id}" class="col-sm-3 col-md-3 col-lg-2 control-label">
+            <label for="${recipients-input-id}" class="control-label">
                 ${recipients-label-text}
             </label>
-            <div class="col-sm-9 col-md-9 col-lg-10">
+            <div>
                 ${recipients-input}
             </div>
         </div>
 
         <div class="form-group">
-            <label for="${subject-input-id}" class="col-sm-3 col-md-3 col-lg-2 control-label">
+            <label for="${subject-input-id}" class="control-label">
                 ${subject-label-text}
             </label>
-            <div class="col-sm-9 col-md-9 col-lg-10">
+            <div>
                 ${subject-input}
             </div>
         </div>
@@ -25,10 +25,10 @@
         <div class="clearfix"></div>
 
         <div class="form-group">
-            <label for="${body-textarea-id}" class="col-sm-3 col-md-3 col-lg-2 control-label">
+            <label for="${body-textarea-id}" class="control-label">
                 ${body-label-text}
             </label>
-            <div class="col-sm-9 col-md-9 col-lg-10">
+            <div>
                 ${body-textarea}
             </div>
         </div>
@@ -47,6 +47,11 @@
         <div class="text-center message-area">
             ${newsletter-message-area}
         </div>
+
+        <br />
+        <br />
+        <br />
+        <br />
     </div>
 </div>
 

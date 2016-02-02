@@ -116,15 +116,51 @@ WWidget *CmsNewsletter::Layout()
             subjectValidator->setMandatory(true);
             m_pimpl->SubjectLineEdit->setValidator(subjectValidator);
 
+
             /// Do not call
             /// 'setPlaceholderText' on 'm_pimpl->BodyTextEdit'
             /// or, it will throw.
             m_pimpl->BodyTextEdit = new WTextEdit();
-            WLengthValidator *bodyValidator = new WLengthValidator(Pool::Storage()->MinEmailSubjectLength(),
-                                                                   Pool::Storage()->MaxEmailSubjectLength_RFC());
-            bodyValidator->setMandatory(true);
-            //m_pimpl->BodyTextEdit->
-            m_pimpl->BodyTextEdit->setValidator(bodyValidator);
+
+            /// http://tinymce.moxiecode.com/wiki.php/Configuration
+            m_pimpl->BodyTextEdit->setConfigurationSetting("valid_elements", std::string("*[*]"));
+
+            switch (m_cgiEnv->GetCurrentLanguage()) {
+            case CgiEnv::Language::Fa:
+                m_pimpl->BodyTextEdit->setConfigurationSetting("language", std::string("fa_IR"));
+                break;
+            case CgiEnv::Language::En:
+            case CgiEnv::Language::Invalid:
+            case CgiEnv::Language::None:
+                break;
+            }
+
+            /// http://www.tinymce.com/wiki.php/Plugins
+            /// Excludes: compat3x,bbcode
+            /// Note: 'legacyoutput' plugin should be enabled due to the lack of HTML5 support in some mail clients
+            m_pimpl->BodyTextEdit->setExtraPlugins("advlist,anchor,autolink,autoresize,autosave"
+                                                   ",charmap,code,codesample,colorpicker,contextmenu"
+                                                   ",directionality,emoticons,fullpage,fullscreen,hr"
+                                                   ",image,imagetools,importcss,insertdatetime,layer"
+                                                   ",legacyoutput,link,lists,media,nonbreaking,noneditable"
+                                                   ",pagebreak,paste,preview,print,save,searchreplace,spellchecker"
+                                                   ",tabfocus,table,template,textcolor,textpattern"
+                                                   ",visualblocks,visualchars,wordcount");
+
+            /// http://www.tinymce.com/wiki.php/Configuration:toolbar%3CN%3E
+            m_pimpl->BodyTextEdit->setToolBar(0, "newdocument save restoredraft fullpage print"
+                                              " | undo redo | cut copy paste pastetext | searchreplace"
+                                              " | visualchars visualblocks | fullscreen preview | code"
+                                              " | spellchecker | help");
+            m_pimpl->BodyTextEdit->setToolBar(1, "link unlink anchor table image media codesample"
+                                              " | emoticons charmap nonbreaking hr pagebreak"
+                                              " | insertdatetime | template");
+            m_pimpl->BodyTextEdit->setToolBar(2, "formatselect fontselect fontsizeselect | forecolor backcolor"
+                                              " | styleselect removeformat");
+            m_pimpl->BodyTextEdit->setToolBar(3, " bold italic underline strikethrough | superscript subscript"
+                                              " | alignleft aligncenter alignright alignjustify"
+                                              " | outdent indent bullist numlist blockquote | ltr rtl");
+
 
             m_pimpl->SendPushButton = new WPushButton(tr("cms-newsletter-send"));
             m_pimpl->SendPushButton->setStyleClass("btn btn-default");
