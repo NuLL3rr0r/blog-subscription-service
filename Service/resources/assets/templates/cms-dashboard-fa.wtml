@@ -1,14 +1,14 @@
 <div class="dashboard-contents row">
     <div class="text-center">
-        <h3>${welcome-message}</h3>
+        <h1>${welcome-message}</h1>
     </div>
 
     <br />
 
-    <div class="last-login-info col-xs-12 col-sm-12 col-md-6 col-lg-6 h-center">
-        <h3>
+    <div class="last-login-info col-xs-12 col-sm-10 col-md-8 col-lg-8 h-center">
+        <h2>
             ${last-login-title}
-        </h3>
+        </h2>
 
         <blockquote>
             <table>
