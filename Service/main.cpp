@@ -231,10 +231,11 @@ void InitializeDatabase()
 
         Service::Pool::Database()->RegisterTable("CONTACTS", "contacts",
                                                  " recipient TEXT NOT NULL PRIMARY KEY, "
-                                                 " email TEXT NOT NULL ");
+                                                 " recipient_fa TEXT NOT NULL UNIQUE, "
+                                                 " address TEXT NOT NULL ");
 
         Service::Pool::Database()->RegisterTable("SUBSCRIBERS", "subscribers",
-                                                 " email TEXT NOT NULL PRIMARY KEY, "
+                                                 " inbox TEXT NOT NULL PRIMARY KEY, "
                                                  " uuid UUID NOT NULL UNIQUE, "
                                                  " subscription SUBSCRIPTION NOT NULL DEFAULT 'none' ");
 

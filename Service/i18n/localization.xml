@@ -71,7 +71,7 @@
     <message id="cms-contacts-email-address">Email Address</message>
     <message id="cms-contacts-email-address-placeholder">Email Address</message>
     <message id="cms-contacts-add">Add</message>
-    <message id="cms-contacts-edit-hint">Note: Click on any table cell in order to edit contact information.</message>
+    <message id="cms-contacts-edit-hint">Note: Click on any table cell in order to edit the contact information.</message>
     <message id="cms-contacts-erase">Erase</message>
     <message id="cms-contacts-erase-mark">X</message>
     <message id="cms-contacts-edit-save">Save</message>
