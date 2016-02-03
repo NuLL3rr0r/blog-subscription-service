@@ -232,7 +232,7 @@ void InitializeDatabase()
 
         Service::Pool::Database()->RegisterTable("SUBSCRIBERS", "subscribers",
                                                  " email TEXT NOT NULL PRIMARY KEY, "
-                                                 " uuid TEXT NOT NULL UNIQUE ");
+                                                 " uuid UUID NOT NULL UNIQUE ");
 
         Service::Pool::Database()->Initialize();
 
