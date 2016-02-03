@@ -34,8 +34,10 @@
 
 
 #include <unordered_map>
+#include <vector>
 #include <cassert>
 #include <cstdarg>
+#include <boost/format.hpp>
 #if defined ( HAS_SQLITE3 )
 #include <sqlite3.h>
 #endif  // defined ( HAS_SQLITE3 )
@@ -53,6 +55,9 @@ using namespace CoreLib;
 
 struct Database::Impl
 {
+    typedef std::unordered_map<std::string, std::string> EnumNamesHashTable;
+    typedef std::unordered_map<std::string, std::vector<std::string>> EnumeratorsHashTable;
+
     typedef std::unordered_map<std::string, std::string> TableNamesHashTable;
     typedef std::unordered_map<std::string, std::string> TableFieldsHashTable;
 
@@ -69,6 +74,9 @@ struct Database::Impl
 #endif  // defined ( CORELIB_STATIC )
 
     cppdb::session Sql;
+
+    EnumNamesHashTable EnumNames;
+    EnumeratorsHashTable Enumerators;
 
     TableNamesHashTable TableNames;
     TableFieldsHashTable TableFields;
@@ -204,14 +212,48 @@ cppdb::session &Database::Sql()
     return m_pimpl->Sql;
 }
 
+bool Database::CreateEnum(const std::string &id)
+{
+    try {
+        result r = m_pimpl->Sql << (boost::format("SELECT EXISTS ( SELECT 1 FROM pg_type WHERE typname = '%1%' );")
+                                    % (m_pimpl->EnumNames[id])).str()
+                                << row;
+
+        if (!r.empty()) {
+            std::string exists;
+            r >> exists;
+
+            if (exists == "f") {
+                std::string ph;
+                for (size_t i = 0; i < m_pimpl->Enumerators[id].size(); ++i) {
+                    if (i != 0)
+                        ph += ", ";
+                    ph += (boost::format("'%1%'") % m_pimpl->Enumerators[id][i]).str();
+                }
+
+                m_pimpl->Sql << (boost::format("CREATE TYPE \"%1%\" AS ENUM ( %2% );")
+                                 % m_pimpl->EnumNames[id]
+                                 % ph).str()
+                             << exec;
+            }
+        }
+
+        return true;
+    } catch (const std::exception &ex) {
+        LOG_ERROR(ex.what());
+    } catch (...) {
+        LOG_ERROR(UNKNOWN_ERROR);
+    }
+
+    return false;
+}
+
 bool Database::CreateTable(const std::string &id)
 {
     try {
-        m_pimpl->Sql << "CREATE TABLE IF NOT EXISTS \""
-                        + m_pimpl->TableNames[id]
-                        + "\" ("
-                        + m_pimpl->TableFields[id]
-                        + ");"
+        m_pimpl->Sql << (boost::format("CREATE TABLE IF NOT EXISTS \"%1%\" ( %2% );")
+                         % m_pimpl->TableNames[id]
+                         % m_pimpl->TableFields[id]).str()
                      << exec;
 
         return true;
@@ -227,7 +269,8 @@ bool Database::CreateTable(const std::string &id)
 bool Database::DropTable(const std::string &id)
 {
     try {
-        m_pimpl->Sql << "DROP TABLE IF EXISTS \"" + m_pimpl->TableNames[id] + "\";"
+        m_pimpl->Sql << (boost::format("DROP TABLE IF EXISTS \"%1%\";")
+                         % m_pimpl->TableNames[id]).str()
                      << exec;
 
         return true;
@@ -271,13 +314,10 @@ bool Database::Insert(const std::string &id,
             ph += "?";
         }
 
-        statement stat = m_pimpl->Sql << "INSERT INTO \""
-                                         + m_pimpl->TableNames[id]
-                                         + "\" ("
-                                         + fields
-                                         + ") VALUES ("
-                                         + ph
-                                         + ");";
+        statement stat = m_pimpl->Sql << (boost::format("INSERT INTO \"%1%\" ( %2% ) VALUES ( %3% );")
+                                          % m_pimpl->TableNames[id]
+                                          % fields
+                                          % ph).str();
 
         for(const auto &arg : args) {
             stat.bind(arg);
@@ -302,13 +342,10 @@ bool Database::Update(const std::string &id,
                       const std::initializer_list<std::string> &args)
 {
     try {
-        statement stat = m_pimpl->Sql << "UPDATE ONLY \""
-                                         + m_pimpl->TableNames[id]
-                                         + "\" SET "
-                                         + set
-                                         + " WHERE "
-                                         + where
-                                         + "=?;";
+        statement stat = m_pimpl->Sql << (boost::format("UPDATE ONLY \"%1%\" SET %2% WHERE %3%=?;")
+                                          % m_pimpl->TableNames[id]
+                                          % set
+                                          % where).str();
 
         for(const auto &arg : args) {
             stat.bind(arg);
@@ -333,11 +370,9 @@ bool Database::Delete(const std::string &id,
                       const std::string &value)
 {
     try {
-        m_pimpl->Sql << "DELETE FROM ONLY \""
-                        + m_pimpl->TableNames[id]
-                        + "\" WHERE "
-                        + where
-                        + "=?;"
+        m_pimpl->Sql << (boost::format("DELETE FROM ONLY \"%1%\" WHERE %2%=?;")
+                         % m_pimpl->TableNames[id]
+                         % where).str()
                      << value
                      << exec;
 
@@ -349,6 +384,14 @@ bool Database::Delete(const std::string &id,
     }
 
     return false;
+}
+
+void Database::RegisterEnum(const std::string &id,
+                            const std::string &name,
+                            const std::initializer_list<std::string> &enumerators)
+{
+    m_pimpl->EnumNames[id] = name;
+    m_pimpl->Enumerators[id] = enumerators;
 }
 
 void Database::RegisterTable(const std::string &id,
@@ -404,10 +447,12 @@ bool Database::Initialize()
     try {
         cppdb::transaction guard(m_pimpl->Sql);
 
-        for (Impl::TableNamesHashTable::const_iterator it = m_pimpl->TableNames.begin();
-             it != m_pimpl->TableNames.end();
-             ++it) {
-            CreateTable(it->first);
+        for (const auto &e : m_pimpl->EnumNames) {
+            CreateEnum(e.first);
+        }
+
+        for (const auto &t : m_pimpl->TableNames) {
+            CreateTable(t.first);
         }
 
         guard.commit();

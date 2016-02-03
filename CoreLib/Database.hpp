@@ -85,6 +85,8 @@ public:
 
     cppdb::session &Sql();
 
+    bool CreateEnum(const std::string &id);
+
     bool CreateTable(const std::string &id);
     bool DropTable(const std::string &id);
     bool RenameTable(const std::string &id, const std::string &newName);
@@ -101,6 +103,10 @@ public:
                 const std::string &where,
                 const std::string &value);
 
+    void RegisterEnum(const std::string &id,
+                      const std::string &name,
+                      const std::initializer_list<std::string> &enumerators);
+
     void RegisterTable(const std::string &id,
                        const std::string &name,
                        const std::string &fields);
@@ -108,6 +114,7 @@ public:
     std::string GetTableFields(const std::string &id);
     bool SetTableName(const std::string &id, const std::string &newName);
     bool SetTableFields(const std::string &id, const std::string &fields);
+
     bool Initialize();
 };
 

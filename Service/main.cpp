@@ -212,6 +212,9 @@ void Terminate(int signo)
 void InitializeDatabase()
 {
     try {
+        Service::Pool::Database()->RegisterEnum("SUBSCRIPTION", "SUBSCRIPTION",
+                                                { "none", "en_fa", "en", "fa" });
+
         Service::Pool::Database()->RegisterTable("ROOT", "root",
                                                  " username TEXT NOT NULL PRIMARY KEY, "
                                                  " email TEXT NOT NULL UNIQUE, "
@@ -232,7 +235,8 @@ void InitializeDatabase()
 
         Service::Pool::Database()->RegisterTable("SUBSCRIBERS", "subscribers",
                                                  " email TEXT NOT NULL PRIMARY KEY, "
-                                                 " uuid UUID NOT NULL UNIQUE ");
+                                                 " uuid UUID NOT NULL UNIQUE, "
+                                                 " subscription SUBSCRIPTION DEFAULT 'none' NOT NULL ");
 
         Service::Pool::Database()->Initialize();
 
