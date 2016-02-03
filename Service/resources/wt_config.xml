@@ -149,7 +149,7 @@
 
                The default value is 1.
 	      -->
-	    <num-threads>1</num-threads>
+            <num-threads>10</num-threads>
 
 	</connector-fcgi>
 
@@ -345,7 +345,7 @@
            still a draft. Wt implements up to version 17 of the draft
 	   (latest as of November 2011).
 	  -->
-	<web-sockets>false</web-sockets>
+        <web-sockets>true</web-sockets>
 
 	<!-- Enables the detection of webgl-capabilites.
 
