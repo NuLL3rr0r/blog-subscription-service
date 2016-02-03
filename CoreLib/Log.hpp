@@ -114,4 +114,3 @@ public:
 
 #endif /* CORELIB_LOG_HPP */
 
-

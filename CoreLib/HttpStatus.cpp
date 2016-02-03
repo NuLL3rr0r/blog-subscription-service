@@ -152,4 +152,3 @@ HttpStatus::Impl::Impl()
     StatusCodes[HttpStatusCode::HTTP_505] = HTTP_505_DEF;
 }
 
-

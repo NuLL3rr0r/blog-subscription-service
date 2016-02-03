@@ -44,4 +44,3 @@ namespace CoreLib {
 
 #endif /* CORELIB_HPP */
 
-

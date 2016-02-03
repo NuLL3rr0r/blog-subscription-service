@@ -58,4 +58,3 @@ public:
 
 #endif /* CORELIB_ARCHIVER_HPP */
 
-

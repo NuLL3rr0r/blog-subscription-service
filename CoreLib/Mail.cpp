@@ -371,4 +371,3 @@ Mail::Impl::Impl()
 
 }
 
-

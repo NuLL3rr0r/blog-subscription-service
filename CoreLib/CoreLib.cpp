@@ -47,4 +47,3 @@ void CoreLib::CoreLibInitialize(int argc, char **argv)
     boost::filesystem::current_path(appPath);
 }
 
-

@@ -234,4 +234,3 @@ Log::Impl::StorageStruct *Log::Impl::Storage()
     return StorageInstance.get();
 }
 
-

@@ -191,4 +191,3 @@ long System::RandSeed()
     return ts.tv_nsec;
 }
 
-
