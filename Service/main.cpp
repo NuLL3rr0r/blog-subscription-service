@@ -225,6 +225,15 @@ void InitializeDatabase()
                                                  " last_login_referer VARCHAR(2083), "
                                                  " pwd TEXT NOT NULL, "
                                                  " recovery_pwd TEXT ");
+
+        Service::Pool::Database()->RegisterTable("CONTACTS", "contacts",
+                                                 " recipient VARCHAR(64) NOT NULL PRIMARY KEY, "
+                                                 " email VARCHAR(254) NOT NULL ");
+
+        Service::Pool::Database()->RegisterTable("SUBSCRIBERS", "subscribers",
+                                                 " email VARCHAR(254) NOT NULL PRIMARY KEY, "
+                                                 " uuid VARCHAR(36) NOT NULL UNIQUE ");
+
         Service::Pool::Database()->Initialize();
 
         cppdb::transaction guard(Service::Pool::Database()->Sql());
@@ -257,5 +266,4 @@ void InitializeDatabase()
         LOG_ERROR("Unknown error!");
     }
 }
-
 
