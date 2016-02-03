@@ -76,17 +76,19 @@ public:
     template <typename Type>
     static Type Number(Type lowerBound, Type upperBound)
     {
-        boost::lock_guard<boost::mutex> guard(GetMutex());
+        boost::lock_guard<boost::mutex> guard(GetLock());
         boost::random::uniform_int_distribution<> dist(lowerBound, upperBound);
         return dist(GetEngine());
     }
 
+    static void Uuid(std::string &out_uuid);
+    static std::string Uuid();
+
 private:
     static boost::random::mt19937 &GetEngine();
-    static boost::mutex &GetMutex();
+    static boost::mutex &GetLock();
 };
 
 
 #endif /* CORELIB_RANDOM_HPP */
-
 

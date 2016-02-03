@@ -35,6 +35,9 @@
 
 #include <unordered_map>
 #include <boost/random/random_device.hpp>
+#include <boost/uuid/random_generator.hpp>
+#include <boost/uuid/uuid.hpp>
+#include <boost/uuid/uuid_io.hpp>
 #include <CoreLib/make_unique.hpp>
 #include "Random.hpp"
 #include "Utility.hpp"
@@ -55,7 +58,7 @@ public:
 
 void Random::Characters(const Character &type, const size_t length, std::string &out_chars)
 {
-    boost::lock_guard<boost::mutex> guard(GetMutex());
+    boost::lock_guard<boost::mutex> guard(GetLock());
 
     boost::random::uniform_int_distribution<> index_dist(0, (int)Impl::GetLookupTable()[type].size() - 1);
 
@@ -72,6 +75,20 @@ std::string Random::Characters(const Character &type, const size_t length)
     return chars;
 }
 
+void Random::Uuid(std::string &out_uuid)
+{
+    static boost::uuids::basic_random_generator<boost::mt19937> rng(&GetEngine());
+    boost::uuids::uuid u = rng();
+    out_uuid.assign(boost::uuids::to_string(u));
+}
+
+std::string Random::Uuid()
+{
+    std::string uuid;
+    Uuid(uuid);
+    return uuid;
+}
+
 boost::random::mt19937 &Random::GetEngine()
 {
     static boost::random_device rd;
@@ -79,10 +96,10 @@ boost::random::mt19937 &Random::GetEngine()
     return rng;
 }
 
-boost::mutex &Random::GetMutex()
+boost::mutex &Random::GetLock()
 {
-    static boost::mutex m;
-    return m;
+    static boost::mutex lock;
+    return lock;
 }
 
 Random::Impl::CharactersHashTable &Random::Impl::GetLookupTable()
