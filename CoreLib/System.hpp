@@ -38,7 +38,7 @@
 
 
 #include <string>
-#include<vector>
+#include <vector>
 
 #if defined ( __unix__ )
 #include <sys/types.h>
