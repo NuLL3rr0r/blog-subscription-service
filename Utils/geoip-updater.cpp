@@ -187,4 +187,3 @@ void UpdateDatabase(std::string url, std::string gzFile, std::string dbFile)
     CoreLib::FileSystem::Erase(gzFile);
 }
 
-
