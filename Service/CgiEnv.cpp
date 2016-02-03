@@ -57,9 +57,9 @@ using namespace Service;
 struct CgiEnv::Impl
 {
     typedef boost::bimap<boost::bimaps::unordered_set_of<CgiEnv::Language>,
-    boost::bimaps::unordered_set_of<std::string>> LanguageMapper_t;
+    boost::bimaps::unordered_set_of<std::string>> LanguageBiMap;
     typedef std::unordered_map<CgiEnv::Language, CgiEnv::LanguageDirection,
-    CoreLib::Utility::Hasher<CgiEnv::Language>> LanguageDirectionMapper_t;
+    CoreLib::Utility::Hasher<CgiEnv::Language>> LanguageDirectionHashTable;
 
     std::string ClientInfoIP;
     std::string ClientInfoBrowser;
@@ -74,8 +74,8 @@ struct CgiEnv::Impl
     std::string InitialQueryString;
 
     CgiEnv::Language CurrentLanguage;
-    LanguageMapper_t LanguageMapper;
-    LanguageDirectionMapper_t LanguageDirectionMapper;
+    LanguageBiMap LanguageMapper;
+    LanguageDirectionHashTable LanguageDirectionMapper;
 
     bool FoundXSS;
     bool IsRootLoginRequested;

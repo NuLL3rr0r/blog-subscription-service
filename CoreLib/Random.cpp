@@ -47,15 +47,15 @@ struct Random::Impl
 {
 public:
     typedef std::unordered_map<const CoreLib::Random::Character, const std::string,
-    CoreLib::Utility::Hasher<const CoreLib::Random::Character>> LookupTable;
+    CoreLib::Utility::Hasher<const CoreLib::Random::Character>> CharactersHashTable;
 
 public:
-    static LookupTable &GetLookupTable();
+    static CharactersHashTable &GetLookupTable();
 };
 
 void Random::Characters(const Character &type, const size_t length, std::string &out_chars)
 {
-    boost::lock_guard<boost::mutex>(GetMutex());
+    boost::lock_guard<boost::mutex> guard(GetMutex());
 
     boost::random::uniform_int_distribution<> index_dist(0, (int)Impl::GetLookupTable()[type].size() - 1);
 
@@ -85,9 +85,9 @@ boost::mutex &Random::GetMutex()
     return m;
 }
 
-Random::Impl::LookupTable &Random::Impl::GetLookupTable()
+Random::Impl::CharactersHashTable &Random::Impl::GetLookupTable()
 {
-    static LookupTable lookupTable {
+    static CharactersHashTable lookupTable {
         {Character::Alphabetic, "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz"},
         {Character::Alphanumeric, "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz"},
         {Character::Blank, "\t "},

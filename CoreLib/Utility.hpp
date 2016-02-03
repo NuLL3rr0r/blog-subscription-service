@@ -59,8 +59,8 @@ public:
     template <typename _T>
     struct HashMapper
     {
-        typedef std::unordered_map<_T, std::string, Hasher<_T>> HashToString_t;
-        typedef std::unordered_map<std::string, _T> HashToEnumClass_t;
+        typedef std::unordered_map<_T, std::string, Hasher<_T>> HashToString;
+        typedef std::unordered_map<std::string, _T> HashToEnumClass;
     };
 
     static std::string CalculateSize(const std::size_t size);

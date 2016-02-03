@@ -215,8 +215,8 @@ CoreLib::Crypto *Pool::Crypto()
         static const string IV = CoreLib::Crypto::HexStringToString(CRYPTO_IV);
 
         s_pimpl->CryptoInstance =
-                std::make_unique<CoreLib::Crypto>(reinterpret_cast<const CoreLib::Crypto::Byte_t *>(KEY.c_str()), KEY.size(),
-                                                  reinterpret_cast<const CoreLib::Crypto::Byte_t *>(IV.c_str()), IV.size());
+                std::make_unique<CoreLib::Crypto>(reinterpret_cast<const CoreLib::Crypto::Byte *>(KEY.c_str()), KEY.size(),
+                                                  reinterpret_cast<const CoreLib::Crypto::Byte *>(IV.c_str()), IV.size());
     }
 
     return s_pimpl->CryptoInstance.get();

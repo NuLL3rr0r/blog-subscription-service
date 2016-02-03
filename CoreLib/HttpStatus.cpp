@@ -95,8 +95,8 @@ struct HttpStatus::Impl
         }
     };
 
-    typedef unordered_map<HttpStatusCode, std::wstring, Hasher<HttpStatusCode>> StatusCodes_t;
-    StatusCodes_t StatusCodes;
+    typedef unordered_map<HttpStatusCode, std::wstring, Hasher<HttpStatusCode>> StatusCodesHashTable;
+    StatusCodesHashTable StatusCodes;
 
     Impl();
 };

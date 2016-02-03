@@ -105,12 +105,12 @@ public:
     typedef std::map<VirtualMemory, double> VirtualMemoryInstant;
 
     typedef std::unordered_map<sg_host_state, Wt::WString,
-    CoreLib::Utility::Hasher<sg_host_state>> HostStateMapper_t;
+    CoreLib::Utility::Hasher<sg_host_state>> HostStateHashTable;
 
 public:
     Wt::WTimer *Timer;
 
-    HostStateMapper_t HostState;
+    HostStateHashTable HostState;
 
     std::list<CpuInstant> CpuUsageCache;
     Wt::WStandardItemModel *CpuUsageModel;

@@ -47,7 +47,7 @@ class Compression;
 class CoreLib::Compression
 {
 public:
-    typedef std::vector<char> CompressionBuffer_t;
+    typedef std::vector<char> Buffer;
 
 public:
     enum class Algorithm : unsigned char {
@@ -58,19 +58,19 @@ public:
 
 public:
     static void Compress(const char *data, size_t size,
-                         CompressionBuffer_t &out_compressedBuffer,
+                         Buffer &out_compressedBuffer,
                          const Algorithm &algorithm);
     static void Compress(const std::string &dataString,
-                         CompressionBuffer_t &out_compressedBuffer,
+                         Buffer &out_compressedBuffer,
                          const Algorithm &algorithm);
-    static void Compress(const CompressionBuffer_t &dataBuffer,
-                         CompressionBuffer_t &out_compressedBuffer,
+    static void Compress(const Buffer &dataBuffer,
+                         Buffer &out_compressedBuffer,
                          const Algorithm &algorithm);
-    static void Decompress(const CompressionBuffer_t &dataBuffer,
+    static void Decompress(const Buffer &dataBuffer,
                            std::string &out_uncompressedString,
                            const Algorithm &algorithm);
-    static void Decompress(const CompressionBuffer_t &dataBuffer,
-                           CompressionBuffer_t &out_uncompressedBuffer,
+    static void Decompress(const Buffer &dataBuffer,
+                           Buffer &out_uncompressedBuffer,
                            const Algorithm &algorithm);
 };
 

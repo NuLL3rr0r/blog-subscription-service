@@ -62,9 +62,9 @@ using namespace CoreLib;
 
 struct Crypto::Impl
 {
-    Crypto::Byte_t *Key;
+    Crypto::Byte *Key;
     std::size_t KeyLen;
-    Crypto::Byte_t *IV;
+    Crypto::Byte *IV;
     std::size_t IVLen;
 
     Impl();
@@ -72,7 +72,7 @@ struct Crypto::Impl
 };
 
 bool Crypto::Encrypt(const std::string &plainText, std::string &out_encodedText,
-                     const Byte_t *key, std::size_t keyLen, const Byte_t *iv, std::size_t ivLen)
+                     const Byte *key, std::size_t keyLen, const Byte *iv, std::size_t ivLen)
 {
     string err;
     return Crypto::Encrypt(plainText, out_encodedText, err, key, keyLen, iv, ivLen);
@@ -80,7 +80,7 @@ bool Crypto::Encrypt(const std::string &plainText, std::string &out_encodedText,
 
 bool Crypto::Encrypt(const std::string &plainText, std::string &out_encodedText,
                      std::string &out_error,
-                     const Byte_t *key, std::size_t keyLen, const Byte_t *iv, std::size_t ivLen)
+                     const Byte *key, std::size_t keyLen, const Byte *iv, std::size_t ivLen)
 {
     try {
         CBC_Mode<AES>::Encryption enc;
@@ -113,7 +113,7 @@ bool Crypto::Encrypt(const std::string &plainText, std::string &out_encodedText,
 }
 
 bool Crypto::Decrypt(const std::string &cipherText, std::string &out_recoveredText,
-                     const Byte_t *key, std::size_t keyLen, const Byte_t *iv, std::size_t ivLen)
+                     const Byte *key, std::size_t keyLen, const Byte *iv, std::size_t ivLen)
 {
     string err;
     return Crypto::Decrypt(cipherText, out_recoveredText, err, key, keyLen, iv, ivLen);
@@ -121,7 +121,7 @@ bool Crypto::Decrypt(const std::string &cipherText, std::string &out_recoveredTe
 
 bool Crypto::Decrypt(const std::string &cipherText, std::string &out_recoveredText,
                      std::string &out_error,
-                     const Byte_t *key, std::size_t keyLen, const Byte_t *iv, std::size_t ivLen)
+                     const Byte *key, std::size_t keyLen, const Byte *iv, std::size_t ivLen)
 {
     try {
         CBC_Mode<AES>::Decryption dec;
@@ -230,11 +230,11 @@ void Crypto::Base64Encode(std::istream &inputStream, std::ostream &outputStream)
     encoder.encode(inputStream, outputStream);
 }
 
-Crypto::Crypto(const Byte_t *key, std::size_t keyLen, const Byte_t *iv, std::size_t ivLen) :
+Crypto::Crypto(const Byte *key, std::size_t keyLen, const Byte *iv, std::size_t ivLen) :
     m_pimpl(std::make_unique<Crypto::Impl>())
 {
-    m_pimpl->Key = new Byte_t[keyLen];
-    m_pimpl->IV = new Byte_t[ivLen];
+    m_pimpl->Key = new Byte[keyLen];
+    m_pimpl->IV = new Byte[ivLen];
 
     std::copy(key, key + keyLen, m_pimpl->Key);
     std::copy(iv, iv + ivLen, m_pimpl->IV);
@@ -330,5 +330,4 @@ Crypto::Impl::~Impl()
     delete IV;
     delete Key;
 }
-
 

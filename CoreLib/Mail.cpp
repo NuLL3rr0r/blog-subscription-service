@@ -63,7 +63,7 @@ using namespace CoreLib;
 struct Mail::Impl
 {
     static std::queue<Mail *> MailQueue;
-    static std::queue<Mail::SendCallback_t> MailCallbackQueue;
+    static std::queue<Mail::SendCallback> MailCallbackQueue;
     static bool WorkerThreadIsRunning;
     static boost::mutex MailMutex;
     static boost::mutex WorkerMutex;
@@ -83,7 +83,7 @@ struct Mail::Impl
 };
 
 std::queue<Mail *> Mail::Impl::MailQueue;
-std::queue<Mail::SendCallback_t> Mail::Impl::MailCallbackQueue;
+std::queue<Mail::SendCallback> Mail::Impl::MailCallbackQueue;
 bool Mail::Impl::WorkerThreadIsRunning = false;
 boost::mutex Mail::Impl::MailMutex;
 boost::mutex Mail::Impl::WorkerMutex;
@@ -98,7 +98,7 @@ void Mail::Impl::DoWork()
 
         bool isMailQueueEmpty = false;
         Mail *mail = nullptr;
-        Mail::SendCallback_t callback = nullptr;
+        Mail::SendCallback callback = nullptr;
 
         for (;;) {
             boost::this_thread::interruption_point();
@@ -328,7 +328,7 @@ bool Mail::Send(std::string &out_error) const
     return false;
 }
 
-void Mail::SendAsync(SendCallback_t callback)
+void Mail::SendAsync(SendCallback callback)
 {
     try {
         {

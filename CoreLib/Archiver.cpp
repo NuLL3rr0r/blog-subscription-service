@@ -67,11 +67,11 @@ bool Archiver::UnGzip(const std::string &archive, const std::string &extractedFi
                           % archive % extractedFile).str());
         return false;
     }
-    Compression::CompressionBuffer_t compressedContents((std::istreambuf_iterator<char>(ifs)),
+    Compression::Buffer compressedContents((std::istreambuf_iterator<char>(ifs)),
                                                         std::istreambuf_iterator<char>());
     ifs.close();
 
-    Compression::CompressionBuffer_t uncompressedContents;
+    Compression::Buffer uncompressedContents;
     Compression::Decompress(compressedContents, uncompressedContents,
                             Compression::Algorithm::Gzip);
 

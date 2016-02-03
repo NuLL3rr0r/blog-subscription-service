@@ -48,23 +48,23 @@ using namespace boost;
 using namespace CoreLib;
 
 void Compression::Compress(const char *data, size_t size,
-                           CompressionBuffer_t &out_compressedBuffer,
+                           Buffer &out_compressedBuffer,
                            const Algorithm &algorithm)
 {
-    const Compression::CompressionBuffer_t buffer(data, data + size);
+    const Compression::Buffer buffer(data, data + size);
     Compress(buffer, out_compressedBuffer, algorithm);
 }
 
 void Compression::Compress(const std::string &dataString,
-                           CompressionBuffer_t &out_compressedBuffer,
+                           Buffer &out_compressedBuffer,
                            const Algorithm &algorithm)
 {
-    const CompressionBuffer_t buffer(dataString.begin(), dataString.end());
+    const Buffer buffer(dataString.begin(), dataString.end());
     Compress(buffer, out_compressedBuffer, algorithm);
 }
 
-void Compression::Compress(const CompressionBuffer_t &dataBuffer,
-                           CompressionBuffer_t &out_compressedBuffer,
+void Compression::Compress(const Buffer &dataBuffer,
+                           Buffer &out_compressedBuffer,
                            const Algorithm &algorithm)
 {
     try {
@@ -90,17 +90,17 @@ void Compression::Compress(const CompressionBuffer_t &dataBuffer,
     }
 }
 
-void Compression::Decompress(const CompressionBuffer_t &dataBuffer,
+void Compression::Decompress(const Buffer &dataBuffer,
                              std::string &out_uncompressedString,
                              const Algorithm &algorithm)
 {
-    CompressionBuffer_t buffer;
+    Buffer buffer;
     Decompress(dataBuffer, buffer, algorithm);
     out_uncompressedString = std::string(buffer.begin(), buffer.end());
 }
 
-void Compression::Decompress(const CompressionBuffer_t &dataBuffer,
-                             CompressionBuffer_t &out_uncompressedBuffer,
+void Compression::Decompress(const Buffer &dataBuffer,
+                             Buffer &out_uncompressedBuffer,
                              const Algorithm &algorithm)
 {
     try {

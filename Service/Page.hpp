@@ -57,7 +57,7 @@ class Service::Page : public Wt::WContainerWidget
 protected:
     CgiRoot *m_cgiRoot;
     Wt::WContainerWidget *m_htmlRoot;
-    CgiRoot::CgiEnvPtr_t m_cgiEnv;
+    CgiRoot::CgiEnv_ptr m_cgiEnv;
 
 public:
     explicit Page(CgiRoot *cgiRoot);

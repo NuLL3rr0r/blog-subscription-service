@@ -53,8 +53,8 @@ using namespace CoreLib;
 
 struct Database::Impl
 {
-    typedef std::unordered_map<std::string, std::string> TableNames_t;
-    typedef std::unordered_map<std::string, std::string> TableFields_t;
+    typedef std::unordered_map<std::string, std::string> TableNamesHashTable;
+    typedef std::unordered_map<std::string, std::string> TableFieldsHashTable;
 
 #if defined ( CORELIB_STATIC )
 #if defined ( HAS_CPPDB_SQLITE3_DRIVER )
@@ -70,8 +70,8 @@ struct Database::Impl
 
     cppdb::session Sql;
 
-    TableNames_t TableNames;
-    TableFields_t TableFields;
+    TableNamesHashTable TableNames;
+    TableFieldsHashTable TableFields;
 };
 
 #if defined ( CORELIB_STATIC )
@@ -404,7 +404,7 @@ bool Database::Initialize()
     try {
         cppdb::transaction guard(m_pimpl->Sql);
 
-        for (Impl::TableNames_t::const_iterator it = m_pimpl->TableNames.begin();
+        for (Impl::TableNamesHashTable::const_iterator it = m_pimpl->TableNames.begin();
              it != m_pimpl->TableNames.end();
              ++it) {
             CreateTable(it->first);
@@ -421,5 +421,4 @@ bool Database::Initialize()
 
     return false;
 }
-
 

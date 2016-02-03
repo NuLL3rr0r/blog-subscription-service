@@ -76,7 +76,7 @@ public:
     template <typename Type>
     static Type Number(Type lowerBound, Type upperBound)
     {
-        boost::lock_guard<boost::mutex>(GetMutex());
+        boost::lock_guard<boost::mutex> guard(GetMutex());
         boost::random::uniform_int_distribution<> dist(lowerBound, upperBound);
         return dist(GetEngine());
     }

@@ -49,7 +49,7 @@ class Crypto;
 class CoreLib::Crypto
 {
 public:
-    typedef unsigned char Byte_t;
+    typedef unsigned char Byte;
 
 private:
     struct Impl;
@@ -57,15 +57,15 @@ private:
 
 public:
     static bool Encrypt(const std::string &plainText, std::string &out_encodedText,
-                        const Byte_t *key, std::size_t keyLen, const Byte_t *iv, std::size_t ivLen);
+                        const Byte *key, std::size_t keyLen, const Byte *iv, std::size_t ivLen);
     static bool Encrypt(const std::string &plainText, std::string &out_encodedText,
                         std::string &out_error,
-                        const Byte_t *key, std::size_t keyLen, const Byte_t *iv, std::size_t ivLen);
+                        const Byte *key, std::size_t keyLen, const Byte *iv, std::size_t ivLen);
     static bool Decrypt(const std::string &cipherText, std::string &out_recoveredText,
-                        const Byte_t *key, std::size_t keyLen, const Byte_t *iv, std::size_t ivLen);
+                        const Byte *key, std::size_t keyLen, const Byte *iv, std::size_t ivLen);
     static bool Decrypt(const std::string &cipherText, std::string &out_recoveredText,
                         std::string &out_error,
-                        const Byte_t *key, std::size_t keyLen, const Byte_t *iv, std::size_t ivLen);
+                        const Byte *key, std::size_t keyLen, const Byte *iv, std::size_t ivLen);
     static bool Hash(const std::string &text, std::string &out_digest);
     static bool Hash(const std::string &text, std::string &out_digest,
                              std::string &out_error);
@@ -84,7 +84,7 @@ public:
     static std::wstring HexStringToWString(const std::wstring &hexString);
 
 public:
-    Crypto(const Byte_t *key, std::size_t keyLen, const Byte_t *iv, std::size_t ivLen);
+    Crypto(const Byte *key, std::size_t keyLen, const Byte *iv, std::size_t ivLen);
     virtual ~Crypto();
 
 public:
@@ -98,5 +98,4 @@ public:
 
 
 #endif /* CORELIB_CRYPTO_HPP */
-
 

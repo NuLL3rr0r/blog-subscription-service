@@ -49,7 +49,7 @@ class Mail;
 class CoreLib::Mail
 {
 public:
-    typedef std::function<void(bool, const std::string &)> SendCallback_t;
+    typedef std::function<void(bool, const std::string &)> SendCallback;
 
 private:
     struct Impl;
@@ -80,7 +80,7 @@ public:
     bool Send() const;
     bool Send(std::string &out_error) const;
 
-    void SendAsync(SendCallback_t callback = nullptr);
+    void SendAsync(SendCallback callback = nullptr);
 };
 
 
