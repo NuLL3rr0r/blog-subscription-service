@@ -38,6 +38,7 @@
 #include <Wt/WApplication>
 #include <Wt/WBootstrapTheme>
 #include <Wt/WContainerWidget>
+#include <Wt/WCssStyleSheet>
 #include <Wt/WEnvironment>
 #include <Wt/WText>
 #include <CoreLib/Log.hpp>
@@ -53,6 +54,7 @@
 #define         ALICE               L"<pre>Alice is not in Wonderland!!</pre>"
 
 using namespace std;
+using namespace boost;
 using namespace Wt;
 using namespace CoreLib;
 using namespace Service;
@@ -78,7 +80,7 @@ WApplication *CgiRoot::CreateApplication(const WEnvironment &env)
 
 CgiRoot::CgiRoot(const WEnvironment &env) :
     WApplication(env),
-    m_pimpl(std::make_unique<CgiRoot::Impl>(this))
+    m_pimpl(make_unique<CgiRoot::Impl>(this))
 {
     try {
         this->setInternalPathDefaultValid(false);
@@ -89,7 +91,7 @@ CgiRoot::CgiRoot(const WEnvironment &env) :
         bootstrapTheme->setFormControlStyleEnabled(true);
         setTheme(bootstrapTheme);
 
-        CgiEnvInstance = std::make_shared<CgiEnv>(env);
+        CgiEnvInstance = make_shared<CgiEnv>(env);
         if (CgiEnvInstance->FoundXSS())
             throw Service::Exception(ALICE);
 
@@ -102,10 +104,10 @@ CgiRoot::CgiRoot(const WEnvironment &env) :
             try {
                 m_pimpl->ReloadWithLanguage(env.getCookie("lang"));
             } catch (...) {
-                if (boost::algorithm::contains(
+                if (algorithm::contains(
                             CgiEnvInstance->GetClientInfo(CgiEnv::ClientInfo::Location),
                             "Iran")
-                        || boost::algorithm::starts_with(locale().name(), "fa")) {
+                        || algorithm::starts_with(locale().name(), "fa")) {
                     m_pimpl->ReloadWithLanguage("fa");
                 } else {
                     m_pimpl->ReloadWithLanguage("en");
@@ -179,10 +181,23 @@ Wt::WWidget *CgiRoot::Impl::GetHomePage()
     case CgiEnv::Language::En:
         m_cgiRoot->useStyleSheet("css/home-ltr.css");
         m_cgiRoot->useStyleSheet("css/home-en.css");
+
+        /// Google Webfonts (Monserrat 400/700, Open Sans 400/600)
+        m_cgiRoot->useStyleSheet("css/wf-montserrat-v6-latin.css");
+        m_cgiRoot->useStyleSheet("css/wf-open-sans-v13-latin.css");
+
+        /// Load our fonts individually if IE8+, to avoid faux bold & italic rendering
+        m_cgiRoot->useStyleSheet(Wt::WCssStyleSheet("css/wf-montserrat-v6-latin-regular.css"), "IE");
+        m_cgiRoot->useStyleSheet(Wt::WCssStyleSheet("css/wf-montserrat-v6-latin-bold.css"), "IE");
+        m_cgiRoot->useStyleSheet(Wt::WCssStyleSheet("css/wf-open-sans-v13-latin-regular.css"), "IE");
+        m_cgiRoot->useStyleSheet(Wt::WCssStyleSheet("css/wf-open-sans-v13-latin-semibold.css"), "IE");
         break;
     case CgiEnv::Language::Fa:
         m_cgiRoot->useStyleSheet("css/home-rtl.css");
         m_cgiRoot->useStyleSheet("css/home-fa.css");
+
+        /// Farsi Webfont (Yekan 400)
+        m_cgiRoot->useStyleSheet("css/wf-yekan.css");
         break;
     case CgiEnv::Language::None:
     case CgiEnv::Language::Invalid:
@@ -195,9 +210,6 @@ Wt::WWidget *CgiRoot::Impl::GetHomePage()
 Wt::WWidget *CgiRoot::Impl::GetRootLoginPage()
 {
     m_cgiRoot->useStyleSheet("css/root.css");
-    m_cgiRoot->useStyleSheet("resources/font-awesome/css/font-awesome.min.css");
-    m_cgiRoot->require("js/jquery.min.js");
-    m_cgiRoot->require("js/bootstrap.min.js");
 
     switch (m_cgiRoot->CgiEnvInstance->GetCurrentLanguage()) {
     case CgiEnv::Language::En:
@@ -213,12 +225,30 @@ Wt::WWidget *CgiRoot::Impl::GetRootLoginPage()
         break;
     }
 
+    /// Google Webfonts (Monserrat 400/700, Open Sans 400/600)
+    m_cgiRoot->useStyleSheet("css/wf-montserrat-v6-latin.css");
+    m_cgiRoot->useStyleSheet("css/wf-open-sans-v13-latin.css");
+
+    /// Load our fonts individually if IE8+, to avoid faux bold & italic rendering
+    m_cgiRoot->useStyleSheet(Wt::WCssStyleSheet("css/wf-montserrat-v6-latin-regular.css"), "IE");
+    m_cgiRoot->useStyleSheet(Wt::WCssStyleSheet("css/wf-montserrat-v6-latin-bold.css"), "IE");
+    m_cgiRoot->useStyleSheet(Wt::WCssStyleSheet("css/wf-open-sans-v13-latin-regular.css"), "IE");
+    m_cgiRoot->useStyleSheet(Wt::WCssStyleSheet("css/wf-open-sans-v13-latin-semibold.css"), "IE");
+
+    /// Farsi Webfont (Yekan 400)
+    m_cgiRoot->useStyleSheet("css/wf-yekan.css");
+
+    m_cgiRoot->useStyleSheet("resources/font-awesome/css/font-awesome.min.css");
+
+    m_cgiRoot->require("js/jquery.min.js");
+    m_cgiRoot->require("js/bootstrap.min.js");
+
     return new RootLogin(m_cgiRoot);
 }
 
 void CgiRoot::Impl::ReloadWithLanguage(const std::string &lang)
 {
-    std::string parameters(m_cgiRoot->CgiEnvInstance->GetInitialQueryString());
+    string parameters(m_cgiRoot->CgiEnvInstance->GetInitialQueryString());
 
     if (parameters.size() > 0) {
         parameters += "&lang=";
@@ -228,7 +258,7 @@ void CgiRoot::Impl::ReloadWithLanguage(const std::string &lang)
 
     parameters = parameters + lang;
 
-    if (!boost::starts_with(parameters, "?")) {
+    if (algorithm::starts_with(parameters, "?")) {
         parameters = "?" + parameters;
     }
 

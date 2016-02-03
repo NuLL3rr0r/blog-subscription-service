@@ -93,7 +93,7 @@ public:
 };
 
 CgiEnv::CgiEnv(const WEnvironment &env) :
-    m_pimpl(std::make_unique<CgiEnv::Impl>(this))
+    m_pimpl(make_unique<CgiEnv::Impl>(this))
 {
     m_pimpl->ClientInfoIP = env.clientAddress();
     m_pimpl->ClientInfoBrowser = env.userAgent();
@@ -102,7 +102,7 @@ CgiEnv::CgiEnv(const WEnvironment &env) :
     m_pimpl->ExtractClientInfoDetail();
 
     m_pimpl->ClientInfoLocation =
-            (boost::format("%1% %2% %3% %4% %5% %6%")
+            (format("%1% %2% %3% %4% %5% %6%")
              % ClientInfoRecord.city
              % ClientInfoRecord.region
              % ClientInfoRecord.country_code
@@ -111,16 +111,16 @@ CgiEnv::CgiEnv(const WEnvironment &env) :
              % ClientInfoRecord.continent_code).str();
     if (ClientInfoRecord.latitude != "" && ClientInfoRecord.longitude != "") {
         m_pimpl->ClientInfoLocation +=
-                (boost::format("%1%,%2%")
+                (format("%1%,%2%")
                  % ClientInfoRecord.latitude
                  % ClientInfoRecord.longitude).str();
     }
-    boost::trim(m_pimpl->ClientInfoLocation);
+    algorithm::trim(m_pimpl->ClientInfoLocation);
 
     m_pimpl->ServerInfoHost = env.hostName();
     m_pimpl->ServerInfoURL = env.urlScheme() + "://" + m_pimpl->ServerInfoHost;
     m_pimpl->ServerInfoRootLoginUrl = m_pimpl->ServerInfoURL
-            + (boost::ends_with(m_pimpl->ServerInfoURL, "/") ? "" : "/")
+            + (algorithm::ends_with(m_pimpl->ServerInfoURL, "/") ? "" : "/")
             + "?root";
     m_pimpl->ServerInfoNoReplyAddr = "no-reply@" + m_pimpl->ServerInfoHost;
 

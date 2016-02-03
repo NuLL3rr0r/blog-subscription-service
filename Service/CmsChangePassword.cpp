@@ -55,6 +55,7 @@
 #define         UNKNOWN_ERROR       "Unknown error!"
 
 using namespace std;
+using namespace boost;
 using namespace cppdb;
 using namespace Wt;
 using namespace Service;
@@ -73,12 +74,12 @@ public:
     explicit Impl(CmsChangePassword *parent);
 
 public:
-    void TryPasswordChange();
+    void OnPasswordChangeFormSubmitted();
 };
 
 CmsChangePassword::CmsChangePassword(CgiRoot *cgi) :
     Page(cgi),
-    m_pimpl(std::make_unique<CmsChangePassword::Impl>(this))
+    m_pimpl(make_unique<CmsChangePassword::Impl>(this))
 {
     this->clear();
     this->setId("CmsChangePasswordPage");
@@ -91,8 +92,8 @@ WWidget *CmsChangePassword::Layout()
     Div *container = new Div("CmsChangePassword", "container-fluid");
 
     try {
-        std::string htmlData;
-        std::string file;
+        string htmlData;
+        string file;
         if (m_cgiEnv->GetCurrentLanguage() == CgiEnv::Language::Fa) {
             file = "../templates/cms-change-password-fa.wtml";
         } else {
@@ -149,10 +150,10 @@ WWidget *CmsChangePassword::Layout()
             tmpl->bindWidget("change-password-button", changePasswordPushButton);
             tmpl->bindWidget("change-password-message-area", m_pimpl->ChangePasswordMessageArea);
 
-            m_pimpl->CurrentPasswordLineEdit->enterPressed().connect(m_pimpl.get(), &CmsChangePassword::Impl::TryPasswordChange);
-            m_pimpl->NewPasswordLineEdit->enterPressed().connect(m_pimpl.get(), &CmsChangePassword::Impl::TryPasswordChange);
-            m_pimpl->ConfirmPasswordLineEdit->enterPressed().connect(m_pimpl.get(), &CmsChangePassword::Impl::TryPasswordChange);
-            changePasswordPushButton->clicked().connect(m_pimpl.get(), &CmsChangePassword::Impl::TryPasswordChange);
+            m_pimpl->CurrentPasswordLineEdit->enterPressed().connect(m_pimpl.get(), &CmsChangePassword::Impl::OnPasswordChangeFormSubmitted);
+            m_pimpl->NewPasswordLineEdit->enterPressed().connect(m_pimpl.get(), &CmsChangePassword::Impl::OnPasswordChangeFormSubmitted);
+            m_pimpl->ConfirmPasswordLineEdit->enterPressed().connect(m_pimpl.get(), &CmsChangePassword::Impl::OnPasswordChangeFormSubmitted);
+            changePasswordPushButton->clicked().connect(m_pimpl.get(), &CmsChangePassword::Impl::OnPasswordChangeFormSubmitted);
 
             m_pimpl->CurrentPasswordLineEdit->setFocus();
         }
@@ -179,7 +180,7 @@ CmsChangePassword::Impl::Impl(CmsChangePassword *parent)
 
 }
 
-void CmsChangePassword::Impl::TryPasswordChange()
+void CmsChangePassword::Impl::OnPasswordChangeFormSubmitted()
 {
     if (!m_parent->Validate(CurrentPasswordLineEdit)
             || !m_parent->Validate(NewPasswordLineEdit)
@@ -195,7 +196,7 @@ void CmsChangePassword::Impl::TryPasswordChange()
         Pool::Crypto()->Encrypt(encryptedPwd, encryptedPwd);
 
         result r = Pool::Database()->Sql()
-                << (boost::format("SELECT pwd FROM %1%"
+                << (format("SELECT pwd FROM \"%1%\""
                                   " WHERE username=? AND pwd=?;")
                     % Pool::Database()->GetTableName("ROOT")).str()
                 << m_parent->m_cgiEnv->SignedInUser.Username
@@ -203,23 +204,23 @@ void CmsChangePassword::Impl::TryPasswordChange()
                 << row;
 
         if (r.empty()) {
+            guard.rollback();
             m_parent->HtmlError(tr("cms-change-password-invalid-pwd-error"), ChangePasswordMessageArea);
             CurrentPasswordLineEdit->setFocus();
-            guard.rollback();
             return;
         }
 
         if (NewPasswordLineEdit->text() == CurrentPasswordLineEdit->text()) {
+            guard.rollback();
             m_parent->HtmlError(tr("cms-change-password-same-pwd-error"), ChangePasswordMessageArea);
             NewPasswordLineEdit->setFocus();
-            guard.rollback();
             return;
         }
 
         if (NewPasswordLineEdit->text() != ConfirmPasswordLineEdit->text()) {
+            guard.rollback();
             m_parent->HtmlError(tr("cms-change-password-confirm-pwd-error"), ChangePasswordMessageArea);
             ConfirmPasswordLineEdit->setFocus();
-            guard.rollback();
             return;
         }
 
@@ -232,12 +233,12 @@ void CmsChangePassword::Impl::TryPasswordChange()
                                  "pwd=?",
                                  { encryptedPwd });
 
+        guard.commit();
+
         CurrentPasswordLineEdit->setText("");
         NewPasswordLineEdit->setText("");
         ConfirmPasswordLineEdit->setText("");
         CurrentPasswordLineEdit->setFocus();
-
-        guard.commit();
 
         m_parent->HtmlInfo(tr("cms-change-password-success-message"), ChangePasswordMessageArea);
 

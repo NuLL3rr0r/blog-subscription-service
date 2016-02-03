@@ -41,6 +41,7 @@
 #include "Home.hpp"
 
 using namespace std;
+using namespace boost;
 using namespace Wt;
 using namespace Service;
 
@@ -52,9 +53,9 @@ public:
 
 Home::Home(CgiRoot *cgi) :
     Page(cgi),
-    m_pimpl(std::make_unique<Home::Impl>())
+    m_pimpl(make_unique<Home::Impl>())
 {
-    m_cgiRoot->setTitle(boost::replace_all_copy(tr("home-page-title").value(), L"&amp;", "&"));
+    m_cgiRoot->setTitle(replace_all_copy(tr("home-page-title").value(), L"&amp;", "&"));
 
     this->clear();
     this->setId("HomePage");

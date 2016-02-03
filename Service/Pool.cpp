@@ -45,6 +45,7 @@
 #include "Pool.hpp"
 
 using namespace std;
+using namespace boost;
 using namespace Service;
 
 struct Pool::Impl
@@ -63,7 +64,7 @@ struct Pool::Impl
     Database_ptr DatabaseInstance;
 };
 
-std::unique_ptr<Pool::Impl> Pool::s_pimpl = std::make_unique<Pool::Impl>();
+std::unique_ptr<Pool::Impl> Pool::s_pimpl = make_unique<Pool::Impl>();
 
 const int &Pool::StorageStruct::LanguageCookieLifespan() const
 {
@@ -199,7 +200,7 @@ Pool::StorageStruct *Pool::Storage()
     (void)lock;
 
     if (s_pimpl->StorageInstance == nullptr) {
-        s_pimpl->StorageInstance = std::make_unique<Pool::StorageStruct>();
+        s_pimpl->StorageInstance = make_unique<Pool::StorageStruct>();
     }
 
     return s_pimpl->StorageInstance.get();
@@ -215,8 +216,8 @@ CoreLib::Crypto *Pool::Crypto()
         static const string IV = CoreLib::Crypto::HexStringToString(CRYPTO_IV);
 
         s_pimpl->CryptoInstance =
-                std::make_unique<CoreLib::Crypto>(reinterpret_cast<const CoreLib::Crypto::Byte *>(KEY.c_str()), KEY.size(),
-                                                  reinterpret_cast<const CoreLib::Crypto::Byte *>(IV.c_str()), IV.size());
+                make_unique<CoreLib::Crypto>(reinterpret_cast<const CoreLib::Crypto::Byte *>(KEY.c_str()), KEY.size(),
+                                             reinterpret_cast<const CoreLib::Crypto::Byte *>(IV.c_str()), IV.size());
     }
 
     return s_pimpl->CryptoInstance.get();
@@ -239,30 +240,30 @@ CoreLib::Database *Pool::Database()
 #endif  // defined ( HAS_CPPDB_PGSQL_DRIVER )
 #endif  // CORELIB_STATIC
 
-        std::string parameters;
-        std::string pgSqlHost(PGSQL_HOST);
-        std::string pgSqlPort(PGSQL_PORT);
-        std::string pgSqlDatabase(PGSQL_DATABASE);
-        std::string pgSqlUser(PGSQL_USER);
-        std::string pgSqlPassword(PGSQL_PASSWORD);
+        string parameters;
+        string pgSqlHost(PGSQL_HOST);
+        string pgSqlPort(PGSQL_PORT);
+        string pgSqlDatabase(PGSQL_DATABASE);
+        string pgSqlUser(PGSQL_USER);
+        string pgSqlPassword(PGSQL_PASSWORD);
 
-        if (boost::trim_copy(pgSqlHost) != "")
-            parameters += (boost::format("host=%1%;") % pgSqlHost).str();
+        if (trim_copy(pgSqlHost) != "")
+            parameters += (format("host=%1%;") % pgSqlHost).str();
 
-        if (boost::trim_copy(pgSqlPort) != "")
-            parameters += (boost::format("port=%1%;") % pgSqlPort).str();
+        if (trim_copy(pgSqlPort) != "")
+            parameters += (format("port=%1%;") % pgSqlPort).str();
 
-        if (boost::trim_copy(pgSqlDatabase) != "")
-            parameters += (boost::format("dbname=%1%;") % pgSqlDatabase).str();
+        if (trim_copy(pgSqlDatabase) != "")
+            parameters += (format("dbname=%1%;") % pgSqlDatabase).str();
 
-        if (boost::trim_copy(pgSqlUser) != "")
-            parameters += (boost::format("user=%1%;") % pgSqlUser).str();
+        if (trim_copy(pgSqlUser) != "")
+            parameters += (format("user=%1%;") % pgSqlUser).str();
 
-        if (boost::trim_copy(pgSqlPassword) != "")
-            parameters += (boost::format("password=%1%;") % pgSqlPassword).str();
+        if (trim_copy(pgSqlPassword) != "")
+            parameters += (format("password=%1%;") % pgSqlPassword).str();
 
-        static const std::string CONNECTION_STRING(
-                    (boost::format("postgresql:%1%")
+        static const string CONNECTION_STRING(
+                    (format("postgresql:%1%")
                      % parameters).str());
 
 #elif DATABASE_BACKEND == MYSQL
@@ -275,34 +276,34 @@ CoreLib::Database *Pool::Database()
 #endif  // defined ( HAS_CPPDB_MYSQL_DRIVER )
 #endif  // CORELIB_STATIC
 
-        std::string parameters;
-        std::string mySqlHost(MYSQL_HOST);
-        std::string mySqlPort(MYSQL_PORT);
-        std::string mySqlUnixSocket(MYSQL_UNIX_SOCKET);
-        std::string mySqlDatabase(MYSQL_DATABASE);
-        std::string mySqlUser(MYSQL_USER);
-        std::string mySqlPassword(MYSQL_PASSWORD);
+        string parameters;
+        string mySqlHost(MYSQL_HOST);
+        string mySqlPort(MYSQL_PORT);
+        string mySqlUnixSocket(MYSQL_UNIX_SOCKET);
+        string mySqlDatabase(MYSQL_DATABASE);
+        string mySqlUser(MYSQL_USER);
+        string mySqlPassword(MYSQL_PASSWORD);
 
-        if (boost::trim_copy(mySqlHost) != "")
-            parameters += (boost::format("host=%1%;") % mySqlHost).str();
+        if (trim_copy(mySqlHost) != "")
+            parameters += (format("host=%1%;") % mySqlHost).str();
 
-        if (boost::trim_copy(mySqlPort) != "")
-            parameters += (boost::format("port=%1%;") % mySqlPort).str();
+        if (trim_copy(mySqlPort) != "")
+            parameters += (format("port=%1%;") % mySqlPort).str();
 
-        if (boost::trim_copy(mySqlUnixSocket) != "")
-            parameters += (boost::format("unix_socket=%1%;") % mySqlUnixSocket).str();
+        if (trim_copy(mySqlUnixSocket) != "")
+            parameters += (format("unix_socket=%1%;") % mySqlUnixSocket).str();
 
-        if (boost::trim_copy(mySqlDatabase) != "")
-            parameters += (boost::format("database=%1%;") % mySqlDatabase).str();
+        if (trim_copy(mySqlDatabase) != "")
+            parameters += (format("database=%1%;") % mySqlDatabase).str();
 
-        if (boost::trim_copy(mySqlUser) != "")
-            parameters += (boost::format("user=%1%;") % mySqlUser).str();
+        if (trim_copy(mySqlUser) != "")
+            parameters += (format("user=%1%;") % mySqlUser).str();
 
-        if (boost::trim_copy(mySqlPassword) != "")
-            parameters += (boost::format("password=%1%;") % mySqlPassword).str();
+        if (trim_copy(mySqlPassword) != "")
+            parameters += (format("password=%1%;") % mySqlPassword).str();
 
-        static const std::string CONNECTION_STRING(
-                    (boost::format("mysql:%1%")
+        static const string CONNECTION_STRING(
+                    (format("mysql:%1%")
                      % parameters).str());
 
 #else   // SQLITE3
@@ -315,11 +316,11 @@ CoreLib::Database *Pool::Database()
 #endif  // defined ( HAS_CPPDB_SQLITE3_DRIVER )
 #endif  // defined ( CORELIB_STATIC )
 
-        static const std::string DB_FILE((boost::filesystem::path(Storage()->AppPath)
-                                          / boost::filesystem::path(SQLITE3_DATABASE_FILE_PATH)
-                                          / boost::filesystem::path(SQLITE3_DATABASE_FILE_NAME)).string());
-        static const std::string CONNECTION_STRING(
-                    (boost::format("sqlite3:db=%1%")
+        static const string DB_FILE((filesystem::path(Storage()->AppPath)
+                                     / filesystem::path(SQLITE3_DATABASE_FILE_PATH)
+                                     / filesystem::path(SQLITE3_DATABASE_FILE_NAME)).string());
+        static const string CONNECTION_STRING(
+                    (format("sqlite3:db=%1%")
                      % DB_FILE).str());
 
 #if defined ( HAS_SQLITE3 )
@@ -328,7 +329,7 @@ CoreLib::Database *Pool::Database()
 
 #endif // DATABASE_BACKEND == PGSQL
 
-        s_pimpl->DatabaseInstance = std::make_unique<CoreLib::Database>(CONNECTION_STRING);
+        s_pimpl->DatabaseInstance = make_unique<CoreLib::Database>(CONNECTION_STRING);
     }
 
     return s_pimpl->DatabaseInstance.get();

@@ -67,11 +67,15 @@ public:
     explicit Impl(CmsSubscribers *parent);
 
 public:
+    void OnAllButtonPressed();
+    void OnEnFaButtonPressed();
+    void OnEnButtonPressed();
+    void OnFaButtonPressed();
 };
 
 CmsSubscribers::CmsSubscribers(CgiRoot *cgi) :
     Page(cgi),
-    m_pimpl(std::make_unique<CmsSubscribers::Impl>(this))
+    m_pimpl(make_unique<CmsSubscribers::Impl>(this))
 {
     this->clear();
     this->setId("CmsSubscribersPage");
@@ -84,8 +88,8 @@ WWidget *CmsSubscribers::Layout()
     Div *container = new Div("CmsSubscribers", "container-fluid");
 
     try {
-        std::string htmlData;
-        std::string file;
+        string htmlData;
+        string file;
         if (m_cgiEnv->GetCurrentLanguage() == CgiEnv::Language::Fa) {
             file = "../templates/cms-subscribers-fa.wtml";
         } else {
@@ -143,6 +147,26 @@ WWidget *CmsSubscribers::Layout()
 
 CmsSubscribers::Impl::Impl(CmsSubscribers *parent)
     : m_parent(parent)
+{
+
+}
+
+void CmsSubscribers::Impl::OnAllButtonPressed()
+{
+
+}
+
+void OnEnFaButtonPressed()
+{
+
+}
+
+void OnEnButtonPressed()
+{
+
+}
+
+void OnFaButtonPressed()
 {
 
 }

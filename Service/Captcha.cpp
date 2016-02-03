@@ -61,7 +61,7 @@ public:
 };
 
 Captcha::Captcha()
-    : m_pimpl(std::make_unique<Captcha::Impl>())
+    : m_pimpl(make_unique<Captcha::Impl>())
 {
     m_pimpl->Result = 0;
 }
@@ -111,7 +111,7 @@ Wt::WImage *Captcha::Generate()
 
     WMemoryResource *captchaResource = new WMemoryResource("image/png");
 
-    std::string buffer;
+    string buffer;
     FileSystem::Read(captchaPath, buffer);
 
     captchaResource->setData(reinterpret_cast<const unsigned char*>(buffer.c_str()),

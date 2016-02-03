@@ -56,6 +56,7 @@
 #define         UNKNOWN_ERROR       "Unknown error!"
 
 using namespace std;
+using namespace boost;
 using namespace cppdb;
 using namespace Wt;
 using namespace Service;
@@ -73,12 +74,12 @@ public:
     explicit Impl(CmsChangeEmail *parent);
 
 public:
-    void TryEmailChange();
+    void OnEmailChangeFormSubmitted();
 };
 
 CmsChangeEmail::CmsChangeEmail(CgiRoot *cgi) :
     Page(cgi),
-    m_pimpl(std::make_unique<CmsChangeEmail::Impl>(this))
+    m_pimpl(make_unique<CmsChangeEmail::Impl>(this))
 {
     this->clear();
     this->setId("CmsChangeEmailPage");
@@ -91,8 +92,8 @@ WWidget *CmsChangeEmail::Layout()
     Div *container = new Div("CmsChangeEmail", "container-fluid");
 
     try {
-        std::string htmlData;
-        std::string file;
+        string htmlData;
+        string file;
         if (m_cgiEnv->GetCurrentLanguage() == CgiEnv::Language::Fa) {
             file = "../templates/cms-change-email-fa.wtml";
         } else {
@@ -137,9 +138,9 @@ WWidget *CmsChangeEmail::Layout()
             tmpl->bindWidget("change-email-button", changeEmailPushButton);
             tmpl->bindWidget("change-email-message-area", m_pimpl->ChangeEmailMessageArea);
 
-            m_pimpl->EmailLineEdit->enterPressed().connect(m_pimpl.get(), &CmsChangeEmail::Impl::TryEmailChange);
-            m_pimpl->PasswordLineEdit->enterPressed().connect(m_pimpl.get(), &CmsChangeEmail::Impl::TryEmailChange);
-            changeEmailPushButton->clicked().connect(m_pimpl.get(), &CmsChangeEmail::Impl::TryEmailChange);
+            m_pimpl->EmailLineEdit->enterPressed().connect(m_pimpl.get(), &CmsChangeEmail::Impl::OnEmailChangeFormSubmitted);
+            m_pimpl->PasswordLineEdit->enterPressed().connect(m_pimpl.get(), &CmsChangeEmail::Impl::OnEmailChangeFormSubmitted);
+            changeEmailPushButton->clicked().connect(m_pimpl.get(), &CmsChangeEmail::Impl::OnEmailChangeFormSubmitted);
 
             m_pimpl->PasswordLineEdit->setFocus();
         }
@@ -166,7 +167,7 @@ CmsChangeEmail::Impl::Impl(CmsChangeEmail *parent)
 
 }
 
-void CmsChangeEmail::Impl::TryEmailChange()
+void CmsChangeEmail::Impl::OnEmailChangeFormSubmitted()
 {
     if (!m_parent->Validate(EmailLineEdit)
             || !m_parent->Validate(PasswordLineEdit)) {
@@ -181,7 +182,7 @@ void CmsChangeEmail::Impl::TryEmailChange()
         Pool::Crypto()->Encrypt(encryptedPwd, encryptedPwd);
 
         result r = Pool::Database()->Sql()
-                << (boost::format("SELECT email FROM %1%"
+                << (format("SELECT email FROM \"%1%\""
                                   " WHERE username=? AND pwd=?;")
                     % Pool::Database()->GetTableName("ROOT")).str()
                 << m_parent->m_cgiEnv->SignedInUser.Username
@@ -189,9 +190,9 @@ void CmsChangeEmail::Impl::TryEmailChange()
                 << row;
 
         if (r.empty()) {
+            guard.rollback();
             m_parent->HtmlError(tr("cms-change-email-invalid-pwd-error"), ChangeEmailMessageArea);
             PasswordLineEdit->setFocus();
-            guard.rollback();
             return;
         }
 
@@ -200,12 +201,12 @@ void CmsChangeEmail::Impl::TryEmailChange()
                                  "email=?",
                                  { EmailLineEdit->text().toUTF8() });
 
+        guard.commit();
+
         m_parent->m_cgiEnv->SignedInUser.Email = EmailLineEdit->text().toUTF8();
 
         PasswordLineEdit->setText("");
         EmailLineEdit->setFocus();
-
-        guard.commit();
 
         m_parent->HtmlInfo(tr("cms-change-email-success-message"), ChangeEmailMessageArea);
 

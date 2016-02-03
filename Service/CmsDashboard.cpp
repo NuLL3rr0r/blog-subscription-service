@@ -66,7 +66,7 @@ public:
 
 CmsDashboard::CmsDashboard(CgiRoot *cgi) :
     Page(cgi),
-    m_pimpl(std::make_unique<CmsDashboard::Impl>(this))
+    m_pimpl(make_unique<CmsDashboard::Impl>(this))
 {
     this->clear();
     this->setId("CmsDashboardPage");
@@ -79,8 +79,8 @@ WWidget *CmsDashboard::Layout()
     Div *container = new Div("CmsDashboard", "container-fluid");
 
     try {
-        std::string htmlData;
-        std::string file;
+        string htmlData;
+        string file;
         if (m_cgiEnv->GetCurrentLanguage() == CgiEnv::Language::Fa) {
             file = "../templates/cms-dashboard-fa.wtml";
         } else {

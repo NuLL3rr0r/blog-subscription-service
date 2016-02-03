@@ -141,7 +141,7 @@ public:
 
 SysMon::SysMon(CgiRoot *cgi) :
     Page(cgi),
-    m_pimpl(std::make_unique<SysMon::Impl>())
+    m_pimpl(make_unique<SysMon::Impl>())
 {
     this->clear();
     this->setId("SysMonPage");
@@ -171,9 +171,8 @@ WWidget *SysMon::Layout()
 {
     Div *container = new Div("SysMon", "container-fluid");
 
-
-    std::string htmlData;
-    std::string file;
+    string htmlData;
+    string file;
     if (m_cgiEnv->GetCurrentLanguage() == CgiEnv::Language::Fa) {
         file = "../templates/system-monitor-fa.wtml";
     } else {
@@ -396,12 +395,12 @@ void SysMon::Impl::RefreshResourceUsage()
     sg_disk_io_stats *diskIoStats;
     sg_network_io_stats *networkIoStats;
 
-    std::size_t cpuPercentsEntries = 0;
-    std::size_t memStatsEntries = 0;
-    std::size_t swapStatsEntries = 0;
-    std::size_t hostInfoEntries = 0;
-    std::size_t diskIoStatsEntries = 0;
-    std::size_t networkIoStatsEntries = 0;
+    size_t cpuPercentsEntries = 0;
+    size_t memStatsEntries = 0;
+    size_t swapStatsEntries = 0;
+    size_t hostInfoEntries = 0;
+    size_t diskIoStatsEntries = 0;
+    size_t networkIoStatsEntries = 0;
 
 
     /// Get the host info
@@ -480,7 +479,7 @@ void SysMon::Impl::RefreshResourceUsage()
         CpuUsageCache.pop_front();
 
         int i = 0;
-        for (std::list<CpuInstant>::const_iterator it =
+        for (list<CpuInstant>::const_iterator it =
              CpuUsageCache.begin(); it != CpuUsageCache.end(); ++it) {
             cpuInstant = *it;
             CpuUsageModel->setData(i, 0, cpuInstant[Cpu::User]);
@@ -530,7 +529,7 @@ void SysMon::Impl::RefreshResourceUsage()
                 );
 
         int i = 0;
-        for (std::list<MemoryInstant>::const_iterator it =
+        for (list<MemoryInstant>::const_iterator it =
              MemoryUsageCache.begin(); it != MemoryUsageCache.end(); ++it) {
             memoryInstant = *it;
             MemoryUsageModel->setData(i, 0, memoryInstant[Memory::Total]);
@@ -571,7 +570,7 @@ void SysMon::Impl::RefreshResourceUsage()
                 );
 
         int i = 0;
-        for (std::list<SwapInstant>::const_iterator it =
+        for (list<SwapInstant>::const_iterator it =
              SwapUsageCache.begin(); it != SwapUsageCache.end(); ++it) {
             swapInstant = *it;
             SwapUsageModel->setData(i, 0, swapInstant[Swap::Total]);
@@ -631,7 +630,7 @@ void SysMon::Impl::RefreshResourceUsage()
                 );
 
         int i = 0;
-        for (std::list<VirtualMemoryInstant>::const_iterator it =
+        for (list<VirtualMemoryInstant>::const_iterator it =
              VirtualMemoryUsageCache.begin(); it != VirtualMemoryUsageCache.end(); ++it) {
             virtualMemoryInstant = *it;
             VirtualMemoryUsageModel->setData(i, 0, virtualMemoryInstant[VirtualMemory::Total]);

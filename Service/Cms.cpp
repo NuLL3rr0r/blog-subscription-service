@@ -79,7 +79,7 @@ public:
 
 Cms::Cms(CgiRoot *cgi) :
     Page(cgi),
-    m_pimpl(std::make_unique<Cms::Impl>(this))
+    m_pimpl(make_unique<Cms::Impl>(this))
 {
     m_cgiRoot->setTitle(tr("cms-page-title"));
 
@@ -97,8 +97,8 @@ WWidget *Cms::Layout()
     Div *noScript = new Div(container);
     noScript->addWidget(new WText(tr("no-script")));
 
-    std::string htmlData;
-    std::string file;
+    string htmlData;
+    string file;
     if (m_cgiEnv->GetCurrentLanguage() == CgiEnv::Language::Fa) {
         file = "../templates/cms-fa.wtml";
     } else {
@@ -239,7 +239,7 @@ void Cms::Impl::OnMenuItemPressed(WText *sender)
         return;
 
     } else if (sender->id() == "menu-item-exit") {
-        std::srand((unsigned int)System::RandSeed());
+        srand((unsigned int)System::RandSeed());
 
         m_parent->m_cgiRoot->removeCookie("cms-session-user");
         m_parent->m_cgiRoot->removeCookie("cms-session-token");

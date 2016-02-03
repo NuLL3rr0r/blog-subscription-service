@@ -103,10 +103,11 @@ public:
     Impl(RootLogin *parent);
 
 public:
-    void TryLogin();
-    void TryPassowrdRecovery();
-    void LogoutRedirectToHomePage();
-    void LogutSignInAgain();
+    void OnLoginFormSubmitted();
+    void OnPasswordRecoveryFormSubmitted();
+
+    void OnGoToHomePageButtonPressed();
+    void OnSignInAgainButtonPressed();
 
     void GenerateCaptcha();
     void PasswordRecoveryForm();
@@ -122,7 +123,7 @@ public:
 
 RootLogin::RootLogin(CgiRoot *cgi) :
     Page(cgi),
-    m_pimpl(std::make_unique<RootLogin::Impl>(this))
+    m_pimpl(make_unique<RootLogin::Impl>(this))
 {
     bool hasValidSession = false;
 
@@ -138,13 +139,13 @@ RootLogin::RootLogin(CgiRoot *cgi) :
             }
             hasValidSession = false;
         } else {
-            std::string user(m_cgiRoot->environment().getCookie("cms-session-user"));
-            std::string token(m_cgiRoot->environment().getCookie("cms-session-token"));
+            string user(m_cgiRoot->environment().getCookie("cms-session-user"));
+            string token(m_cgiRoot->environment().getCookie("cms-session-token"));
             Pool::Crypto()->Decrypt(user, user);
             Pool::Crypto()->Decrypt(token, token);
 
             try {
-                std::time_t rawTime = boost::lexical_cast<time_t>(token);
+                time_t rawTime = lexical_cast<time_t>(token);
 
                 CDate::Now n;
                 if (rawTime + Pool::Storage()->RootSessionLifespan() >= n.RawTime) {
@@ -152,13 +153,13 @@ RootLogin::RootLogin(CgiRoot *cgi) :
 
                     try {
                         result r = Pool::Database()->Sql()
-                                << (boost::format("SELECT username, email,"
-                                                  " last_login_ip, last_login_location,"
-                                                  " last_login_rawtime,"
-                                                  " last_login_gdate, last_login_jdate,"
-                                                  " last_login_time,"
-                                                  " last_login_user_agent, last_login_referer"
-                                                  " FROM %1% WHERE username=?;")
+                                << (format("SELECT username, email,"
+                                           " last_login_ip, last_login_location,"
+                                           " last_login_rawtime,"
+                                           " last_login_gdate, last_login_jdate,"
+                                           " last_login_time,"
+                                           " last_login_user_agent, last_login_referer"
+                                           " FROM \"%1%\" WHERE username=?;")
                                     % Pool::Database()->GetTableName("ROOT")).str()
                                 << user << row;
 
@@ -186,18 +187,18 @@ RootLogin::RootLogin(CgiRoot *cgi) :
                     }
 
                     catch (boost::exception &ex) {
-                        LOG_ERROR(boost::diagnostic_information(ex));
                         guard.rollback();
+                        LOG_ERROR(boost::diagnostic_information(ex));
                     }
 
                     catch (std::exception &ex) {
-                        LOG_ERROR(ex.what());
                         guard.rollback();
+                        LOG_ERROR(ex.what());
                     }
 
                     catch (...) {
-                        LOG_ERROR(UNKNOWN_ERROR);
                         guard.rollback();
+                        LOG_ERROR(UNKNOWN_ERROR);
                     }
                 }
             }
@@ -247,8 +248,8 @@ WWidget *RootLogin::Layout()
     Div *noScript = new Div(container);
     noScript->addWidget(new WText(tr("no-script")));
 
-    std::string htmlData;
-    std::string file;
+    string htmlData;
+    string file;
     if (m_cgiEnv->GetCurrentLanguage() == CgiEnv::Language::Fa) {
         file = "../templates/root-login-fa.wtml";
     } else {
@@ -322,11 +323,11 @@ WWidget *RootLogin::Layout()
 
         container->addWidget(tmpl);
 
-        m_pimpl->UsernameLineEdit->enterPressed().connect(m_pimpl.get(), &RootLogin::Impl::TryLogin);
-        m_pimpl->PasswordLineEdit->enterPressed().connect(m_pimpl.get(), &RootLogin::Impl::TryLogin);
-        m_pimpl->CaptchaLineEdit->enterPressed().connect(m_pimpl.get(), &RootLogin::Impl::TryLogin);
-        m_pimpl->RememberMeCheckBox->enterPressed().connect(m_pimpl.get(), &RootLogin::Impl::TryLogin);
-        signInPushButton->clicked().connect(m_pimpl.get(), &RootLogin::Impl::TryLogin);
+        m_pimpl->UsernameLineEdit->enterPressed().connect(m_pimpl.get(), &RootLogin::Impl::OnLoginFormSubmitted);
+        m_pimpl->PasswordLineEdit->enterPressed().connect(m_pimpl.get(), &RootLogin::Impl::OnLoginFormSubmitted);
+        m_pimpl->CaptchaLineEdit->enterPressed().connect(m_pimpl.get(), &RootLogin::Impl::OnLoginFormSubmitted);
+        m_pimpl->RememberMeCheckBox->enterPressed().connect(m_pimpl.get(), &RootLogin::Impl::OnLoginFormSubmitted);
+        signInPushButton->clicked().connect(m_pimpl.get(), &RootLogin::Impl::OnLoginFormSubmitted);
 
         WSignalMapper<WText *> *forgotPasswordSignalMapper = new WSignalMapper<WText *>(m_pimpl.get());
         forgotPasswordSignalMapper->mapped().connect(m_pimpl.get(), &RootLogin::Impl::PasswordRecoveryForm);
@@ -344,7 +345,7 @@ RootLogin::Impl::Impl(RootLogin *parent)
     PasswordRecoveryFormFlag = false;
 }
 
-void RootLogin::Impl::TryLogin()
+void RootLogin::Impl::OnLoginFormSubmitted()
 {
     if (!m_parent->Validate(CaptchaLineEdit)
             || !m_parent->Validate(UsernameLineEdit)
@@ -362,39 +363,39 @@ void RootLogin::Impl::TryLogin()
         Pool::Crypto()->Encrypt(pwd, pwd);
 
         result r = Pool::Database()->Sql()
-                << (boost::format("SELECT username, email,"
-                                  " last_login_ip, last_login_location,"
-                                  " last_login_rawtime,"
-                                  " last_login_gdate, last_login_jdate,"
-                                  " last_login_time,"
-                                  " last_login_user_agent, last_login_referer"
-                                  " FROM %1% WHERE username=? AND pwd=?;")
+                << (format("SELECT username, email,"
+                           " last_login_ip, last_login_location,"
+                           " last_login_rawtime,"
+                           " last_login_gdate, last_login_jdate,"
+                           " last_login_time,"
+                           " last_login_user_agent, last_login_referer"
+                           " FROM \"%1%\" WHERE username=? AND pwd=?;")
                     % Pool::Database()->GetTableName("ROOT")).str()
                 << user << pwd << row;
 
         // One-time passowrd
         if (r.empty()) {
             r = Pool::Database()->Sql()
-                    << (boost::format("SELECT username, email,"
-                                      " last_login_ip, last_login_location,"
-                                      " last_login_rawtime,"
-                                      " last_login_gdate, last_login_jdate,"
-                                      " last_login_time,"
-                                      " last_login_user_agent, last_login_referer"
-                                      " FROM %1% WHERE username=? AND recovery_pwd=?;")
+                    << (format("SELECT username, email,"
+                               " last_login_ip, last_login_location,"
+                               " last_login_rawtime,"
+                               " last_login_gdate, last_login_jdate,"
+                               " last_login_time,"
+                               " last_login_user_agent, last_login_referer"
+                               " FROM \"%1%\" WHERE username=? AND recovery_pwd=?;")
                         % Pool::Database()->GetTableName("ROOT")).str()
                     << user << pwd << row;
             Pool::Database()->Update("ROOT",
                                      "username", user,
                                      "recovery_pwd=?",
-                                     { "" });
+            { "" });
         }
 
         if (r.empty()) {
+            guard.rollback();
             m_parent->HtmlError(tr("root-login-fail"), LoginMessageArea);
             UsernameLineEdit->setFocus();
             GenerateCaptcha();
-            guard.rollback();
             return;
         }
 
@@ -454,7 +455,7 @@ void RootLogin::Impl::TryLogin()
     guard.rollback();
 }
 
-void RootLogin::Impl::TryPassowrdRecovery()
+void RootLogin::Impl::OnPasswordRecoveryFormSubmitted()
 {
     if (!m_parent->Validate(ForgotPassword_CaptchaLineEdit)
             || !m_parent->Validate(ForgotPassword_EmailLineEdit)) {
@@ -468,16 +469,16 @@ void RootLogin::Impl::TryPassowrdRecovery()
         string email = ForgotPassword_EmailLineEdit->text().toUTF8();
 
         result r = Pool::Database()->Sql()
-                << (boost::format("SELECT username FROM %1%"
-                                  " WHERE email=?;")
+                << (format("SELECT username FROM \"%1%\""
+                           " WHERE email=?;")
                     % Pool::Database()->GetTableName("ROOT")).str()
                 << email << row;
 
         if (r.empty()) {
+            guard.rollback();
             m_parent->HtmlError(tr("root-login-password-recovery-fail"), PasswordRecoveryMessageArea);
             ForgotPassword_EmailLineEdit->setFocus();
             GenerateCaptcha();
-            guard.rollback();
             return;
         }
 
@@ -523,12 +524,12 @@ void RootLogin::Impl::TryPassowrdRecovery()
     guard.rollback();
 }
 
-void RootLogin::Impl::LogoutRedirectToHomePage()
+void RootLogin::Impl::OnGoToHomePageButtonPressed()
 {
     m_parent->m_cgiRoot->Exit("/");
 }
 
-void RootLogin::Impl::LogutSignInAgain()
+void RootLogin::Impl::OnSignInAgainButtonPressed()
 {
     m_parent->m_cgiRoot->Exit("/?root");
 }
@@ -551,7 +552,7 @@ void RootLogin::Impl::PasswordRecoveryForm()
         PasswordRecoveryDiv->clear();
 
         if (PasswordRecoveryHtmlData == "") {
-            std::string file;
+            string file;
             if (m_parent->m_cgiEnv->GetCurrentLanguage() == CgiEnv::Language::Fa) {
                 file = "../templates/root-login-password-recovery-fa.wtml";
             } else {
@@ -597,9 +598,9 @@ void RootLogin::Impl::PasswordRecoveryForm()
         tmpl->bindWidget("message-area", PasswordRecoveryMessageArea);
         tmpl->bindWidget("recover-button", recoverPushButton);
 
-        ForgotPassword_EmailLineEdit->enterPressed().connect(this, &RootLogin::Impl::TryPassowrdRecovery);
-        ForgotPassword_CaptchaLineEdit->enterPressed().connect(this, &RootLogin::Impl::TryPassowrdRecovery);
-        recoverPushButton->clicked().connect(this, &RootLogin::Impl::TryPassowrdRecovery);
+        ForgotPassword_EmailLineEdit->enterPressed().connect(this, &RootLogin::Impl::OnPasswordRecoveryFormSubmitted);
+        ForgotPassword_CaptchaLineEdit->enterPressed().connect(this, &RootLogin::Impl::OnPasswordRecoveryFormSubmitted);
+        recoverPushButton->clicked().connect(this, &RootLogin::Impl::OnPasswordRecoveryFormSubmitted);
 
         PasswordRecoveryFormFlag = true;
     } else {
@@ -622,7 +623,7 @@ void RootLogin::Impl::PreserveSessionData(const CDate::Now &n, const std::string
                                  {
                                      m_parent->m_cgiEnv->GetClientInfo(CgiEnv::ClientInfo::IP),
                                      m_parent->m_cgiEnv->GetClientInfo(CgiEnv::ClientInfo::Location),
-                                     boost::lexical_cast<std::string>(n.RawTime),
+                                     lexical_cast<std::string>(n.RawTime),
                                      DateConv::ToGregorian(n),
                                      DateConv::DateConv::ToJalali(n),
                                      DateConv::Time(n),
@@ -630,12 +631,12 @@ void RootLogin::Impl::PreserveSessionData(const CDate::Now &n, const std::string
                                      m_parent->m_cgiEnv->GetClientInfo(CgiEnv::ClientInfo::Referer)
                                  });
 
-        std::string user;
-        std::string token;
+        string user;
+        string token;
 
         if (saveLocally) {
             Pool::Crypto()->Encrypt(username, user);
-            Pool::Crypto()->Encrypt(boost::lexical_cast<std::string>(n.RawTime), token);
+            Pool::Crypto()->Encrypt(lexical_cast<std::string>(n.RawTime), token);
         }
 
         if (m_parent->m_cgiRoot->environment().supportsCookies()) {
@@ -663,8 +664,8 @@ void RootLogin::Impl::PreserveSessionData(const CDate::Now &n, const std::string
 
 void RootLogin::Impl::SendLoginAlertEmail(const std::string &email, const std::string &username, CDate::Now &n)
 {
-    std::string htmlData;
-    std::string file;
+    string htmlData;
+    string file;
     if (m_parent->m_cgiEnv->GetCurrentLanguage() == CgiEnv::Language::Fa) {
         file = "../templates/email-root-login-alert-fa.wtml";
     } else {
@@ -672,23 +673,23 @@ void RootLogin::Impl::SendLoginAlertEmail(const std::string &email, const std::s
     }
 
     if (CoreLib::FileSystem::Read(file, htmlData)) {
-        boost::replace_all(htmlData, "${username}", username);
-        boost::replace_all(htmlData, "${client-ip}",
+        replace_all(htmlData, "${username}", username);
+        replace_all(htmlData, "${client-ip}",
                            m_parent->m_cgiEnv->GetClientInfo(CgiEnv::ClientInfo::IP));
-        boost::replace_all(htmlData, "${client-location}",
+        replace_all(htmlData, "${client-location}",
                            m_parent->m_cgiEnv->GetClientInfo(CgiEnv::ClientInfo::Location));
-        boost::replace_all(htmlData, "${client-user-agent}",
+        replace_all(htmlData, "${client-user-agent}",
                            m_parent->m_cgiEnv->GetClientInfo(CgiEnv::ClientInfo::Browser));
-        boost::replace_all(htmlData, "${client-referer}",
+        replace_all(htmlData, "${client-referer}",
                            m_parent->m_cgiEnv->GetClientInfo(CgiEnv::ClientInfo::Referer));
-        boost::replace_all(htmlData, "${time}",
+        replace_all(htmlData, "${time}",
                            DateConv::ToJalali(n)
                            + " ~ "
                            + algorithm::trim_copy(DateConv::RawLocalDateTime(n)));
 
         CoreLib::Mail *mail = new CoreLib::Mail(
                     m_parent->m_cgiEnv->GetServerInfo(CgiEnv::ServerInfo::NoReplyAddr), email,
-                    (boost::format(tr("root-login-alert-email-subject").toUTF8())
+                    (format(tr("root-login-alert-email-subject").toUTF8())
                      % m_parent->m_cgiEnv->GetServerInfo(CgiEnv::ServerInfo::Host)
                      % username).str(),
                     htmlData);
@@ -701,8 +702,8 @@ void RootLogin::Impl::SendPasswordRecoveryEmail(const std::string &email,
                                                 const std::string &username, const std::string &password,
                                                 CDate::Now &n)
 {
-    std::string htmlData;
-    std::string file;
+    string htmlData;
+    string file;
     if (m_parent->m_cgiEnv->GetCurrentLanguage() == CgiEnv::Language::Fa) {
         file = "../templates/email-root-password-recovery-fa.wtml";
     } else {
@@ -710,26 +711,26 @@ void RootLogin::Impl::SendPasswordRecoveryEmail(const std::string &email,
     }
 
     if (CoreLib::FileSystem::Read(file, htmlData)) {
-        boost::replace_all(htmlData, "${login-url}",
+        replace_all(htmlData, "${login-url}",
                            m_parent->m_cgiEnv->GetServerInfo(CgiEnv::ServerInfo::RootLoginUrl));
-        boost::replace_all(htmlData, "${username}", username);
-        boost::replace_all(htmlData, "${password}", password);
-        boost::replace_all(htmlData, "${client-ip}",
+        replace_all(htmlData, "${username}", username);
+        replace_all(htmlData, "${password}", password);
+        replace_all(htmlData, "${client-ip}",
                            m_parent->m_cgiEnv->GetClientInfo(CgiEnv::ClientInfo::IP));
-        boost::replace_all(htmlData, "${client-location}",
+        replace_all(htmlData, "${client-location}",
                            m_parent->m_cgiEnv->GetClientInfo(CgiEnv::ClientInfo::Location));
-        boost::replace_all(htmlData, "${client-user-agent}",
+        replace_all(htmlData, "${client-user-agent}",
                            m_parent->m_cgiEnv->GetClientInfo(CgiEnv::ClientInfo::Browser));
-        boost::replace_all(htmlData, "${client-referer}",
+        replace_all(htmlData, "${client-referer}",
                            m_parent->m_cgiEnv->GetClientInfo(CgiEnv::ClientInfo::Referer));
-        boost::replace_all(htmlData, "${time}",
+        replace_all(htmlData, "${time}",
                            DateConv::ToJalali(n)
                            + " ~ "
                            + algorithm::trim_copy(DateConv::RawLocalDateTime(n)));
 
         CoreLib::Mail *mail = new CoreLib::Mail(
                     m_parent->m_cgiEnv->GetServerInfo(CgiEnv::ServerInfo::NoReplyAddr), email,
-                    (boost::format(tr("root-login-password-recovery-email-subject").toUTF8())
+                    (format(tr("root-login-password-recovery-email-subject").toUTF8())
                      % m_parent->m_cgiEnv->GetServerInfo(CgiEnv::ServerInfo::Host)
                      % username).str(),
                     htmlData);
@@ -753,8 +754,8 @@ Wt::WWidget *RootLogin::Impl::LogoutPage()
     Div *noScript = new Div(container);
     noScript->addWidget(new WText(tr("no-script")));
 
-    std::string htmlData;
-    std::string file;
+    string htmlData;
+    string file;
     if (m_parent->m_cgiEnv->GetCurrentLanguage() == CgiEnv::Language::Fa) {
         file = "../templates/root-logout-fa.wtml";
     } else {
@@ -776,8 +777,8 @@ Wt::WWidget *RootLogin::Impl::LogoutPage()
         tmpl->bindWidget("home-page-button", homePagePushButton);
         tmpl->bindWidget("sign-in-button", signInPushButton);
 
-        homePagePushButton->clicked().connect(this, &RootLogin::Impl::LogoutRedirectToHomePage);
-        signInPushButton->clicked().connect(this, &RootLogin::Impl::LogutSignInAgain);
+        homePagePushButton->clicked().connect(this, &RootLogin::Impl::OnGoToHomePageButtonPressed);
+        signInPushButton->clicked().connect(this, &RootLogin::Impl::OnSignInAgainButtonPressed);
     }
 
     return container;
