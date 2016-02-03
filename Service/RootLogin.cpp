@@ -149,7 +149,7 @@ RootLogin::RootLogin(CgiRoot *cgi) :
 
                 CDate::Now n;
                 if (rawTime + Pool::Storage()->RootSessionLifespan() >= n.RawTime) {
-                    cppdb::transaction guard(Service::Pool::Database()->Sql());
+                    transaction guard(Service::Pool::Database()->Sql());
 
                     try {
                         result r = Pool::Database()->Sql()
@@ -354,7 +354,7 @@ void RootLogin::Impl::OnLoginFormSubmitted()
         return;
     }
 
-    cppdb::transaction guard(Service::Pool::Database()->Sql());
+    transaction guard(Service::Pool::Database()->Sql());
 
     try {
         string user = UsernameLineEdit->text().toUTF8();
@@ -463,7 +463,7 @@ void RootLogin::Impl::OnPasswordRecoveryFormSubmitted()
         return;
     }
 
-    cppdb::transaction guard(Service::Pool::Database()->Sql());
+    transaction guard(Service::Pool::Database()->Sql());
 
     try {
         string email = ForgotPassword_EmailLineEdit->text().toUTF8();

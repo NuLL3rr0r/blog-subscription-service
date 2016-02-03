@@ -174,7 +174,7 @@ void CmsChangeEmail::Impl::OnEmailChangeFormSubmitted()
         return;
     }
 
-    cppdb::transaction guard(Service::Pool::Database()->Sql());
+    transaction guard(Service::Pool::Database()->Sql());
 
     try {
         string encryptedPwd;

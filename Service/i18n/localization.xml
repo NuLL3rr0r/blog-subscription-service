@@ -77,10 +77,11 @@
     <message id="cms-contacts-edit-save">Save</message>
     <message id="cms-contacts-edit-cancel">Cancel</message>
     <message id="cms-contacts-erase-confirm-title">Erase</message>
-    <message id="cms-contacts-erase-confirm-question">Do you really want to remove <strong>%1%</strong>? Are you sure?</message>
+    <message id="cms-contacts-erase-confirm-question">Do you really want to remove <strong>{1}</strong>? Are you sure?</message>
     <message id="cms-contacts-erase-confirm-ok">OK</message>
     <message id="cms-contacts-erase-confirm-cancel">Cancel</message>
-    <message id="cms-contacts-duplicate-contact-error">Contact already exists!</message>
+    <message id="cms-contacts-duplicate-error">Contact already exists!</message>
+    <message id="cms-contacts-not-found-error">Could not find the contact inside database!</message>
     <message id="cms-change-password-page-title">Change Password</message>
     <message id="cms-change-password-current-pwd">Current Password</message>
     <message id="cms-change-password-current-pwd-placeholder">Your current password</message>

@@ -77,10 +77,11 @@
     <message id="cms-contacts-edit-save">ذخیره</message>
     <message id="cms-contacts-edit-cancel">لغو</message>
     <message id="cms-contacts-erase-confirm-title">حذف</message>
-    <message id="cms-contacts-erase-confirm-question">آیا واقعا مایل به حذف <strong>%1%</strong> می باشید?</message>
+    <message id="cms-contacts-erase-confirm-question">آیا واقعا مایل به حذف <strong>{1}</strong> می باشید?</message>
     <message id="cms-contacts-erase-confirm-ok">تائید</message>
     <message id="cms-contacts-erase-confirm-cancel">لغو</message>
-    <message id="cms-contacts-duplicate-contact-error">تماس مورد نظر قبلا ایجاد شده است!</message>
+    <message id="cms-contacts-duplicate-error">تماس مورد نظر قبلا ایجاد شده است!</message>
+    <message id="cms-contacts-not-found-error">تماس مورد نظر در پایگاه داده وجود ندارد!</message>
     <message id="cms-change-password-page-title">تغییر کلمه عبور مدیر سیستم</message>
     <message id="cms-change-password-current-pwd">کلمه عبور فعلی</message>
     <message id="cms-change-password-current-pwd-placeholder">کلمه عبور فعلی</message>

@@ -188,7 +188,7 @@ void CmsChangePassword::Impl::OnPasswordChangeFormSubmitted()
         return;
     }
 
-    cppdb::transaction guard(Service::Pool::Database()->Sql());
+    transaction guard(Service::Pool::Database()->Sql());
 
     try {
         string encryptedPwd;

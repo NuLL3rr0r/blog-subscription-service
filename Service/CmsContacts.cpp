@@ -53,6 +53,7 @@
 #include <CoreLib/Database.hpp>
 #include <CoreLib/FileSystem.hpp>
 #include <CoreLib/Log.hpp>
+#include <CoreLib/make_unique.hpp>
 #include "CgiEnv.hpp"
 #include "CmsContacts.hpp"
 #include "Div.hpp"
@@ -76,6 +77,8 @@ public:
     WLineEdit *EmailLineEdit;
     WText *EditContactsMessageArea;
     WContainerWidget *ContactsTableContainer;
+
+    std::unique_ptr<Wt::WMessageBox> eraseMessageBox;
 
 public:
     explicit Impl(CmsContacts *parent);
@@ -211,10 +214,10 @@ void CmsContacts::Impl::OnAddContactFormSubmitted()
 
     m_parent->HtmlInfo(L"", EditContactsMessageArea);
 
-    cppdb::transaction guard(Service::Pool::Database()->Sql());
+    transaction guard(Service::Pool::Database()->Sql());
 
     try {
-        string recipient(RecipientEnLineEdit->text().toUTF8());
+        string recipient(trim_copy(RecipientEnLineEdit->text().toUTF8()));
 
         result r = Pool::Database()->Sql()
                 << (format("SELECT recipient FROM \"%1%\""
@@ -225,18 +228,18 @@ void CmsContacts::Impl::OnAddContactFormSubmitted()
 
         if (!r.empty()) {
             guard.rollback();
-            m_parent->HtmlError(tr("cms-contacts-duplicate-contact-error"), EditContactsMessageArea);
+            m_parent->HtmlError(tr("cms-contacts-duplicate-error"), EditContactsMessageArea);
             RecipientEnLineEdit->setFocus();
             return;
         }
 
+        string recipient_fa(trim_copy(RecipientFaLineEdit->text().toUTF8()));
+        string email(trim_copy(EmailLineEdit->text().toUTF8()));
+
+
         Pool::Database()->Insert("CONTACTS",
                                  "recipient, recipient_fa, address",
-                                 {
-                                     RecipientEnLineEdit->text().toUTF8(),
-                                     RecipientFaLineEdit->text().toUTF8(),
-                                     EmailLineEdit->text().toUTF8()
-                                 });
+                                 { recipient, recipient_fa, email });
 
         guard.commit();
 
@@ -267,45 +270,188 @@ void CmsContacts::Impl::OnAddContactFormSubmitted()
 
 void CmsContacts::Impl::OnCellSaveButtonPressed(Wt::WInPlaceEdit *inPlaceEdit)
 {
-    /*string recipient(sender->attributeValue("db-key").toUTF8());
-    string field(sender->attributeValue("db-field").toUTF8());
-    string value(trim_copy(inPlaceEdit->text().toUTF8()));
+    if (!m_parent->Validate(inPlaceEdit->lineEdit())) {
+        FillContactsDataTable();
+        return;
+    }
 
-    result r = m_db->Sql() << "SELECT recipient FROM ["
-                              + m_dbTables->Table("CONTACTS")
-                              + "] WHERE recipient=?;" << recipient << row;
+    transaction guard(Service::Pool::Database()->Sql());
 
-    if (!r.empty()) {
+    try {
+        string recipient(inPlaceEdit->attributeValue("db-key").toUTF8());
+
+        result r = Pool::Database()->Sql()
+                << (format("SELECT recipient FROM \"%1%\""
+                           " WHERE recipient=?;")
+                    % Pool::Database()->GetTableName("CONTACTS")).str()
+                << recipient
+                << row;
+
+        if (r.empty()) {
+            guard.rollback();
+            m_parent->HtmlError(tr("cms-contacts-not-found-error"), EditContactsMessageArea);
+            return;
+        }
+
+        string field(inPlaceEdit->attributeValue("db-field").toUTF8());
+        string value(trim_copy(inPlaceEdit->text().toUTF8()));
+
         if (field == "recipient" && recipient != value) {
-            r = m_db->Sql() << "SELECT recipient FROM ["
-                               + m_dbTables->Table("CONTACTS")
-                               + "] WHERE recipient=?;" << value << row;
+            r = Pool::Database()->Sql()
+                            << (format("SELECT recipient FROM \"%1%\""
+                                       " WHERE recipient=?;")
+                                % Pool::Database()->GetTableName("CONTACTS")).str()
+                            << value
+                            << row;
+
             if (!r.empty()) {
+                guard.rollback();
+                m_parent->HtmlError(tr("cms-contacts-duplicate-error"), EditContactsMessageArea);
                 FillContactsDataTable();
-                HtmlError(m_lang->GetString("ROOT_CMSCONTACTS_ADD_DUPLICATE_CONTACT_ERR"), m_errAddContact);
                 return;
             }
         }
 
-        if (field == "addr")
-            value = Crypto::Encrypt(value);
+        if (field == "recipient_fa") {
+            r = Pool::Database()->Sql()
+                            << (format("SELECT recipient FROM \"%1%\""
+                                       " WHERE recipient_fa=?;")
+                                % Pool::Database()->GetTableName("CONTACTS")).str()
+                            << value
+                            << row;
 
-        HtmlError(L"", m_errAddContact);
-        m_db->Update(m_dbTables->Table("CONTACTS"), "recipient", recipient, field + "=?", 1, value.c_str());
-     }
+            if (!r.empty()) {
+                string recipient_key;
+                r >> recipient_key;
 
-    FillContactsDataTable();
-    m_contactRecipientEdit->setFocus();*/
+                if (recipient != recipient_key) {
+                    guard.rollback();
+                    m_parent->HtmlError(tr("cms-contacts-duplicate-error"), EditContactsMessageArea);
+                    FillContactsDataTable();
+                    return;
+                }
+            }
+        }
+
+        Pool::Database()->Update("CONTACTS",
+                                 "recipient",
+                                 recipient,
+                                 (format("%1%=?") % field ).str(),
+                                 { value });
+
+        guard.commit();
+
+        m_parent->HtmlInfo(L"", EditContactsMessageArea);
+
+        FillContactsDataTable();
+
+        return;
+    }
+
+    catch (boost::exception &ex) {
+        LOG_ERROR(boost::diagnostic_information(ex));
+    }
+
+    catch (std::exception &ex) {
+        LOG_ERROR(ex.what());
+    }
+
+    catch (...) {
+        LOG_ERROR(UNKNOWN_ERROR);
+    }
+
+    guard.rollback();
 }
 
 void CmsContacts::Impl::OnEraseButtonPressed(Wt::WPushButton *button)
 {
-    (void)button;
+    try {
+        WString dbKey(button->attributeValue("db-key"));
+
+        WString question;
+        if (m_parent->m_cgiEnv->GetCurrentLanguage() == CgiEnv::Language::Fa) {
+            transaction guard(Service::Pool::Database()->Sql());
+            result r = Pool::Database()->Sql()
+                    << (format("SELECT recipient_fa FROM \"%1%\""
+                               " WHERE recipient=?;")
+                        % Pool::Database()->GetTableName("CONTACTS")).str()
+                    << dbKey.toUTF8()
+                    << row;
+            string recipient_fa;
+            r >> recipient_fa;
+            question = tr("cms-contacts-erase-confirm-question").arg(WString::fromUTF8(recipient_fa));
+            guard.rollback();
+        } else {
+            question = tr("cms-contacts-erase-confirm-question").arg(dbKey);
+        }
+        eraseMessageBox =
+                std::make_unique<WMessageBox>(tr("cms-contacts-erase-confirm-title"),
+                                              question, Warning, NoButton);
+        eraseMessageBox->setAttributeValue("db-key", dbKey);
+        eraseMessageBox->addButton(tr("cms-contacts-erase-confirm-ok"), Ok);
+        eraseMessageBox->addButton(tr("cms-contacts-erase-confirm-cancel"), Cancel);
+
+        eraseMessageBox->buttonClicked().connect(this, &CmsContacts::Impl::OnEraseDialogClosed);
+
+        eraseMessageBox->show();
+    }
+
+    catch (boost::exception &ex) {
+        LOG_ERROR(boost::diagnostic_information(ex));
+    }
+
+    catch (std::exception &ex) {
+        LOG_ERROR(ex.what());
+    }
+
+    catch (...) {
+        LOG_ERROR(UNKNOWN_ERROR);
+    }
 }
 
 void CmsContacts::Impl::OnEraseDialogClosed(Wt::StandardButton button)
 {
-    (void)button;
+    transaction guard(Service::Pool::Database()->Sql());
+
+    try {
+        if (button == Ok) {
+            string recipient(eraseMessageBox->attributeValue("db-key").toUTF8());
+
+            result r = Pool::Database()->Sql()
+                    << (format("SELECT recipient FROM \"%1%\""
+                               " WHERE recipient=?;")
+                        % Pool::Database()->GetTableName("CONTACTS")).str()
+                    << recipient
+                    << row;
+
+            if (!r.empty()) {
+                Pool::Database()->Delete("CONTACTS", "recipient", recipient);
+                guard.commit();
+            } else {
+                guard.rollback();
+
+            }
+
+            FillContactsDataTable();
+        }
+    }
+
+    catch (boost::exception &ex) {
+        guard.rollback();
+        LOG_ERROR(boost::diagnostic_information(ex));
+    }
+
+    catch (std::exception &ex) {
+        guard.rollback();
+        LOG_ERROR(ex.what());
+    }
+
+    catch (...) {
+        guard.rollback();
+        LOG_ERROR(UNKNOWN_ERROR);
+    }
+
+    eraseMessageBox.reset();
 }
 
 void CmsContacts::Impl::FillContactsDataTable()
@@ -321,7 +467,7 @@ void CmsContacts::Impl::FillContactsDataTable()
     table->elementAt(0, 2)->addWidget(new WText(tr("cms-contacts-email-address")));
     table->elementAt(0, 3)->addWidget(new WText(tr("cms-contacts-erase")));
 
-    cppdb::transaction guard(Service::Pool::Database()->Sql());
+    transaction guard(Service::Pool::Database()->Sql());
 
     try {
         result r = Pool::Database()->Sql()
@@ -347,7 +493,7 @@ void CmsContacts::Impl::FillContactsDataTable()
             WPushButton *eraseButton = new WPushButton(tr("cms-contacts-erase-mark"));
             eraseSignalMapper->mapConnect(eraseButton->clicked(), eraseButton);
             eraseButton->setStyleClass("btn btn-default");
-            eraseButton->setAttributeValue("db-id", WString::fromUTF8(recipient));
+            eraseButton->setAttributeValue("db-key", WString::fromUTF8(recipient));
             table->elementAt(i, 3)->addWidget(eraseButton);
         }
     }

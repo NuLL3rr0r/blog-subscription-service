@@ -136,9 +136,9 @@ void Database::LoadSqlite3Driver()
 {
     if (!Impl::IsSQLite3DriverLoaded) {
         Impl::IsSQLite3DriverLoaded = true;
-        cppdb::driver_manager::instance()
+        driver_manager::instance()
                 .install_driver("sqlite3",
-                                new cppdb::backend::static_driver(cppdb_sqlite3_get_connection));
+                                new backend::static_driver(cppdb_sqlite3_get_connection));
     }
 }
 #endif  // defined ( HAS_CPPDB_SQLITE3_DRIVER )
@@ -148,9 +148,9 @@ void Database::LoadPgSqlDriver()
 {
     if (!Impl::IsSQLite3DriverLoaded) {
         Impl::IsSQLite3DriverLoaded = true;
-        cppdb::driver_manager::instance()
+        driver_manager::instance()
                 .install_driver("postgresql",
-                                new cppdb::backend::static_driver(cppdb_postgresql_get_connection));
+                                new backend::static_driver(cppdb_postgresql_get_connection));
     }
 }
 #endif  // defined ( HAS_CPPDB_PGSQL_DRIVER )
@@ -160,9 +160,9 @@ void Database::LoadMySqlDriver()
 {
     if (!Impl::IsSQLite3DriverLoaded) {
         Impl::IsSQLite3DriverLoaded = true;
-        cppdb::driver_manager::instance()
+        driver_manager::instance()
                 .install_driver("mysql",
-                                new cppdb::backend::static_driver(cppdb_mysql_get_connection));
+                                new backend::static_driver(cppdb_mysql_get_connection));
     }
 }
 #endif  // defined ( HAS_CPPDB_MYSQL_DRIVER )
@@ -446,7 +446,7 @@ bool Database::SetTableFields(const std::string &id, const std::string &fields)
 bool Database::Initialize()
 {
     try {
-        cppdb::transaction guard(m_pimpl->Sql);
+        transaction guard(m_pimpl->Sql);
 
         for (const auto &e : m_pimpl->EnumNames) {
             CreateEnum(e.first);
