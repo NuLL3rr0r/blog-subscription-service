@@ -51,10 +51,6 @@
 
 #define     UNKNOWN_ERROR           "Unknown error!"
 
-using namespace std;
-using namespace boost;
-using namespace CoreLib;
-
 [[ noreturn ]] void Terminate(int signo);
 
 void UpdateDatabase(std::string url, std::string file, std::string dbFile);
@@ -107,8 +103,8 @@ int main(int argc, char **argv)
 
 
         if(!CoreLib::System::GetLock(lockId, lock)) {
-            cerr << "Could not get lock!" << endl;
-            cerr << "Probably process is already running!" << endl;
+            std::cerr << "Could not get lock!" << std::endl;
+            std::cerr << "Probably process is already running!" << std::endl;
             return EXIT_FAILURE;
         } else {
             LOG_INFO("Got the process lock!");
@@ -158,7 +154,7 @@ int main(int argc, char **argv)
 
 void Terminate(int signo)
 {
-    clog << "Terminating...." << endl;
+    std::clog << "Terminating...." << std::endl;
     exit(signo);
 }
 
@@ -168,7 +164,7 @@ void UpdateDatabase(std::string url, std::string gzFile, std::string dbFile)
     std::string error;
 
     LOG_INFO("Downloading...", url);
-    rc = Http::Download(url, gzFile);
+    rc = CoreLib::Http::Download(url, gzFile);
 
     if (!rc) {
         LOG_ERROR(url, "Download failed!");
@@ -177,7 +173,7 @@ void UpdateDatabase(std::string url, std::string gzFile, std::string dbFile)
 
     LOG_INFO(gzFile, "Uncompressing...");
 
-    string err;
+    std::string err;
     if (CoreLib::Archiver::UnGzip(gzFile, dbFile, err)) {
         LOG_INFO(dbFile, "Successfully Updated!");
     } else {

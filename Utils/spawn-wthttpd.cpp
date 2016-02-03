@@ -61,13 +61,9 @@
 
 #define     UNKNOWN_ERROR           "Unknown error!"
 
-using namespace std;
-using namespace boost;
-using namespace CoreLib;
+const std::string DATABASE_FILE_NAME = "spawn-wthttpd.db";
 
-const string DATABASE_FILE_NAME = "spawn-wthttpd.db";
-
-static property_tree::ptree appsTree;
+static boost::property_tree::ptree appsTree;
 
 [[ noreturn ]] void Terminate(int signo);
 
@@ -122,8 +118,8 @@ int main(int argc, char **argv)
 
 
         if(!CoreLib::System::GetLock(lockId, lock)) {
-            cerr << "Could not get lock!" << endl;
-            cerr << "Probably process is already running!" << endl;
+            std::cerr << "Could not get lock!" << std::endl;
+            std::cerr << "Probably process is already running!" << std::endl;
             return EXIT_FAILURE;
         } else {
             LOG_INFO("Got the process lock!");
@@ -137,7 +133,7 @@ int main(int argc, char **argv)
         if (appsTree.empty()
                 || appsTree.count("apps") == 0
                 || appsTree.get_child("apps").count("") == 0) {
-            cerr << "There is no WtHttpd app to spawn!" << endl;
+            std::cerr << "There is no WtHttpd app to spawn!" << std::endl;
             return EXIT_FAILURE;
         }
 
@@ -168,25 +164,25 @@ int main(int argc, char **argv)
 
 void Terminate(int signo)
 {
-    clog << "Terminating...." << endl;
+    std::clog << "Terminating...." << std::endl;
     exit(signo);
 }
 
 bool ReadApps()
 {
-    ifstream dbFile(
+    std::ifstream dbFile(
                 (boost::filesystem::path("..")
                  / boost::filesystem::path("db")
                  / DATABASE_FILE_NAME).string()
                 );
 
     if (!dbFile.is_open()) {
-        cerr << "Unable to open the database file!" << endl;
+        std::cerr << "Unable to open the database file!" << std::endl;
         return false;
     }
 
     try {
-        property_tree::read_json(dbFile, appsTree);
+        boost::property_tree::read_json(dbFile, appsTree);
     }
 
     catch (std::exception const &ex) {
@@ -204,19 +200,19 @@ bool ReadApps()
 void ReSpawn()
 {
     try {
-        BOOST_FOREACH(property_tree::ptree::value_type &appNode, appsTree.get_child("apps")) {
+        BOOST_FOREACH(boost::property_tree::ptree::value_type &appNode, appsTree.get_child("apps")) {
             if (appNode.first.empty()) {
                 bool running = false;
-                vector<int> pids;
+                std::vector<int> pids;
 
                 if (appNode.second.get_child_optional("pid-file")) {
-                    if (FileSystem::FileExists(appNode.second.get<std::string>("pid-file"))) {
-                        ifstream pidFile(appNode.second.get<std::string>("pid-file"));
+                    if (CoreLib::FileSystem::FileExists(appNode.second.get<std::string>("pid-file"))) {
+                        std::ifstream pidFile(appNode.second.get<std::string>("pid-file"));
                         if (pidFile.is_open()) {
-                            string firstLine;
+                            std::string firstLine;
                             getline(pidFile, firstLine);
                             pidFile.close();
-                            algorithm::trim(firstLine);
+                            boost::algorithm::trim(firstLine);
                             try {
                                 int pid = boost::lexical_cast<int>(firstLine);
 
@@ -231,7 +227,9 @@ void ReSpawn()
                                 // GNU/Linux
                                 // ps ax -o pid,cmd | grep ${PID}
 
-                                if (System::GetPidsOfProcess(System::GetProcessNameFromPath(appNode.second.get<std::string>("app")), pids)) {
+                                if (CoreLib::System::GetPidsOfProcess(
+                                            CoreLib::System::GetProcessNameFromPath(appNode.second.get<std::string>("app")),
+                                            pids)) {
                                     if (pids.size() > 0 &&
                                             std::find(pids.begin(), pids.end(), pid) != pids.end()) {
                                         running = true;
@@ -253,27 +251,27 @@ void ReSpawn()
                 if (!running) {
                     for (std::vector<int>::const_iterator it =
                          pids.begin(); it != pids.end(); ++it) {
-                        string output;
-                        string cmd = (format("/bin/ps -p %1% | grep '%2%'")
+                        std::string output;
+                        std::string cmd = (boost::format("/bin/ps -p %1% | grep '%2%'")
                                       % *it
                                       % appNode.second.get<std::string>("app")).str();
-                        System::Exec(cmd, output);
-                        if (output.find(appNode.second.get<std::string>("app")) != string::npos) {
-                            clog << endl
-                                 << (format("  * KILLING ==>  %1%"
+                        CoreLib::System::Exec(cmd, output);
+                        if (output.find(appNode.second.get<std::string>("app")) != std::string::npos) {
+                            std::clog << std::endl
+                                 << (boost::format("  * KILLING ==>  %1%"
                                             "\n\t%2%")
                                      % *it
                                      % appNode.second.get<std::string>("app")).str()
-                                 << endl;
+                                 << std::endl;
 
-                            cmd = (format("/bin/kill -SIGKILL %1%")
+                            cmd = (boost::format("/bin/kill -SIGKILL %1%")
                                    % *it).str();
-                            System::Exec(cmd);
+                            CoreLib::System::Exec(cmd);
                         }
                     }
 
-                    clog << endl
-                         << (format("  * RESPAWNING WTHTTPD APP ==>  %1%"
+                    std::clog << std::endl
+                         << (boost::format("  * RESPAWNING WTHTTPD APP ==>  %1%"
                                     "\n\tWorking Directory       :  %2%"
                                     "\n\tThreads                 :  %3%"
                                     "\n\tServer Name             :  %4%"
@@ -328,35 +326,35 @@ void ReSpawn()
                              % appNode.second.get<std::string>("ssl-ca-certificates")
                              % appNode.second.get<std::string>("ssl-cipherlist")
                              ).str()
-                         << endl << endl;
+                         << std::endl << std::endl;
 
-                    string cmd((format("cd %2% && %1%")
+                    std::string cmd((boost::format("cd %2% && %1%")
                                 % appNode.second.get<std::string>("app")
                                 % appNode.second.get<std::string>("workdir")
                                 ).str());
                     if (!appNode.second.get<std::string>("threads").empty()
                             && appNode.second.get<std::string>("threads") != "-1") {
-                        cmd += (format(" --threads %1%")
+                        cmd += (boost::format(" --threads %1%")
                                 % appNode.second.get<std::string>("threads")).str();
                     }
                     if (!appNode.second.get<std::string>("servername").empty()) {
-                        cmd += (format(" --servername %1%")
+                        cmd += (boost::format(" --servername %1%")
                                 % appNode.second.get<std::string>("servername")).str();
                     }
                     if (!appNode.second.get<std::string>("docroot").empty()) {
-                        cmd += (format(" --docroot \"%1%\"")
+                        cmd += (boost::format(" --docroot \"%1%\"")
                                 % appNode.second.get<std::string>("docroot")).str();
                     }
                     if (!appNode.second.get<std::string>("approot").empty()) {
-                        cmd += (format(" --approot \"%1%\"")
+                        cmd += (boost::format(" --approot \"%1%\"")
                                 % appNode.second.get<std::string>("approot")).str();
                     }
                     if (!appNode.second.get<std::string>("errroot").empty()) {
-                        cmd += (format(" --errroot \"%1%\"")
+                        cmd += (boost::format(" --errroot \"%1%\"")
                                 % appNode.second.get<std::string>("errroot")).str();
                     }
                     if (!appNode.second.get<std::string>("accesslog").empty()) {
-                        cmd += (format(" --accesslog \"%1%\"")
+                        cmd += (boost::format(" --accesslog \"%1%\"")
                                 % appNode.second.get<std::string>("accesslog")).str();
                     }
                     if (!appNode.second.get<std::string>("compression").empty()
@@ -364,23 +362,23 @@ void ReSpawn()
                         cmd += " --no-compression";
                     }
                     if (!appNode.second.get<std::string>("deploy-path").empty()) {
-                        cmd += (format(" --deploy-path %1%")
+                        cmd += (boost::format(" --deploy-path %1%")
                                 % appNode.second.get<std::string>("deploy-path")).str();
                     }
                     if (!appNode.second.get<std::string>("session-id-prefix").empty()) {
-                        cmd += (format(" --session-id-prefix %1%")
+                        cmd += (boost::format(" --session-id-prefix %1%")
                                 % appNode.second.get<std::string>("session-id-prefix")).str();
                     }
                     if (!appNode.second.get<std::string>("pid-file").empty()) {
-                        cmd += (format(" --pid-file \"%1%\"")
+                        cmd += (boost::format(" --pid-file \"%1%\"")
                                 % appNode.second.get<std::string>("pid-file")).str();
                     }
                     if (!appNode.second.get<std::string>("config").empty()) {
-                        cmd += (format(" --config \"%1%\"")
+                        cmd += (boost::format(" --config \"%1%\"")
                                 % appNode.second.get<std::string>("config")).str();
                     }
                     if (!appNode.second.get<std::string>("max-memory-request-size").empty()) {
-                        cmd += (format(" --max-memory-request-size %1%")
+                        cmd += (boost::format(" --max-memory-request-size %1%")
                                 % appNode.second.get<std::string>("max-memory-request-size")).str();
                     }
                     if (!appNode.second.get<std::string>("gdb").empty()
@@ -388,31 +386,31 @@ void ReSpawn()
                         cmd += " --gdb";
                     }
                     if (!appNode.second.get<std::string>("http-address").empty()) {
-                        cmd += (format(" --http-address %1%")
+                        cmd += (boost::format(" --http-address %1%")
                                 % appNode.second.get<std::string>("http-address")).str();
                     }
                     if (!appNode.second.get<std::string>("http-port").empty()) {
-                        cmd += (format(" --http-port %1%")
+                        cmd += (boost::format(" --http-port %1%")
                                 % appNode.second.get<std::string>("http-port")).str();
                     }
                     if (!appNode.second.get<std::string>("https-address").empty()) {
-                        cmd += (format(" --https-address %1%")
+                        cmd += (boost::format(" --https-address %1%")
                                 % appNode.second.get<std::string>("https-address")).str();
                     }
                     if (!appNode.second.get<std::string>("https-port").empty()) {
-                        cmd += (format(" --https-port %1%")
+                        cmd += (boost::format(" --https-port %1%")
                                 % appNode.second.get<std::string>("https-port")).str();
                     }
                     if (!appNode.second.get<std::string>("ssl-certificate").empty()) {
-                        cmd += (format(" --ssl-certificate \"%1%\"")
+                        cmd += (boost::format(" --ssl-certificate \"%1%\"")
                                 % appNode.second.get<std::string>("ssl-certificate")).str();
                     }
                     if (!appNode.second.get<std::string>("ssl-private-key").empty()) {
-                        cmd += (format(" --ssl-private-key \"%1%\"")
+                        cmd += (boost::format(" --ssl-private-key \"%1%\"")
                                 % appNode.second.get<std::string>("ssl-private-key")).str();
                     }
                     if (!appNode.second.get<std::string>("ssl-tmp-dh").empty()) {
-                        cmd += (format(" --ssl-tmp-dh \"%1%\"")
+                        cmd += (boost::format(" --ssl-tmp-dh \"%1%\"")
                                 % appNode.second.get<std::string>("ssl-tmp-dh")).str();
                     }
                     if (!appNode.second.get<std::string>("ssl-enable-v3").empty()
@@ -420,24 +418,24 @@ void ReSpawn()
                         cmd += " --ssl-enable-v3";
                     }
                     if (!appNode.second.get<std::string>("ssl-client-verification").empty()) {
-                        cmd += (format(" --ssl-client-verification %1%")
+                        cmd += (boost::format(" --ssl-client-verification %1%")
                                 % appNode.second.get<std::string>("ssl-client-verification")).str();
                     }
                     if (!appNode.second.get<std::string>("ssl-verify-depth").empty()) {
-                        cmd += (format(" --ssl-verify-depth %1%")
+                        cmd += (boost::format(" --ssl-verify-depth %1%")
                                 % appNode.second.get<std::string>("ssl-verify-depth")).str();
                     }
                     if (!appNode.second.get<std::string>("ssl-ca-certificates").empty()) {
-                        cmd += (format(" --ssl-ca-certificates \"%1%\"")
+                        cmd += (boost::format(" --ssl-ca-certificates \"%1%\"")
                                 % appNode.second.get<std::string>("ssl-ca-certificates")).str();
                     }
                     if (!appNode.second.get<std::string>("ssl-cipherlist").empty()) {
-                        cmd += (format(" --ssl-cipherlist %1%")
+                        cmd += (boost::format(" --ssl-cipherlist %1%")
                                 % appNode.second.get<std::string>("ssl-cipherlist")).str();
                     }
                     cmd += " &";
 
-                    System::Exec(cmd);
+                    CoreLib::System::Exec(cmd);
                 }
             }
         }

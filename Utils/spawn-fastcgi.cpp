@@ -60,13 +60,9 @@
 
 #define     UNKNOWN_ERROR           "Unknown error!"
 
-using namespace std;
-using namespace boost;
-using namespace CoreLib;
+const std::string DATABASE_FILE_NAME = "spawn-fastcgi.db";
 
-const string DATABASE_FILE_NAME = "spawn-fastcgi.db";
-
-static property_tree::ptree appsTree;
+static boost::property_tree::ptree appsTree;
 
 [[ noreturn ]] void Terminate(int signo);
 
@@ -121,8 +117,8 @@ int main(int argc, char **argv)
 
 
         if(!CoreLib::System::GetLock(lockId, lock)) {
-            cerr << "Could not get lock!" << endl;
-            cerr << "Probably process is already running!" << endl;
+            std::cerr << "Could not get lock!" << std::endl;
+            std::cerr << "Probably process is already running!" << std::endl;
             return EXIT_FAILURE;
         } else {
             LOG_INFO("Got the process lock!");
@@ -136,7 +132,7 @@ int main(int argc, char **argv)
         if (appsTree.empty()
                 || appsTree.count("apps") == 0
                 || appsTree.get_child("apps").count("") == 0) {
-            cerr << "There is no WtHttpd app to spawn!" << endl;
+            std::cerr << "There is no WtHttpd app to spawn!" << std::endl;
             return EXIT_FAILURE;
         }
 
@@ -167,25 +163,25 @@ int main(int argc, char **argv)
 
 void Terminate(int signo)
 {
-    clog << "Terminating...." << endl;
+    std::clog << "Terminating...." << std::endl;
     exit(signo);
 }
 
 bool ReadApps()
 {
-    ifstream dbFile(
+    std::ifstream dbFile(
                 (boost::filesystem::path("..")
                  / boost::filesystem::path("db")
                  / DATABASE_FILE_NAME).string()
                 );
 
     if (!dbFile.is_open()) {
-        cerr << "Unable to open the database file!" << endl;
+        std::cerr << "Unable to open the database file!" << std::endl;
         return false;
     }
 
     try {
-        property_tree::read_json(dbFile, appsTree);
+        boost::property_tree::read_json(dbFile, appsTree);
     }
 
     catch (std::exception const &ex) {
@@ -204,68 +200,70 @@ bool ReadApps()
 void ReSpawn()
 {
     try {
-        BOOST_FOREACH(property_tree::ptree::value_type &appNode, appsTree.get_child("apps")) {
+        BOOST_FOREACH(boost::property_tree::ptree::value_type &appNode, appsTree.get_child("apps")) {
             if (appNode.first.empty()) {
                 // 'optional<property_tree::basic_ptree<string, string> &>' works too.
                 // but 'auto' is a conservative option on C++11-enabled compiler.
                 auto socket = appNode.second.get_child_optional("socket");
                 auto port = appNode.second.get_child_optional("port");
 
-                string cmd;
+                std::string cmd;
 
                 if (socket || port) {
                     if (socket) {
-                        cmd = (format("/usr/bin/netstat | /usr/bin/grep '%1%'")
+                        cmd = (boost::format("/usr/bin/netstat | /usr/bin/grep '%1%'")
                                % appNode.second.get<std::string>("socket")).str();
                     } else {
-                        cmd = (format("/usr/bin/netstat -an | /usr/bin/grep '%1%'")
+                        cmd = (boost::format("/usr/bin/netstat -an | /usr/bin/grep '%1%'")
                                % appNode.second.get<std::string>("port")).str();
                     }
                 } else {
                     throw "No socket or port specified!";
                 }
 
-                string output;
+                std::string output;
                 bool running = false;
-                if (System::Exec(cmd, output)) {
+                if (CoreLib::System::Exec(cmd, output)) {
                     if (socket) {
-                        if (algorithm::trim_copy(output) != "") {
+                        if (boost::algorithm::trim_copy(output) != "") {
                             running = true;
                         }
                     } else {
-                        if (output.find("LISTEN") != string::npos) {
+                        if (output.find("LISTEN") != std::string::npos) {
                             running = true;
                         }
                     }
                 }
 
                 if (!running) {
-                    vector<int> pids;
-                    if (System::GetPidsOfProcess(System::GetProcessNameFromPath(appNode.second.get<std::string>("app")), pids)) {
+                    std::vector<int> pids;
+                    if (CoreLib::System::GetPidsOfProcess(
+                                CoreLib::System::GetProcessNameFromPath(appNode.second.get<std::string>("app")),
+                                pids)) {
                         for (std::vector<int>::const_iterator it =
                              pids.begin(); it != pids.end(); ++it) {
-                            cmd = (format("/bin/ps -p %1% | grep '%2%'")
+                            cmd = (boost::format("/bin/ps -p %1% | grep '%2%'")
                                    % *it
                                    % appNode.second.get<std::string>("app")).str();
-                            System::Exec(cmd, output);
-                            if (output.find(appNode.second.get<std::string>("app")) != string::npos) {
-                                clog << endl
-                                     << (format("  * KILLING ==>  %1%"
+                            CoreLib::System::Exec(cmd, output);
+                            if (output.find(appNode.second.get<std::string>("app")) != std::string::npos) {
+                                std::clog << std::endl
+                                     << (boost::format("  * KILLING ==>  %1%"
                                                 "\n\t%2%")
                                          % *it
                                          % appNode.second.get<std::string>("app")).str()
-                                     << endl;
+                                     << std::endl;
 
-                                cmd = (format("/bin/kill -SIGKILL %1%")
+                                cmd = (boost::format("/bin/kill -SIGKILL %1%")
                                        % *it).str();
-                                System::Exec(cmd);
+                                CoreLib::System::Exec(cmd);
                             }
                         }
                     }
 
                     if (socket) {
-                        clog << endl
-                             << (format("  * RESPAWNING FASTCGI APP ==>  %1%"
+                        std::clog << std::endl
+                             << (boost::format("  * RESPAWNING FASTCGI APP ==>  %1%"
                                         "\n\tConfig File        :  %2%"
                                         "\n\tUnix domain socket :  %3%"
                                         "\n\tWorking directory  :  %4%")
@@ -274,17 +272,17 @@ void ReSpawn()
                                  % appNode.second.get<std::string>("socket")
                                  % appNode.second.get<std::string>("workdir")
                                  ).str()
-                             << endl << endl;
+                             << std::endl << std::endl;
 
-                        cmd = (format("cd %2% && WT_CONFIG_XML=%1% /usr/local/bin/spawn-fcgi -d %2% -s %3% -n -M 0770 -u www -g www -- %4% &")
+                        cmd = (boost::format("cd %2% && WT_CONFIG_XML=%1% /usr/local/bin/spawn-fcgi -d %2% -s %3% -n -M 0770 -u www -g www -- %4% &")
                                % appNode.second.get<std::string>("config")
                                % appNode.second.get<std::string>("workdir")
                                % appNode.second.get<std::string>("socket")
                                % appNode.second.get<std::string>("app")
                                ).str();
                     } else {
-                        clog << endl
-                             << (format("  * RESPAWNING FASTCGI APP ==>  %1%"
+                        std::clog << std::endl
+                             << (boost::format("  * RESPAWNING FASTCGI APP ==>  %1%"
                                         "\n\tConfig File        :  %2%"
                                         "\n\tTCP port           :  %3%"
                                         "\n\tWorking directory  :  %4%")
@@ -293,9 +291,9 @@ void ReSpawn()
                                  % appNode.second.get<std::string>("port")
                                  % appNode.second.get<std::string>("workdir")
                                  ).str()
-                             << endl << endl;
+                             << std::endl << std::endl;
 
-                        cmd = (format("cd %2% && WT_CONFIG_XML=%1% /usr/local/bin/spawn-fcgi -d %2% -a 127.0.0.1 -p %3% -n -u www -g www -- %4% &")
+                        cmd = (boost::format("cd %2% && WT_CONFIG_XML=%1% /usr/local/bin/spawn-fcgi -d %2% -a 127.0.0.1 -p %3% -n -u www -g www -- %4% &")
                                % appNode.second.get<std::string>("config")
                                % appNode.second.get<std::string>("workdir")
                                % appNode.second.get<std::string>("port")
@@ -303,7 +301,7 @@ void ReSpawn()
                                ).str();
                     }
 
-                    System::Exec(cmd);
+                    CoreLib::System::Exec(cmd);
                 }
             }
         }
