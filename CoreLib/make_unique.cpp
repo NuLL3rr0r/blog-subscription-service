@@ -29,7 +29,7 @@
  *
  * @section DESCRIPTION
  *
- * C++14 std::make_unique implementation for C++11 compilers.
+ * C++14 make_unique implementation for C++11 compilers.
  * This file does not contain any code. The only purpuse it serves is to make
  * Qt Creator pickup the header file by the same name.
  */

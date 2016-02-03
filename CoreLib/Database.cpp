@@ -50,6 +50,7 @@
 #define     UNKNOWN_ERROR       "Unknow database error!"
 
 using namespace std;
+using namespace boost;
 using namespace cppdb;
 using namespace CoreLib;
 
@@ -184,7 +185,7 @@ bool Database::Sqlite3Vacuum(const std::string &databaseFile)
 
 
 Database::Database(const std::string &connectionString) :
-    m_pimpl(std::make_unique<Database::Impl>())
+    m_pimpl(make_unique<Database::Impl>())
 {
     if (!m_pimpl->Sql.is_open()) {
         bool isDatabaseOpenedSuccessfully = true;
@@ -215,7 +216,7 @@ cppdb::session &Database::Sql()
 bool Database::CreateEnum(const std::string &id)
 {
     try {
-        result r = m_pimpl->Sql << (boost::format("SELECT EXISTS ( SELECT 1 FROM pg_type WHERE typname = '%1%' );")
+        result r = m_pimpl->Sql << (format("SELECT EXISTS ( SELECT 1 FROM pg_type WHERE typname = '%1%' );")
                                     % (m_pimpl->EnumNames[id])).str()
                                 << row;
 
@@ -228,10 +229,10 @@ bool Database::CreateEnum(const std::string &id)
                 for (size_t i = 0; i < m_pimpl->Enumerators[id].size(); ++i) {
                     if (i != 0)
                         ph += ", ";
-                    ph += (boost::format("'%1%'") % m_pimpl->Enumerators[id][i]).str();
+                    ph += (format("'%1%'") % m_pimpl->Enumerators[id][i]).str();
                 }
 
-                m_pimpl->Sql << (boost::format("CREATE TYPE \"%1%\" AS ENUM ( %2% );")
+                m_pimpl->Sql << (format("CREATE TYPE \"%1%\" AS ENUM ( %2% );")
                                  % m_pimpl->EnumNames[id]
                                  % ph).str()
                              << exec;
@@ -251,7 +252,7 @@ bool Database::CreateEnum(const std::string &id)
 bool Database::CreateTable(const std::string &id)
 {
     try {
-        m_pimpl->Sql << (boost::format("CREATE TABLE IF NOT EXISTS \"%1%\" ( %2% );")
+        m_pimpl->Sql << (format("CREATE TABLE IF NOT EXISTS \"%1%\" ( %2% );")
                          % m_pimpl->TableNames[id]
                          % m_pimpl->TableFields[id]).str()
                      << exec;
@@ -269,7 +270,7 @@ bool Database::CreateTable(const std::string &id)
 bool Database::DropTable(const std::string &id)
 {
     try {
-        m_pimpl->Sql << (boost::format("DROP TABLE IF EXISTS \"%1%\";")
+        m_pimpl->Sql << (format("DROP TABLE IF EXISTS \"%1%\";")
                          % m_pimpl->TableNames[id]).str()
                      << exec;
 
@@ -314,7 +315,7 @@ bool Database::Insert(const std::string &id,
             ph += "?";
         }
 
-        statement stat = m_pimpl->Sql << (boost::format("INSERT INTO \"%1%\" ( %2% ) VALUES ( %3% );")
+        statement stat = m_pimpl->Sql << (format("INSERT INTO \"%1%\" ( %2% ) VALUES ( %3% );")
                                           % m_pimpl->TableNames[id]
                                           % fields
                                           % ph).str();
@@ -342,7 +343,7 @@ bool Database::Update(const std::string &id,
                       const std::initializer_list<std::string> &args)
 {
     try {
-        statement stat = m_pimpl->Sql << (boost::format("UPDATE ONLY \"%1%\" SET %2% WHERE %3%=?;")
+        statement stat = m_pimpl->Sql << (format("UPDATE ONLY \"%1%\" SET %2% WHERE %3%=?;")
                                           % m_pimpl->TableNames[id]
                                           % set
                                           % where).str();
@@ -370,7 +371,7 @@ bool Database::Delete(const std::string &id,
                       const std::string &value)
 {
     try {
-        m_pimpl->Sql << (boost::format("DELETE FROM ONLY \"%1%\" WHERE %2%=?;")
+        m_pimpl->Sql << (format("DELETE FROM ONLY \"%1%\" WHERE %2%=?;")
                          % m_pimpl->TableNames[id]
                          % where).str()
                      << value

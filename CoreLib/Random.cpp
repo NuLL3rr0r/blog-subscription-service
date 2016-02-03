@@ -60,7 +60,7 @@ void Random::Characters(const Character &type, const size_t length, std::string 
 {
     boost::lock_guard<boost::mutex> guard(GetLock());
 
-    boost::random::uniform_int_distribution<> index_dist(0, (int)Impl::GetLookupTable()[type].size() - 1);
+    random::uniform_int_distribution<> index_dist(0, (int)Impl::GetLookupTable()[type].size() - 1);
 
     out_chars.clear();
     for (size_t i = 0; i < length; ++i) {
@@ -70,29 +70,29 @@ void Random::Characters(const Character &type, const size_t length, std::string 
 
 std::string Random::Characters(const Character &type, const size_t length)
 {
-    std::string chars;
+    string chars;
     Characters(type, length, chars);
     return chars;
 }
 
 void Random::Uuid(std::string &out_uuid)
 {
-    static boost::uuids::basic_random_generator<boost::mt19937> rng(&GetEngine());
-    boost::uuids::uuid u = rng();
-    out_uuid.assign(boost::uuids::to_string(u));
+    static uuids::basic_random_generator<random::mt19937> rng(&GetEngine());
+    uuids::uuid u = rng();
+    out_uuid.assign(std::move(uuids::to_string(u)));
 }
 
 std::string Random::Uuid()
 {
-    std::string uuid;
+    string uuid;
     Uuid(uuid);
     return uuid;
 }
 
 boost::random::mt19937 &Random::GetEngine()
 {
-    static boost::random_device rd;
-    static boost::random::mt19937 rng(rd);
+    static random::random_device rd;
+    static random::mt19937 rng(rd);
     return rng;
 }
 

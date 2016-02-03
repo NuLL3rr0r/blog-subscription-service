@@ -64,7 +64,7 @@ bool Http::Download(const std::string &remoteAddr, const std::string &localPath,
         Cleanup cleanup;
         (void)cleanup;
 
-        std::list<std::string> headers;
+        list<std::string> headers;
         headers.push_back("ACCEPT: text/html, */*; q=0.01");
         headers.push_back("ACCEPT_CHARSET: utf-8;q=0.7,*;q=0.7");
         headers.push_back("ACCEPT_ENCODING: gzip, deflate");
@@ -74,9 +74,9 @@ bool Http::Download(const std::string &remoteAddr, const std::string &localPath,
 
         internal::SList slist(headers);
 
-        std::string userAgent = "Mozilla/5.0 (Windows; FreeBSD amd64; rv:26.0) Gecko/20100101 Firefox/26.0";
+        string userAgent = "Mozilla/5.0 (Windows; FreeBSD amd64; rv:26.0) Gecko/20100101 Firefox/26.0";
 
-        curlpp::Easy request;
+        Easy request;
         request.setOpt<options::HttpHeader>(slist);
         request.setOpt<options::UserAgent>(userAgent.c_str());
 
@@ -85,7 +85,7 @@ bool Http::Download(const std::string &remoteAddr, const std::string &localPath,
         request.setOpt<options::Encoding>("");
 
         request.setOpt<options::Url>(remoteAddr);
-        std::ofstream ofs(localPath, std::ios::binary);
+        ofstream ofs(localPath, std::ios::binary);
 
         if (!ofs.is_open()) {
             out_error.assign(OPEN_FILE_ERROR);

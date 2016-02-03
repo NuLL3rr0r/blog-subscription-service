@@ -61,9 +61,9 @@ bool Archiver::UnGzip(const std::string &archive, const std::string &extractedFi
 {
     out_error.clear();
 
-    std::ifstream ifs(archive, std::ios::binary);
+    ifstream ifs(archive, ios::binary);
     if (!ifs.is_open()) {
-        out_error.assign((boost::format("Archiver::UnGzip: Could not extract '%1%' as %2%!")
+        out_error.assign((format("Archiver::UnGzip: Could not extract '%1%' as %2%!")
                           % archive % extractedFile).str());
         return false;
     }
@@ -75,14 +75,14 @@ bool Archiver::UnGzip(const std::string &archive, const std::string &extractedFi
     Compression::Decompress(compressedContents, uncompressedContents,
                             Compression::Algorithm::Gzip);
 
-    std::ofstream ofs(extractedFile, std::ios::binary);
+    ofstream ofs(extractedFile, ios::binary);
     if (!ofs.is_open()) {
-        out_error.assign((boost::format("Archiver::UnGzip: Could not extract '%1%' as %2%!")
+        out_error.assign((format("Archiver::UnGzip: Could not extract '%1%' as %2%!")
                           % archive % extractedFile).str());
         return false;
     }
-    std::copy(uncompressedContents.begin(), uncompressedContents.end(),
-              std::ostreambuf_iterator<char>(ofs));
+    copy(uncompressedContents.begin(), uncompressedContents.end(),
+              ostreambuf_iterator<char>(ofs));
     ofs.flush();
     ofs.close();
 
@@ -108,7 +108,7 @@ bool Archiver::UnZip(const std::string &archive, const std::string &extractionPa
 
     if ((za = zip_open(archive.c_str(), 0, &err)) == NULL) {
         zip_error_to_str(buf, sizeof(buf), err, errno);
-        out_error.assign((boost::format("Archiver::UnZip: Can't open zip archive `%1%': %2%!")
+        out_error.assign((format("Archiver::UnZip: Can't open zip archive `%1%': %2%!")
                           % archive % buf).str());
         return false;
     }
@@ -123,28 +123,28 @@ bool Archiver::UnZip(const std::string &archive, const std::string &extractionPa
         if (zip_stat_index(za, (zip_uint64_t)i, 0, &sb) == 0) {
             len = (zip_int64_t)strlen(sb.name);
             if (sb.name[len - 1] == '/') {
-                FileSystem::CreateDir((boost::filesystem::path(extractionPath)
+                FileSystem::CreateDir((filesystem::path(extractionPath)
                                        / sb.name).string());
             } else {
                 zf = zip_fopen_index(za, (zip_uint64_t)i, 0);
                 if (!zf) {
-                    out_error.assign((boost::format("Archiver::UnZip: Corrupted zip archive `%1%'!")
+                    out_error.assign((format("Archiver::UnZip: Corrupted zip archive `%1%'!")
                                       % archive).str());
                     return false;
                 }
 
 #if ! defined ( _WIN32 )
-                fd = open((boost::filesystem::path(extractionPath)
+                fd = open((filesystem::path(extractionPath)
                            / sb.name).string().c_str(),
                           O_RDWR | O_TRUNC | O_CREAT, 0644);
 #else
-                fd = open((boost::filesystem::path(extractionPath)
+                fd = open((filesystem::path(extractionPath)
                            / sb.name).string().c_str(),
                           O_RDWR | O_TRUNC | O_CREAT | O_BINARY, 0644);
 #endif  // ! defined ( _WIN32 )
 
                 if (fd < 0) {
-                    out_error.assign((boost::format("Archiver::UnZip: Cannot open file `%1%' for writing!")
+                    out_error.assign((format("Archiver::UnZip: Cannot open file `%1%' for writing!")
                                       % sb.name).str());
                     return false;
                 }
@@ -153,7 +153,7 @@ bool Archiver::UnZip(const std::string &archive, const std::string &extractionPa
                 while (sum != sb.size) {
                     len = zip_fread(zf, buf, 100);
                     if (len < 0) {
-                        out_error.assign((boost::format("Archiver::UnZip: Corrupted zip archive `%1%'!")
+                        out_error.assign((format("Archiver::UnZip: Corrupted zip archive `%1%'!")
                                           % archive).str());
                         return false;
                     }
@@ -164,13 +164,13 @@ bool Archiver::UnZip(const std::string &archive, const std::string &extractionPa
                 zip_fclose(zf);
             }
         } else {
-            out_error.assign((boost::format("Archiver::UnZip: Corrupted zip archive `%1%'!")
+            out_error.assign((format("Archiver::UnZip: Corrupted zip archive `%1%'!")
                               % archive).str());
         }
     }
 
     if (zip_close(za) == -1) {
-        out_error.assign((boost::format("Archiver::UnZip: Can't close zip archive `%1%'!")
+        out_error.assign((format("Archiver::UnZip: Can't close zip archive `%1%'!")
                           % archive).str());
         return false;
     }

@@ -157,7 +157,7 @@ int System::GetPidsOfProcess(const std::string &processName, std::vector<int> &p
         p = kvm_getprocs(kd, KERN_PROC_PROC, 0, &nProcesses);
 
         /// WARNING: HACK
-        std::string name;
+        string name;
         if (processName.size() <= 19) {
             name = processName;
         } else {

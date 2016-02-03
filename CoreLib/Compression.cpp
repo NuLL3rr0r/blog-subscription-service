@@ -44,6 +44,7 @@
 #define     COMP_ERROR          "Unknow compression error!";
 #define     DECOMP_ERROR        "Unknow decompression error!";
 
+using namespace std;
 using namespace boost;
 using namespace CoreLib;
 
@@ -120,7 +121,7 @@ void Compression::Decompress(const Buffer &dataBuffer,
         }
 
         output.push(iostreams::back_inserter(out_uncompressedBuffer));
-        iostreams::write(output, &dataBuffer[0], (std::streamsize)dataBuffer.size());
+        iostreams::write(output, &dataBuffer[0], (streamsize)dataBuffer.size());
     } catch(...) {
         LOG_ERROR(DECOMP_ERROR)
     }

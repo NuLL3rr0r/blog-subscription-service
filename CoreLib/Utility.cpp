@@ -43,21 +43,21 @@ using namespace CoreLib;
 
 std::string Utility::CalculateSize(const std::size_t size)
 {
-    static const std::vector<std::string> units { "EB", "PB", "TB", "GB", "MB", "KB", "B" };
-    static const std::size_t exbibytes = 1024ull * 1024ull * 1024ull * 1024ull * 1024ull * 1024ull;
+    static const vector<std::string> units { "EB", "PB", "TB", "GB", "MB", "KB", "B" };
+    static const size_t exbibytes = 1024ull * 1024ull * 1024ull * 1024ull * 1024ull * 1024ull;
 
-    std::size_t multiplier = exbibytes;
-    std::string result;
+    size_t multiplier = exbibytes;
+    string result;
 
     if (size != 0) {
-        for (std::size_t i = 0; i < units.size(); i++, multiplier /= 1024) {
+        for (size_t i = 0; i < units.size(); i++, multiplier /= 1024) {
             if (size < multiplier)
                 continue;
 
             if (size % multiplier == 0) {
-                result.assign((boost::format("%s %s") % (size / multiplier) % units[i]).str());
+                result.assign((format("%s %s") % (size / multiplier) % units[i]).str());
             } else {
-                result.assign((boost::format("%.2f %s") % ((float)size / (float)multiplier) % units[i]).str());
+                result.assign((format("%.2f %s") % ((float)size / (float)multiplier) % units[i]).str());
             }
 
             return result;

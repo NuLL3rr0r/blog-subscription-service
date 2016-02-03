@@ -38,9 +38,11 @@
 
 #include <sstream>
 #include <ctime>
+#include <boost/lexical_cast.hpp>
 #include "CDate.hpp"
 
 using namespace std;
+using namespace boost;
 using namespace CoreLib::CDate;
 
 Now::Now()
@@ -65,15 +67,12 @@ Now::Now()
     Year = TimeInfo->tm_year + 1900; //  year since 1900
 }
 
-string DateConv::IntToStr(int num)
+std::string DateConv::IntToStr(int num)
 {
-    //return boost::lexical_cast<std::string>(n);
-    stringstream ss;
-    ss << num;
-    return ss.str();
+    return lexical_cast<string>(num);
 }
 
-string DateConv::CalcToG(int jYear, int dayOfYear)
+std::string DateConv::CalcToG(int jYear, int dayOfYear)
 {
     bool isLeapYear = IsLeapYearJ(jYear);
     int dayMatch[13] = { !isLeapYear ? 287 : 288, !isLeapYear ? 318 : 319, !isLeapYear && !IsLeapYearJ(jYear + 1) ? 346 : 347, !isLeapYear ? 12 : 13, !isLeapYear ? 42 : 43, !isLeapYear ? 73 : 74, !isLeapYear ? 103 : 104, !isLeapYear ? 134 : 135, !isLeapYear ? 165 : 166, !isLeapYear ? 195 : 196, !isLeapYear ? 226 : 227, !isLeapYear ? 256 : 257, 999 };
@@ -94,7 +93,7 @@ string DateConv::CalcToG(int jYear, int dayOfYear)
             (gDay.size() != 1 ? gDay : "0" + gDay);
 }
 
-string DateConv::CalcToJ(int gYear, int dayOfYear)
+std::string DateConv::CalcToJ(int gYear, int dayOfYear)
 {
     bool isLeapYear = IsLeapYearG(gYear - 1);
     int dayMatch[13] = { 80, 111, 142, 173, 204, 235, 266, 296, 326, 356, !isLeapYear ? 21 : 20, !isLeapYear ? 51 : 50, 999 };
@@ -175,7 +174,7 @@ bool DateConv::IsLeapYearJ(int jYear)
     return jYear > 0 && modulus == 3 ? true : jYear < 0 && modulus == -1 ? true : false;
 }
 
-string DateConv::ToGregorian(int jYear, int jMonth, int jDay)
+std::string DateConv::ToGregorian(int jYear, int jMonth, int jDay)
 {
     if (!IsRangeValidJ(jYear, jMonth, jDay))
         return "";
@@ -183,7 +182,7 @@ string DateConv::ToGregorian(int jYear, int jMonth, int jDay)
     return CalcToG(jYear, DayOfYearJ(jYear, jMonth, jDay));
 }
 
-string DateConv::ToGregorian()
+std::string DateConv::ToGregorian()
 {
     Now n;
 
@@ -196,7 +195,7 @@ string DateConv::ToGregorian()
             (d.size() != 1 ? d : "0" + d);
 }
 
-string DateConv::ToJalali(int gYear, int gMonth, int gDay)
+std::string DateConv::ToJalali(int gYear, int gMonth, int gDay)
 {
     if (!IsRangeValidG(gYear, gMonth, gDay))
         return "";
@@ -204,13 +203,13 @@ string DateConv::ToJalali(int gYear, int gMonth, int gDay)
     return CalcToJ(gYear, DayOfYearG(gYear, gMonth, gDay));
 }
 
-string DateConv::ToJalali()
+std::string DateConv::ToJalali()
 {
     Now n;
     return CalcToJ(n.Year, n.DayOfYear);
 }
 
-string DateConv::ToGregorian(const CDate::Now &now)
+std::string DateConv::ToGregorian(const CDate::Now &now)
 {
     string m = IntToStr(now.Month);
     string d = IntToStr(now.DayOfMonth);
@@ -221,12 +220,12 @@ string DateConv::ToGregorian(const CDate::Now &now)
             (d.size() != 1 ? d : "0" + d);
 }
 
-string DateConv::ToJalali(const CDate::Now &now)
+std::string DateConv::ToJalali(const CDate::Now &now)
 {
     return CalcToJ(now.Year, now.DayOfYear);
 }
 
-string DateConv::Time(const CDate::Now &now)
+std::string DateConv::Time(const CDate::Now &now)
 {
     string s = IntToStr(now.Seconds);
     string m = IntToStr(now.Minutes);
@@ -238,12 +237,12 @@ string DateConv::Time(const CDate::Now &now)
             (s.size() != 1 ? s : "0" + s);
 }
 
-string DateConv::RawLocalDateTime(const CDate::Now &now)
+std::string DateConv::RawLocalDateTime(const CDate::Now &now)
 {
     return asctime(now.TimeInfo);
 }
 
-wstring DateConv::GetPersianDayOfWeek(const CDate::Now &now)
+std::wstring DateConv::GetPersianDayOfWeek(const CDate::Now &now)
 {
     switch (now.DayOfWeek) {
     case 7:
@@ -267,7 +266,7 @@ wstring DateConv::GetPersianDayOfWeek(const CDate::Now &now)
     return L"";
 }
 
-wstring DateConv::FormatToPersianNums(const string &date)
+std::wstring DateConv::FormatToPersianNums(const std::string &date)
 {
     wstring res;
 
@@ -312,7 +311,7 @@ wstring DateConv::FormatToPersianNums(const string &date)
     return res;
 }
 
-wstring DateConv::FormatToPersianNums(const wstring &date)
+std::wstring DateConv::FormatToPersianNums(const std::wstring &date)
 {
     wstring res;
 

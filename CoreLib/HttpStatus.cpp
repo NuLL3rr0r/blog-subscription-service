@@ -101,11 +101,11 @@ struct HttpStatus::Impl
     Impl();
 };
 
-std::unique_ptr<HttpStatus::Impl> HttpStatus::s_pimpl = std::make_unique<HttpStatus::Impl>();
+std::unique_ptr<HttpStatus::Impl> HttpStatus::s_pimpl = make_unique<HttpStatus::Impl>();
 
 std::wstring HttpStatus::GetHttpResponse(const HttpStatusCode &code)
 {
-    return (boost::wformat(L"%1% %2%") % HTTP_VERSION % s_pimpl->StatusCodes[code]).str();
+    return (wformat(L"%1% %2%") % HTTP_VERSION % s_pimpl->StatusCodes[code]).str();
 }
 
 HttpStatus::Impl::Impl()

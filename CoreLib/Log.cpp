@@ -46,6 +46,8 @@
 #include "make_unique.hpp"
 #include "Log.hpp"
 
+using namespace std;
+using namespace boost;
 using namespace CoreLib;
 
 struct Log::Impl
@@ -86,7 +88,7 @@ struct Log::Impl
     StorageStruct *Storage();
 };
 
-std::unique_ptr<Log::Impl> Log::s_pimpl = std::make_unique<Log::Impl>();
+std::unique_ptr<Log::Impl> Log::s_pimpl = make_unique<Log::Impl>();
 
 void Log::Initialize(std::ostream &out_outputStream)
 {
@@ -108,26 +110,26 @@ void Log::Initialize(const std::string &outputDirectoryPath,
     s_pimpl->Storage()->LogOutputDirectoryPath = outputDirectoryPath;
     s_pimpl->Storage()->LogOutputFilePrefix = outputFilePrefix;
 
-    if (boost::filesystem::exists(s_pimpl->Storage()->LogOutputDirectoryPath)) {
-        if (!boost::filesystem::is_directory(s_pimpl->Storage()->LogOutputDirectoryPath)) {
-            boost::filesystem::remove(s_pimpl->Storage()->LogOutputDirectoryPath);
+    if (filesystem::exists(s_pimpl->Storage()->LogOutputDirectoryPath)) {
+        if (!filesystem::is_directory(s_pimpl->Storage()->LogOutputDirectoryPath)) {
+            filesystem::remove(s_pimpl->Storage()->LogOutputDirectoryPath);
         }
     }
 
-    if (!boost::filesystem::exists(s_pimpl->Storage()->LogOutputDirectoryPath)) {
-        boost::filesystem::create_directories(s_pimpl->Storage()->LogOutputDirectoryPath);
+    if (!filesystem::exists(s_pimpl->Storage()->LogOutputDirectoryPath)) {
+        filesystem::create_directories(s_pimpl->Storage()->LogOutputDirectoryPath);
     }
 
     s_pimpl->Storage()->LogOutputFilePath =
-            (boost::filesystem::path(s_pimpl->Storage()->LogOutputDirectoryPath)
-             / boost::filesystem::path((boost::format("%1%_%2%.txt")
-                                        % s_pimpl->Storage()->LogOutputFilePrefix
-                                        % boost::algorithm::replace_all_copy(
-                                            boost::algorithm::replace_all_copy(
-                                                boost::posix_time::to_simple_string(
-                                                    boost::posix_time::second_clock::local_time()),
-                                                ":", "-"),
-                                            " ", "_")).str())).string();
+            (filesystem::path(s_pimpl->Storage()->LogOutputDirectoryPath)
+             / filesystem::path((format("%1%_%2%.txt")
+                                 % s_pimpl->Storage()->LogOutputFilePrefix
+                                 % algorithm::replace_all_copy(
+                                     algorithm::replace_all_copy(
+                                         posix_time::to_simple_string(
+                                             posix_time::second_clock::local_time()),
+                                         ":", "-"),
+                                     " ", "_")).str())).string();
 
     if (!s_pimpl->Storage()->MultiStream)
         s_pimpl->Storage()->Initialized = true;
@@ -153,7 +155,7 @@ Log::Log(EType type, const std::string &file, const std::string &func, int line,
 {
     assert(s_pimpl->Storage()->Initialized);
 
-    m_buffer << "[ " << boost::posix_time::second_clock::local_time()
+    m_buffer << "[ " << posix_time::second_clock::local_time()
              << " " << s_pimpl->Storage()->LogTypeHash[type]
                 << " " << line << " " << func << " " << file << " ]"
                 << "\n";
@@ -180,7 +182,7 @@ Log::~Log()
             s_pimpl->Storage()->LogOutputFileStream.imbue(
                         std::locale(
                             s_pimpl->Storage()->LogOutputFileStream.getloc(),
-                            new boost::posix_time::time_facet()));
+                            new posix_time::time_facet()));
         }
 
         s_pimpl->Storage()->LogOutputFileStream << m_buffer.str();
@@ -208,7 +210,7 @@ Log::Impl::StorageStruct *Log::Impl::Storage()
     (void)lock;
 
     if (StorageInstance == nullptr) {
-        StorageInstance = std::make_unique<StorageStruct>();
+        StorageInstance = make_unique<StorageStruct>();
 
         StorageInstance->MultiStream = false;
         StorageInstance->Initialized = false;

@@ -126,7 +126,7 @@ void Mail::Impl::DoWork()
             }
 
             if (!isMailQueueEmpty) {
-                std::string error;
+                string error;
                 bool rc = mail->Send(error);
                 if (callback != nullptr) {
                     callback(rc, error);
@@ -295,7 +295,7 @@ bool Mail::Send(std::string &out_error) const
             for (auto a : m_pimpl->Attachments) {
                 vmime::shared_ptr <vmime::attachment> att = vmime::make_shared <vmime::fileAttachment>
                         (a, vmime::mediaType("application/octet-stream"),
-                         vmime::text(boost::filesystem::path(a).stem().string()));
+                         vmime::text(filesystem::path(a).stem().string()));
                 mb.appendAttachment(att);
             }
         }
@@ -346,7 +346,7 @@ void Mail::SendAsync(SendCallback callback)
             if (!Impl::WorkerThreadIsRunning) {
                 Impl::WorkerThreadIsRunning = true;
 
-                Impl::WorkerThread = std::make_unique<boost::thread>(Mail::Impl::DoWork);
+                Impl::WorkerThread = make_unique<boost::thread>(Mail::Impl::DoWork);
                 Impl::WorkerThread->detach();
             }
         }

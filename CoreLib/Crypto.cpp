@@ -57,6 +57,7 @@
 #define     UNKNOWN_ERROR           "Unknown error!"
 
 using namespace std;
+using namespace boost;
 using namespace CryptoPP;
 using namespace CoreLib;
 
@@ -90,9 +91,9 @@ bool Crypto::Encrypt(const std::string &plainText, std::string &out_encodedText,
         StringSource(plainText, true,
                      new StreamTransformationFilter(enc, new StringSink(cipher)));
 
-        std::string encoded;
+        string encoded;
         StringSource(cipher, true, new HexEncoder(new StringSink(encoded)));
-        out_encodedText.assign(std::move(encoded));
+        out_encodedText.assign(move(encoded));
 
         return true;
     }
@@ -130,10 +131,10 @@ bool Crypto::Decrypt(const std::string &cipherText, std::string &out_recoveredTe
         string cipher;
         StringSource(cipherText, true, new HexDecoder(new StringSink(cipher)));
 
-        std::string decoded;
+        string decoded;
         StringSource(cipher, true,
                      new StreamTransformationFilter(dec, new StringSink(decoded)));
-        out_recoveredText.assign(std::move(decoded));
+        out_recoveredText.assign(move(decoded));
 
         return true;
     }
@@ -165,10 +166,10 @@ bool Crypto::Hash(const std::string &text, std::string &out_digest,
     try {
         SHA512 hash;
 
-        std::string digest;
+        string digest;
         StringSource(text, true,
                      new HashFilter(hash, new HexEncoder(new StringSink(digest))));
-        out_digest.assign(std::move(digest));
+        out_digest.assign(move(digest));
 
         return true;
     }
@@ -231,13 +232,13 @@ void Crypto::Base64Encode(std::istream &inputStream, std::ostream &outputStream)
 }
 
 Crypto::Crypto(const Byte *key, std::size_t keyLen, const Byte *iv, std::size_t ivLen) :
-    m_pimpl(std::make_unique<Crypto::Impl>())
+    m_pimpl(make_unique<Crypto::Impl>())
 {
     m_pimpl->Key = new Byte[keyLen];
     m_pimpl->IV = new Byte[ivLen];
 
-    std::copy(key, key + keyLen, m_pimpl->Key);
-    std::copy(iv, iv + ivLen, m_pimpl->IV);
+    copy(key, key + keyLen, m_pimpl->Key);
+    copy(iv, iv + ivLen, m_pimpl->IV);
 
     m_pimpl->KeyLen = keyLen;
     m_pimpl->IVLen = ivLen;
@@ -294,12 +295,12 @@ std::wstring Crypto::WCharArrayToString(const wchar_t *array, size_t length)
 
 std::string Crypto::HexStringToString(const std::string &hexString)
 {
-    std::vector<std::string> bytes;
-    boost::algorithm::iter_split(bytes, hexString, boost::algorithm::first_finder(":"));
+    vector<string> bytes;
+    algorithm::iter_split(bytes, hexString, algorithm::first_finder(":"));
 
-    std::ostringstream oss;
+    ostringstream oss;
 
-    for (std::vector<std::string>::iterator it = bytes.begin(); it != bytes.end(); ++it) {
+    for (vector<string>::iterator it = bytes.begin(); it != bytes.end(); ++it) {
         oss << (char)strtol(it->c_str(), NULL, 16);
     }
 
@@ -308,12 +309,12 @@ std::string Crypto::HexStringToString(const std::string &hexString)
 
 std::wstring Crypto::HexStringToWString(const std::wstring &hexString)
 {
-    std::vector<std::wstring> bytes;
-    boost::algorithm::iter_split(bytes, hexString, boost::algorithm::first_finder(":"));
+    vector<wstring> bytes;
+    algorithm::iter_split(bytes, hexString, algorithm::first_finder(":"));
 
-    std::wostringstream woss;
+    wostringstream woss;
 
-    for (std::vector<std::wstring>::iterator it = bytes.begin(); it != bytes.end(); ++it) {
+    for (vector<wstring>::iterator it = bytes.begin(); it != bytes.end(); ++it) {
         woss << (wchar_t)wcstol(it->c_str(), NULL, 16);
     }
 
