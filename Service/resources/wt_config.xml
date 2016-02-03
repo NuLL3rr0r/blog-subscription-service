@@ -595,7 +595,7 @@
 
 	    <property name="tinyMCEVersion">4</property>
 	    <property name="tinyMCEBaseURL">/tinymce</property>
-	    <property name="tinyMCEURL">/resources/tinymce/tinymce.min.js</property>
+            <property name="tinyMCEURL">resources/tinymce/tinymce.min.js</property>
 	</properties>
 
     </application-settings>

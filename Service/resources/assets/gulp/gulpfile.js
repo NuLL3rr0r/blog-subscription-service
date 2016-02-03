@@ -41,6 +41,14 @@ var minifyCss = require('gulp-minify-css');
 var sass = require('gulp-sass');
 var uglify = require('gulp-uglify');
 
+gulp.task('fonts', function() {
+    gulp.src('fonts/**/*')
+        .pipe(imagemin({
+        })).on('error', errorHandler)
+        .pipe(gulp.dest('./output/www/fonts/')
+    );
+});
+
 gulp.task('images', function() {
     gulp.src('favicon.ico')
         .pipe(gulp.dest('./output/www/')
@@ -74,6 +82,12 @@ gulp.task('scripts', function() {
 gulp.task('styles', function() {
     gulp.src('stylesheets/**/*.scss')
         .pipe(sass()).on('error', errorHandler)
+        .pipe(autoprefixer('last 2 versions')).on('error', errorHandler)
+        .pipe(gulp.dest('./output/css-temp/'))
+        .pipe(minifyCss()).on('error', errorHandler)
+        .pipe(gulp.dest('./output/www/css/')
+    );
+    gulp.src('stylesheets/**/*.css')
         .pipe(autoprefixer('last 2 versions')).on('error', errorHandler)
         .pipe(gulp.dest('./output/css-temp/'))
         .pipe(minifyCss()).on('error', errorHandler)
@@ -123,7 +137,7 @@ gulp.task('wt-resources', function() {
     );
 });
 
-gulp.task('default', ['templates', 'scripts', 'styles', 'images', 'wt-resources']);
+gulp.task('default', ['templates', 'scripts', 'styles', 'fonts', 'images', 'wt-resources']);
 
 // Public error handler
 function errorHandler (error) {

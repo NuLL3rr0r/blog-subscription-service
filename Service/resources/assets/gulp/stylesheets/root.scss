@@ -118,7 +118,6 @@ html, body {
 .nav-side-menu {
     padding: 0;
     overflow: auto;
-    font-family: verdana;
     font-size: 12px;
     font-weight: 200;
     background-color: #2e353d;
@@ -260,7 +259,6 @@ html, body {
 
 
 .dashboard-contents {
-    font-family: 'Bitstream Vera Sans', arial, helvetica, sans-serif;
     font-size: 11px;
     font-weight: bold;
     color: #203070;
@@ -288,6 +286,19 @@ html, body {
 
     button {
         margin: 12px;
+    }
+}
+
+.contacts {
+    .table th, .table td {
+        text-align: center !important;
+        vertical-align: middle !important;
+    }
+
+    .table td {
+        button {
+            margin: 0 !important;
+        }
     }
 }
 
