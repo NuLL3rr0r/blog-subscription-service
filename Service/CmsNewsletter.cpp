@@ -41,6 +41,7 @@
 #include <Wt/WLineEdit>
 #include <Wt/WPushButton>
 #include <Wt/WString>
+#include <Wt/WTable>
 #include <Wt/WTemplate>
 #include <Wt/WText>
 #include <Wt/WTextEdit>
@@ -76,11 +77,16 @@ public:
     explicit Impl(CmsNewsletter *parent);
 
 public:
+    void OnRecipientsComboBoxSelectionChanged(Wt::WString recipients);
+    void OnSendButtonPressed();
+    void OnSendConfirmDialogClosed(Wt::StandardButton button);
+    void OnClearButtonPressed();
+    void OnClearConfirmDialogClosed(Wt::StandardButton button);
 };
 
 CmsNewsletter::CmsNewsletter(CgiRoot *cgi) :
     Page(cgi),
-    m_pimpl(std::make_unique<CmsNewsletter::Impl>(this))
+    m_pimpl(make_unique<CmsNewsletter::Impl>(this))
 {
     this->clear();
     this->setId("CmsNewsletterPage");
@@ -93,8 +99,8 @@ WWidget *CmsNewsletter::Layout()
     Div *container = new Div("CmsNewsletter", "container-fluid");
 
     try {
-        std::string htmlData;
-        std::string file;
+        string htmlData;
+        string file;
         if (m_cgiEnv->GetCurrentLanguage() == CgiEnv::Language::Fa) {
             file = "../templates/cms-newsletter-fa.wtml";
         } else {
@@ -127,7 +133,7 @@ WWidget *CmsNewsletter::Layout()
 
             switch (m_cgiEnv->GetCurrentLanguage()) {
             case CgiEnv::Language::Fa:
-                m_pimpl->BodyTextEdit->setConfigurationSetting("language", std::string("fa_IR"));
+                m_pimpl->BodyTextEdit->setConfigurationSetting("language", string("fa_IR"));
                 break;
             case CgiEnv::Language::En:
             case CgiEnv::Language::Invalid:
@@ -161,6 +167,10 @@ WWidget *CmsNewsletter::Layout()
                                               " | alignleft aligncenter alignright alignjustify"
                                               " | outdent indent bullist numlist blockquote | ltr rtl");
 
+            m_pimpl->BodyTextEdit->setConfigurationSetting(
+                        "contextmenu",
+                        std::string("link anchor image media"
+                                    " | inserttable cell row column deletetable | code"));
 
             m_pimpl->SendPushButton = new WPushButton(tr("cms-newsletter-send"));
             m_pimpl->SendPushButton->setStyleClass("btn btn-default");
@@ -214,5 +224,29 @@ CmsNewsletter::Impl::Impl(CmsNewsletter *parent)
     : m_parent(parent)
 {
 
+}
+
+void CmsNewsletter::Impl::OnRecipientsComboBoxSelectionChanged(Wt::WString recipients)
+{
+    (void)recipients;
+}
+
+void CmsNewsletter::Impl::OnSendButtonPressed()
+{
+}
+
+void CmsNewsletter::Impl::OnSendConfirmDialogClosed(Wt::StandardButton button)
+{
+    (void)button;
+}
+
+void CmsNewsletter::Impl::OnClearButtonPressed()
+{
+
+}
+
+void CmsNewsletter::Impl::OnClearConfirmDialogClosed(Wt::StandardButton button)
+{
+    (void)button;
 }
 
