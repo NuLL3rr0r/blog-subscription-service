@@ -276,7 +276,7 @@ IF ( BUILD_SERVICE )
 
         FILE ( MAKE_DIRECTORY ${GULP_DIR} )
         FILE ( MAKE_DIRECTORY ${GULP_MODULES_DIR} )
-        FILE ( COPY "${CMAKE_CURRENT_SOURCE_DIR}/resources/assets/package.json"
+        FILE ( COPY "${CMAKE_CURRENT_SOURCE_DIR}/resources/assets/gulp/package.json"
                 DESTINATION ${GULP_DIR} )
 
         EXECUTE_PROCESS (
@@ -291,18 +291,22 @@ IF ( BUILD_SERVICE )
         IF ( GULP_NPM_RESULT EQUAL 0 )
             MESSAGE ( STATUS "Local Gulp modules installation completed successfully" )
         ELSE (  )
-            MESSAGE ( ${OUTPUT_VARIABLE} )
+            MESSAGE ( "${OUTPUT_VARIABLE}" )
             MESSAGE ( FATAL_ERROR "Local Gulp modules installation has failed" )
         ENDIF (  )
 
         ADD_CUSTOM_COMMAND ( TARGET ${SERVICE_BIN_FILE}
             POST_BUILD
             COMMAND ${CMAKE_COMMAND} -E copy_directory
-                "${CMAKE_CURRENT_SOURCE_DIR}/resources/assets" "${GULP_DIR}"
+                "${CMAKE_CURRENT_SOURCE_DIR}/resources/assets/gulp" "${GULP_DIR}"
             COMMAND ${CMAKE_COMMAND} -E copy_directory
                 "${WT_RESOURCES_DIR}" "${GULP_DIR}/resources"
             COMMAND ${CMAKE_COMMAND} -E copy_directory
-                "${CMAKE_CURRENT_SOURCE_DIR}/resources/tinymce" "${GULP_DIR}/resources/tinymce"
+                "${CMAKE_CURRENT_SOURCE_DIR}/resources/assets/bootstrap/css" "${GULP_DIR}/resources/themes/bootstrap/3"
+            COMMAND ${CMAKE_COMMAND} -E copy_directory
+                "${CMAKE_CURRENT_SOURCE_DIR}/resources/assets/font-awesome" "${GULP_DIR}/resources/font-awesome"
+            COMMAND ${CMAKE_COMMAND} -E copy_directory
+                "${CMAKE_CURRENT_SOURCE_DIR}/resources/assets/tinymce" "${GULP_DIR}/resources/tinymce"
             COMMAND ${GULP_EXECUTABLE} default
                 WORKING_DIRECTORY "${GULP_DIR}"
         )
