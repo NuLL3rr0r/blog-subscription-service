@@ -36,4 +36,3 @@
 
 #include "VersionInfo.hpp"
 
-

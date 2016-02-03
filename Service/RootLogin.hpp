@@ -59,4 +59,3 @@ private:
 
 #endif /* SERVICE_ROOT_LOGIN_HPP */
 
-

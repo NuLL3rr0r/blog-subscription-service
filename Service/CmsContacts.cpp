@@ -36,8 +36,10 @@
 #include <boost/exception/diagnostic_information.hpp>
 #include <boost/format.hpp>
 #include <cppdb/frontend.h>
+#include <Wt/WInPlaceEdit>
 #include <Wt/WLengthValidator>
 #include <Wt/WLineEdit>
+#include <Wt/WMessageBox>
 #include <Wt/WPushButton>
 #include <Wt/WRegExpValidator>
 #include <Wt/WString>
@@ -74,6 +76,13 @@ public:
     explicit Impl(CmsContacts *parent);
 
 public:
+    void OnAddButtonPressed();
+    void OnCellSaveButtonPressed(Wt::WInPlaceEdit *sender);
+    void OnEraseButtonPressed(Wt::WPushButton *sender);
+    void OnEraseDialogClosed(Wt::StandardButton resultButton);
+
+public:
+    void FillContactsDataTable();
 };
 
 CmsContacts::CmsContacts(CgiRoot *cgi) :
@@ -124,11 +133,8 @@ WWidget *CmsContacts::Layout()
             emailValidator->setMandatory(true);
             m_pimpl->EmailLineEdit->setValidator(emailValidator);
 
-            WPushButton *addPushButton = new WPushButton(tr("cms-contacts-add-save"));
+            WPushButton *addPushButton = new WPushButton(tr("cms-contacts-add"));
             addPushButton->setStyleClass("btn btn-default");
-
-            WPushButton *cancelPushButton = new WPushButton(tr("cms-contacts-add-cancel"));
-            cancelPushButton->setStyleClass("btn btn-default");
 
             m_pimpl->EditContactsMessageArea = new WText();
             HtmlInfo(tr("cms-contacts-edit-hint").value(), m_pimpl->EditContactsMessageArea);
@@ -150,7 +156,6 @@ WWidget *CmsContacts::Layout()
             tmpl->bindWidget("email-input", m_pimpl->EmailLineEdit);
 
             tmpl->bindWidget("add-button", addPushButton);
-            tmpl->bindWidget("cancel-button", cancelPushButton);
 
             tmpl->bindWidget("edit-contacts-message-area", m_pimpl->EditContactsMessageArea);
 
@@ -180,6 +185,31 @@ WWidget *CmsContacts::Layout()
 
 CmsContacts::Impl::Impl(CmsContacts *parent)
     : m_parent(parent)
+{
+
+}
+
+void CmsContacts::Impl::OnAddButtonPressed()
+{
+
+}
+
+void CmsContacts::Impl::OnCellSaveButtonPressed(Wt::WInPlaceEdit *sender)
+{
+
+}
+
+void CmsContacts::Impl::OnEraseButtonPressed(Wt::WPushButton *sender)
+{
+
+}
+
+void CmsContacts::Impl::OnEraseDialogClosed(Wt::StandardButton resultButton)
+{
+
+}
+
+void CmsContacts::Impl::FillContactsDataTable()
 {
 
 }

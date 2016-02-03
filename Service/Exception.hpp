@@ -60,4 +60,3 @@ public:
 
 #endif /* SERVICE_EXCEPTION_HPP */
 
-

@@ -78,4 +78,3 @@ public:
 
 #endif /* SERVICE_CGIROOT_HPP */
 
-

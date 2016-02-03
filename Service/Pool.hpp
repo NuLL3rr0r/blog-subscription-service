@@ -92,4 +92,3 @@ public:
 
 #endif /* SERVICE_POOL_HPP */
 
-

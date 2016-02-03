@@ -111,4 +111,3 @@ void Page::HtmlInfo(const wstring& msg, WText *txt)
     txt->setStyleClass("boldText");
 }
 
-

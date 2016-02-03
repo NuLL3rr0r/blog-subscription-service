@@ -313,4 +313,3 @@ void CgiEnv::Impl::ExtractClientInfoDetail()
     }
 }
 
-

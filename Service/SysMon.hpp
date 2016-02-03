@@ -64,4 +64,3 @@ private:
 
 #endif /* SYSMON_ROOT_LOGIN_HPP */
 
-

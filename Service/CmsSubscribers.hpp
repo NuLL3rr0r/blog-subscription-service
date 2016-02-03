@@ -59,4 +59,3 @@ private:
 
 #endif /* SERVICE_CMS_PAGE_MANAGER_HPP */
 
-

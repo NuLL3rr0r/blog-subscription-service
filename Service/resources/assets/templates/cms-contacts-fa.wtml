@@ -40,12 +40,7 @@
         <br />
 
         <div class="text-center">
-            <div class="btn-group">
-                ${cancel-button}
-                ${add-button}
-            </div>
-
-            <div class="clearfix"></div>
+            ${add-button}
         </div>
 
         <br />

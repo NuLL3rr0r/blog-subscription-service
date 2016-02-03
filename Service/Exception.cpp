@@ -59,4 +59,3 @@ const wchar_t *Exception::What() const
     return m_message.c_str();
 }
 
-
