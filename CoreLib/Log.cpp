@@ -41,6 +41,8 @@
 #include <boost/filesystem/operations.hpp>
 #include <boost/filesystem/path.hpp>
 #include <boost/format.hpp>
+#include <boost/thread/lock_guard.hpp>
+#include <boost/thread/mutex.hpp>
 #include "make_unique.hpp"
 #include "Log.hpp"
 
@@ -73,10 +75,10 @@ struct Log::Impl
 
     typedef std::unique_ptr<StorageStruct> Storage_ptr;
 
-    std::mutex StorageMutex;
+    boost::mutex StorageMutex;
     Storage_ptr StorageInstance;
 
-    std::mutex LogMutex;
+    boost::mutex LogMutex;
 
     Impl();
     virtual ~Impl();
@@ -162,7 +164,7 @@ Log::~Log()
     m_buffer << "\n\n";
     m_buffer.flush();
 
-    std::lock_guard<std::mutex> lock(s_pimpl->LogMutex);
+    boost::lock_guard<boost::mutex> lock(s_pimpl->LogMutex);
     (void)lock;
 
     if (s_pimpl->Storage()->LogOutputStream) {
@@ -194,7 +196,7 @@ Log::Impl::Impl()
 
 Log::Impl::~Impl()
 {
-    std::lock_guard<std::mutex> lock(StorageMutex);
+    boost::lock_guard<boost::mutex> lock(StorageMutex);
     (void)lock;
 
     StorageInstance.reset();
@@ -202,7 +204,7 @@ Log::Impl::~Impl()
 
 Log::Impl::StorageStruct *Log::Impl::Storage()
 {
-    std::lock_guard<std::mutex> lock(StorageMutex);
+    boost::lock_guard<boost::mutex> lock(StorageMutex);
     (void)lock;
 
     if (StorageInstance == nullptr) {

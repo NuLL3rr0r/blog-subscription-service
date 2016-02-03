@@ -33,10 +33,11 @@
  */
 
 
-#include <mutex>
 #include <boost/algorithm/string.hpp>
 #include <boost/filesystem/path.hpp>
 #include <boost/format.hpp>
+#include <boost/thread/lock_guard.hpp>
+#include <boost/thread/mutex.hpp>
 #include <CoreLib/Crypto.hpp>
 #include <CoreLib/Database.hpp>
 #include <CoreLib/make_unique.hpp>
@@ -52,13 +53,13 @@ struct Pool::Impl
     typedef std::unique_ptr<CoreLib::Crypto> Crypto_ptr;
     typedef std::unique_ptr<CoreLib::Database> Database_ptr;
 
-    std::mutex StorageMutex;
+    boost::mutex StorageMutex;
     Storage_ptr StorageInstance;
 
-    std::mutex CryptoMutex;
+    boost::mutex CryptoMutex;
     Crypto_ptr CryptoInstance;
 
-    std::mutex DatabaseMutex;
+    boost::mutex DatabaseMutex;
     Database_ptr DatabaseInstance;
 };
 
@@ -194,7 +195,7 @@ const int &Pool::StorageStruct::MaxEmailBodyLength() const
 
 Pool::StorageStruct *Pool::Storage()
 {
-    lock_guard<mutex> lock(s_pimpl->StorageMutex);
+    boost::lock_guard<boost::mutex> lock(s_pimpl->StorageMutex);
     (void)lock;
 
     if (s_pimpl->StorageInstance == nullptr) {
@@ -206,7 +207,7 @@ Pool::StorageStruct *Pool::Storage()
 
 CoreLib::Crypto *Pool::Crypto()
 {
-    lock_guard<mutex> lock(s_pimpl->CryptoMutex);
+    boost::lock_guard<boost::mutex> lock(s_pimpl->CryptoMutex);
     (void)lock;
 
     if (s_pimpl->CryptoInstance == nullptr) {
@@ -223,7 +224,7 @@ CoreLib::Crypto *Pool::Crypto()
 
 CoreLib::Database *Pool::Database()
 {
-    lock_guard<mutex> lock(s_pimpl->DatabaseMutex);
+    boost::lock_guard<boost::mutex> lock(s_pimpl->DatabaseMutex);
     (void)lock;
 
     if (s_pimpl->DatabaseInstance == nullptr) {

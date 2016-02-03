@@ -34,13 +34,14 @@
 
 
 #include <chrono>
-#include <mutex>
 #include <queue>
 #include <cmath>
 #include <boost/bind.hpp>
 #include <boost/chrono/chrono.hpp>
 #include <boost/exception/diagnostic_information.hpp>
 #include <boost/filesystem.hpp>
+#include <boost/thread/lock_guard.hpp>
+#include <boost/thread/mutex.hpp>
 #include <boost/thread/thread.hpp>
 #if defined ( _WIN32 )
 #include <vmime/platforms/windows/windowsHandler.hpp>
@@ -64,8 +65,8 @@ struct Mail::Impl
     static std::queue<Mail *> MailQueue;
     static std::queue<Mail::SendCallback_t> MailCallbackQueue;
     static bool WorkerThreadIsRunning;
-    static std::mutex MailMutex;
-    static std::mutex WorkerMutex;
+    static boost::mutex MailMutex;
+    static boost::mutex WorkerMutex;
     static std::unique_ptr<boost::thread> WorkerThread;
 
     static void DoWork();
@@ -84,8 +85,8 @@ struct Mail::Impl
 std::queue<Mail *> Mail::Impl::MailQueue;
 std::queue<Mail::SendCallback_t> Mail::Impl::MailCallbackQueue;
 bool Mail::Impl::WorkerThreadIsRunning = false;
-std::mutex Mail::Impl::MailMutex;
-std::mutex Mail::Impl::WorkerMutex;
+boost::mutex Mail::Impl::MailMutex;
+boost::mutex Mail::Impl::WorkerMutex;
 std::unique_ptr<boost::thread> Mail::Impl::WorkerThread;
 
 void Mail::Impl::DoWork()
@@ -103,7 +104,7 @@ void Mail::Impl::DoWork()
             boost::this_thread::interruption_point();
 
             {
-                std::lock_guard<std::mutex> lock(WorkerMutex);
+                boost::lock_guard<boost::mutex> lock(WorkerMutex);
                 (void)lock;
 
                 if (!WorkerThreadIsRunning)
@@ -113,7 +114,7 @@ void Mail::Impl::DoWork()
             boost::this_thread::disable_interruption di;
 
             {
-                std::lock_guard<std::mutex> lock(MailMutex);
+                boost::lock_guard<boost::mutex> lock(MailMutex);
                 (void)lock;
 
                 isMailQueueEmpty = !(MailQueue.size() > 0);
@@ -132,7 +133,7 @@ void Mail::Impl::DoWork()
                 }
 
                 {
-                    std::lock_guard<std::mutex> lock(MailMutex);
+                    boost::lock_guard<boost::mutex> lock(MailMutex);
                     (void)lock;
 
                     MailQueue.pop();
@@ -157,7 +158,7 @@ void Mail::Impl::DoWork()
                          std::chrono::high_resolution_clock::now() - lastJobTime)).count() // elapsed in milliseconds
                         > WORKER_THREAD_STOP_IDLE_MILLISECONDS) {
                     {
-                        std::lock_guard<std::mutex> lock(WorkerMutex);
+                        boost::lock_guard<boost::mutex> lock(WorkerMutex);
                         (void)lock;
 
                         WorkerThreadIsRunning = false;
@@ -331,7 +332,7 @@ void Mail::SendAsync(SendCallback_t callback)
 {
     try {
         {
-            std::lock_guard<std::mutex> lock(Impl::MailMutex);
+            boost::lock_guard<boost::mutex> lock(Impl::MailMutex);
             (void)lock;
 
             Impl::MailQueue.push(this);
@@ -339,7 +340,7 @@ void Mail::SendAsync(SendCallback_t callback)
         }
 
         {
-            std::lock_guard<std::mutex> lock(Impl::WorkerMutex);
+            boost::lock_guard<boost::mutex> lock(Impl::WorkerMutex);
             (void)lock;
 
             if (!Impl::WorkerThreadIsRunning) {
