@@ -37,11 +37,11 @@
 #define CORELIB_RANDOM_HPP
 
 
-#include <memory>
 #include <string>
 #include <boost/random/mersenne_twister.hpp>
 #include <boost/random/uniform_int_distribution.hpp>
-#include <boost/random/variate_generator.hpp>
+#include <boost/thread/mutex.hpp>
+#include <boost/thread/lock_guard.hpp>
 #include "System.hpp"
 
 namespace CoreLib {
@@ -68,20 +68,22 @@ public:
 
 private:
     struct Impl;
-    static std::unique_ptr<Impl> s_pimpl;
 
 public:
-    static boost::random::mt19937 &GetEngine();
-
     static void Characters(const Character &type, const size_t length, std::string &out_chars);
     static std::string Characters(const Character &type, const size_t length);
 
     template <typename Type>
     static Type Number(Type lowerBound, Type upperBound)
     {
+        boost::lock_guard<boost::mutex>(GetMutex());
         boost::random::uniform_int_distribution<> dist(lowerBound, upperBound);
         return dist(GetEngine());
     }
+
+private:
+    static boost::random::mt19937 &GetEngine();
+    static boost::mutex &GetMutex();
 };
 
 

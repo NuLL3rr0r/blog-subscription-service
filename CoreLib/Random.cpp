@@ -35,7 +35,6 @@
 
 #include <unordered_map>
 #include <boost/random/random_device.hpp>
-#include <boost/random/uniform_int_distribution.hpp>
 #include <CoreLib/make_unique.hpp>
 #include "Random.hpp"
 #include "Utility.hpp"
@@ -48,31 +47,21 @@ struct Random::Impl
 {
 public:
     typedef std::unordered_map<const CoreLib::Random::Character, const std::string,
-    CoreLib::Utility::Hasher<const CoreLib::Random::Character>> CharacterMapper_t;
+    CoreLib::Utility::Hasher<const CoreLib::Random::Character>> LookupTable;
 
 public:
-    CharacterMapper_t LookupTable;
-
-public:
-    Impl();
+    static LookupTable &GetLookupTable();
 };
-
-std::unique_ptr<Random::Impl> Random::s_pimpl = std::make_unique<Random::Impl>();
-
-boost::random::mt19937 &Random::GetEngine()
-{
-    static boost::random_device rd;
-    static boost::random::mt19937 rng(rd);
-    return rng;
-}
 
 void Random::Characters(const Character &type, const size_t length, std::string &out_chars)
 {
-    boost::random::uniform_int_distribution<> index_dist(0, (int)s_pimpl->LookupTable[type].size() - 1);
+    boost::lock_guard<boost::mutex>(GetMutex());
+
+    boost::random::uniform_int_distribution<> index_dist(0, (int)Impl::GetLookupTable()[type].size() - 1);
 
     out_chars.clear();
     for (size_t i = 0; i < length; ++i) {
-        out_chars += s_pimpl->LookupTable[type][(size_t)index_dist(GetEngine())];
+        out_chars += Impl::GetLookupTable()[type][(size_t)index_dist(GetEngine())];
     }
 }
 
@@ -83,22 +72,35 @@ std::string Random::Characters(const Character &type, const size_t length)
     return chars;
 }
 
-Random::Impl::Impl() :
-    LookupTable {
-{Character::Alphabetic, "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz"},
-{Character::Alphanumeric, "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz"},
-{Character::Blank, "\t "},
-{Character::Control, "0123456789"},
-{Character::Digits, "0123456789"},
-{Character::Graphical, "!\"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`abcdefghijklmnopqrstuvwxyz{|}~"},
-{Character::Hexadecimal, "0123456789ABCDEFabcdef"},
-{Character::Lower, "abcdefghijklmnopqrstuvwxyz"},
-{Character::Printable, " !\"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`abcdefghijklmnopqrstuvwxyz{|}~"},
-{Character::Punctuation, "!\"#$%&'()*+,-./:;<=>?@[\\]^_`{|}~"},
-{Character::Space, "\t\n\v\f\r "},
-{Character::Upper, "ABCDEFGHIJKLMNOPQRSTUVWXYZ"}
-        }
+boost::random::mt19937 &Random::GetEngine()
 {
+    static boost::random_device rd;
+    static boost::random::mt19937 rng(rd);
+    return rng;
+}
 
+boost::mutex &Random::GetMutex()
+{
+    static boost::mutex m;
+    return m;
+}
+
+Random::Impl::LookupTable &Random::Impl::GetLookupTable()
+{
+    static LookupTable lookupTable {
+        {Character::Alphabetic, "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz"},
+        {Character::Alphanumeric, "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz"},
+        {Character::Blank, "\t "},
+        {Character::Control, "0123456789"},
+        {Character::Digits, "0123456789"},
+        {Character::Graphical, "!\"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`abcdefghijklmnopqrstuvwxyz{|}~"},
+        {Character::Hexadecimal, "0123456789ABCDEFabcdef"},
+        {Character::Lower, "abcdefghijklmnopqrstuvwxyz"},
+        {Character::Printable, " !\"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`abcdefghijklmnopqrstuvwxyz{|}~"},
+        {Character::Punctuation, "!\"#$%&'()*+,-./:;<=>?@[\\]^_`{|}~"},
+        {Character::Space, "\t\n\v\f\r "},
+        {Character::Upper, "ABCDEFGHIJKLMNOPQRSTUVWXYZ"}
+    };
+    return lookupTable;
 }
 
