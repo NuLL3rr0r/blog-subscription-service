@@ -477,7 +477,7 @@
 
            (Not to be confused with the Twitter Bootstrap theme)
 	  -->
-	<progressive-bootstrap>false</progressive-bootstrap>
+        <progressive-bootstrap>true</progressive-bootstrap>
 
 	<!-- Set session-ID cookie
 
