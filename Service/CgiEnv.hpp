@@ -38,6 +38,8 @@
 
 
 #include <string>
+#include <vector>
+#include <ctime>
 
 namespace Wt {
 class WEnvironment;
@@ -110,6 +112,26 @@ public:
         } LastLogin;
     } SignedInUser;
 
+public:
+    struct Subscription {
+        enum class Action : char {
+            Subscribe=0,
+            Confirm=1,
+            Unsubscribe=-1,
+        };
+
+        enum class Language : unsigned char {
+            En,
+            Fa
+        };
+
+        Action Subscribe;
+        std::string Inbox;
+        std::vector<Language> Languages;
+        std::string Uuid;
+        std::time_t Timestamp;
+    } SubscriptionData;
+
 private:
     struct Impl;
     std::unique_ptr<Impl> m_pimpl;
@@ -121,8 +143,6 @@ public:
 public:
     std::string GetClientInfo(const ClientInfo &key) const;
     std::string GetServerInfo(const ServerInfo &key) const;
-
-    std::string GetInitialQueryString() const;
 
     const Language &GetCurrentLanguage() const;
     std::string GetCurrentLanguageString() const;

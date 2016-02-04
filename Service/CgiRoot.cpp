@@ -35,6 +35,7 @@
 
 
 #include <boost/algorithm/string.hpp>
+#include <boost/format.hpp>
 #include <Wt/WApplication>
 #include <Wt/WBootstrapTheme>
 #include <Wt/WContainerWidget>
@@ -248,20 +249,69 @@ Wt::WWidget *CgiRoot::Impl::GetRootLoginPage()
 
 void CgiRoot::Impl::ReloadWithLanguage(const std::string &lang)
 {
-    string parameters(m_cgiRoot->CgiEnvInstance->GetInitialQueryString());
+    string queryString(m_cgiRoot->environment().getCgiValue("QUERY_STRING"));
 
-    if (parameters.size() > 0) {
-        parameters += "&lang=";
-    } else {
-        parameters = "?lang=";
+    if (algorithm::starts_with(queryString, "?")) {
+        boost::replace_first(queryString, "?", "");
     }
 
-    parameters = parameters + lang;
+    string newQueryString;
 
-    if (algorithm::starts_with(parameters, "?")) {
-        parameters = "?" + parameters;
+    bool langFlag = false;
+    int argsCount = 0;
+
+    vector<string> pairs;
+    boost::split(pairs, queryString, boost::is_any_of("&"));
+    for (const auto &p : pairs) {
+        vector<string> pair;
+        boost::split(pair, p, boost::is_any_of("="));
+        if (pair.size() > 0) {
+            if (pair[0] != "lang") {
+                if (pair.size() == 1) {
+                    string key = trim_copy(pair[0]);
+                    if (key != "") {
+                        if (argsCount == 0) {
+                            newQueryString += (format("?%1%") % key).str();
+                        } else {
+                            newQueryString += (format("&%1%") % key).str();
+                        }
+                        ++argsCount;
+                    }
+                }
+                else {
+                    string value;
+                    string key = trim_copy(pair[0]);
+                    if (key != "") {
+                        for (size_t i = 1; i < pair.size(); ++i) {
+                            value += pair[i];
+                        }
+                        if (argsCount == 0) {
+                            newQueryString += (format("?%1%=%2%") % key % value).str();
+                        } else {
+                            newQueryString += (format("&%1%=%2%") % key % value).str();
+                        }
+                        ++argsCount;
+                    }
+                }
+            } else if (!langFlag) {
+                if (argsCount == 0) {
+                    newQueryString += (format("?lang=%1%") % lang).str();
+                } else {
+                    newQueryString += (format("&lang=%1%") % lang).str();
+                }
+                langFlag = true;
+            }
+        }
     }
 
-    m_cgiRoot->Exit(parameters);
+    if (!langFlag) {
+        if (argsCount == 0) {
+            newQueryString += (format("?lang=%1%") % lang).str();
+        } else {
+            newQueryString += (format("&lang=%1%") % lang).str();
+        }
+    }
+
+    m_cgiRoot->Exit(newQueryString);
 }
 

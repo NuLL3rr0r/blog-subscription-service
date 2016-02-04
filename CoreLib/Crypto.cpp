@@ -93,7 +93,7 @@ bool Crypto::Encrypt(const std::string &plainText, std::string &out_encodedText,
 
         string encoded;
         StringSource(cipher, true, new HexEncoder(new StringSink(encoded)));
-        out_encodedText.assign(move(encoded));
+        out_encodedText.assign(std::move(encoded));
 
         return true;
     }
@@ -134,7 +134,7 @@ bool Crypto::Decrypt(const std::string &cipherText, std::string &out_recoveredTe
         string decoded;
         StringSource(cipher, true,
                      new StreamTransformationFilter(dec, new StringSink(decoded)));
-        out_recoveredText.assign(move(decoded));
+        out_recoveredText.assign(std::move(decoded));
 
         return true;
     }
@@ -169,7 +169,7 @@ bool Crypto::Hash(const std::string &text, std::string &out_digest,
         string digest;
         StringSource(text, true,
                      new HashFilter(hash, new HexEncoder(new StringSink(digest))));
-        out_digest.assign(move(digest));
+        out_digest.assign(std::move(digest));
 
         return true;
     }
@@ -237,8 +237,8 @@ Crypto::Crypto(const Byte *key, std::size_t keyLen, const Byte *iv, std::size_t 
     m_pimpl->Key = new Byte[keyLen];
     m_pimpl->IV = new Byte[ivLen];
 
-    copy(key, key + keyLen, m_pimpl->Key);
-    copy(iv, iv + ivLen, m_pimpl->IV);
+    std::copy(key, key + keyLen, m_pimpl->Key);
+    std::copy(iv, iv + ivLen, m_pimpl->IV);
 
     m_pimpl->KeyLen = keyLen;
     m_pimpl->IVLen = ivLen;

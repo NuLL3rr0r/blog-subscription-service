@@ -63,6 +63,11 @@ public:
         typedef std::unordered_map<std::string, _T> HashToEnumClass;
     };
 
+    template <typename _E>
+    static constexpr typename std::underlying_type<_E>::type ToUnderlyingType(_E e) {
+        return static_cast<typename std::underlying_type<_E>::type>(e);
+    }
+
     static std::string CalculateSize(const std::size_t size);
 };
 

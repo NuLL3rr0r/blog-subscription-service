@@ -194,6 +194,18 @@ const int &Pool::StorageStruct::MaxEmailBodyLength() const
     return LENGTH;
 }
 
+const std::string &Pool::StorageStruct::RegexUuid() const
+{
+    static const string regex("/^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i");
+    return regex;
+}
+
+const std::string &Pool::StorageStruct::RegexLanguageArray() const
+{
+    static const string regex("^((^|,)(en|fa))+$");
+    return regex;
+}
+
 Pool::StorageStruct *Pool::Storage()
 {
     boost::lock_guard<boost::mutex> lock(s_pimpl->StorageMutex);

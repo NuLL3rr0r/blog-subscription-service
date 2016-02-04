@@ -41,6 +41,7 @@
 
 
 #include <string>
+#include <ctime>
 
 namespace CoreLib {
 namespace CDate {

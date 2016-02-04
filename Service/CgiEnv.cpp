@@ -39,14 +39,17 @@
 #include <boost/bimap/unordered_set_of.hpp>
 #include <boost/format.hpp>
 #include <boost/lexical_cast.hpp>
+#include <boost/regex.hpp>
 #include <Wt/WEnvironment>
 #include <GeoIP.h>
 #include <GeoIPCity.h>
+#include <CoreLib/Crypto.hpp>
 #include <CoreLib/FileSystem.hpp>
 #include <CoreLib/Log.hpp>
 #include <CoreLib/make_unique.hpp>
 #include <CoreLib/Utility.hpp>
 #include "CgiEnv.hpp"
+#include "Pool.hpp"
 
 using namespace std;
 using namespace Wt;
@@ -70,8 +73,6 @@ struct CgiEnv::Impl
     std::string ServerInfoURL;
     std::string ServerInfoRootLoginUrl;
     std::string ServerInfoNoReplyAddr;
-
-    std::string InitialQueryString;
 
     CgiEnv::Language CurrentLanguage;
     LanguageBiMap LanguageMapper;
@@ -133,8 +134,6 @@ CgiEnv::CgiEnv(const WEnvironment &env) :
             queryStr.find("%3e") != string::npos)
             ? true : false;
 
-    m_pimpl->InitialQueryString = queryStr;
-
     bool logout = false;
 
     Http::ParameterMap map = env.getParameterMap();
@@ -154,6 +153,65 @@ CgiEnv::CgiEnv(const WEnvironment &env) :
 
         if (it->first == "logout") {
             logout = true;
+        }
+
+        if (it->first == "subscribe" && it->second[0] != "") {
+            try {
+                /// 1st check
+                if (it->second[0] == "0" || it->second[0] == "1" || it->second[0] == "-1") {
+                    auto action = lexical_cast<short>(it->second[0]);
+                    /// 2nd check
+                    if (action >= static_cast<short>(Subscription::Action::Unsubscribe)
+                            && action <= static_cast<short>(Subscription::Action::Confirm)) {
+                        SubscriptionData.Subscribe = static_cast<Subscription::Action>(action);
+                    }
+                }
+            } catch (...) {
+                SubscriptionData.Subscribe = Subscription::Action::Subscribe;
+            }
+        }
+
+        if (it->first == "inbox" && it->second[0] != "") {
+            static const regex REGEX(Pool::Storage()->RegexEmail());
+            smatch result;
+            if (regex_search(it->second[0], result, REGEX)) {
+                SubscriptionData.Inbox.assign(it->second[0]);
+            }
+        }
+
+        if (it->first == "subscription" && it->second[0] != "") {
+            static const regex REGEX(Pool::Storage()->RegexLanguageArray());
+            smatch result;
+            if (regex_search(it->second[0], result, REGEX)) {
+                vector<string> vec;
+                split(vec, it->second[0], boost::is_any_of(","));
+                vector<Subscription::Language> langs;
+                for (const auto &s : vec) {
+                    if (s == "en") {
+                        langs.push_back(Subscription::Language::En);
+                    } else if (s == "fa") {
+                        langs.push_back(Subscription::Language::Fa);
+                    }
+                }
+                SubscriptionData.Languages = std::move(langs);
+            }
+        }
+
+        if (it->first == "recipient" && it->second[0] != "") {
+            static const regex REGEX(Pool::Storage()->RegexUuid());
+            smatch result;
+            if (regex_search(it->second[0], result, REGEX)) {
+                SubscriptionData.Uuid.assign(it->second[0]);
+            }
+        }
+
+        if (it->first == "token" && it->second[0] != "") {
+            try {
+                string token;
+                Pool::Crypto()->Decrypt(it->second[0], token);
+                SubscriptionData.Timestamp = lexical_cast<time_t>(token);
+            } catch (...) {
+            }
         }
     }
 
@@ -203,11 +261,6 @@ string CgiEnv::GetServerInfo(const CgiEnv::ServerInfo &key) const
         return m_pimpl->ServerInfoNoReplyAddr;
 
     }
-}
-
-std::string CgiEnv::GetInitialQueryString() const
-{
-    return m_pimpl->InitialQueryString;
 }
 
 const CgiEnv::Language &CgiEnv::GetCurrentLanguage() const
@@ -275,11 +328,11 @@ void CgiEnv::Impl::ExtractClientInfoDetail()
 {
     try {
         GeoIP *geoLiteCity;
-#if defined ( _FreeBSD__ )
-        if (IO::FileExists("/usr/local/share/GeoIP/GeoLiteCity.dat")) {
+#if defined ( __FreeBSD__ )
+        if (FileSystem::FileExists("/usr/local/share/GeoIP/GeoLiteCity.dat")) {
             geoLiteCity = GeoIP_open("/usr/local/share/GeoIP/GeoLiteCity.dat", GEOIP_STANDARD);
 #elif  defined ( __gnu_linux__ ) || defined ( __linux__ )
-        if (IO::FileExists("/usr/share/GeoIP/GeoLiteCity.dat")) {
+        if (FileSystem::FileExists("/usr/share/GeoIP/GeoLiteCity.dat")) {
             geoLiteCity = GeoIP_open("/usr/share/GeoIP/GeoLiteCity.dat", GEOIP_STANDARD);
 #else
         if (FileSystem::FileExists("/usr/local/share/GeoIP/GeoLiteCity.dat")) {
