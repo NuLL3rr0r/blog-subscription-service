@@ -29,7 +29,7 @@
  *
  * @section DESCRIPTION
  *
- * The website home page.
+ * The contact form shown to the end-user.
  */
 
 
@@ -37,54 +37,51 @@
 #include <Wt/WString>
 #include <Wt/WText>
 #include <CoreLib/make_unique.hpp>
-#include "ContactForm.hpp"
 #include "Div.hpp"
-#include "Home.hpp"
-#include "SubscribeForm.hpp"
-#include "UnsubscribeForm.hpp"
+#include "ContactForm.hpp"
 
 using namespace std;
 using namespace boost;
 using namespace Wt;
 using namespace Service;
 
-struct Home::Impl : public Wt::WObject
+struct ContactForm::Impl : public Wt::WObject
 {
 private:
-    Home *m_parent;
+    ContactForm *m_parent;
 
 public:
-    Impl(Home *parent);
+    Impl(ContactForm *parent);
     ~Impl();
 };
 
-Home::Home(CgiRoot *cgi) :
+ContactForm::ContactForm(CgiRoot *cgi) :
     Page(cgi),
-    m_pimpl(make_unique<Home::Impl>(this))
+    m_pimpl(make_unique<ContactForm::Impl>(this))
 {
-    m_cgiRoot->setTitle(replace_all_copy(tr("home-page-title").value(), L"&amp;", "&"));
+    m_cgiRoot->setTitle(replace_all_copy(tr("ContactForm-page-title").value(), L"&amp;", "&"));
 
     this->clear();
-    this->setId("HomePage");
+    this->setId("ContactFormPage");
     this->addWidget(Layout());
 }
 
-Home::~Home() = default;
+ContactForm::~ContactForm() = default;
 
-WWidget *Home::Layout()
+WWidget *ContactForm::Layout()
 {
-    Div *container = new Div("Home", "container");
+    Div *container = new Div("ContactForm", "container");
     Div *noScript = new Div(container);
     noScript->addWidget(new WText(tr("no-script")));
 
     return container;
 }
 
-Home::Impl::Impl(Home *parent)
+ContactForm::Impl::Impl(ContactForm *parent)
     : m_parent(parent)
 {
 
 }
 
-Home::Impl::~Impl() = default;
+ContactForm::Impl::~Impl() = default;
 

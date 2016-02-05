@@ -29,7 +29,7 @@
  *
  * @section DESCRIPTION
  *
- * The website home page.
+ * The unsubscribe form shown to the end-user.
  */
 
 
@@ -37,10 +37,7 @@
 #include <Wt/WString>
 #include <Wt/WText>
 #include <CoreLib/make_unique.hpp>
-#include "ContactForm.hpp"
 #include "Div.hpp"
-#include "Home.hpp"
-#include "SubscribeForm.hpp"
 #include "UnsubscribeForm.hpp"
 
 using namespace std;
@@ -48,43 +45,43 @@ using namespace boost;
 using namespace Wt;
 using namespace Service;
 
-struct Home::Impl : public Wt::WObject
+struct UnsubscribeForm::Impl : public Wt::WObject
 {
 private:
-    Home *m_parent;
+    UnsubscribeForm *m_parent;
 
 public:
-    Impl(Home *parent);
+    Impl(UnsubscribeForm *parent);
     ~Impl();
 };
 
-Home::Home(CgiRoot *cgi) :
+UnsubscribeForm::UnsubscribeForm(CgiRoot *cgi) :
     Page(cgi),
-    m_pimpl(make_unique<Home::Impl>(this))
+    m_pimpl(make_unique<UnsubscribeForm::Impl>(this))
 {
-    m_cgiRoot->setTitle(replace_all_copy(tr("home-page-title").value(), L"&amp;", "&"));
+    m_cgiRoot->setTitle(replace_all_copy(tr("UnsubscribeForm-page-title").value(), L"&amp;", "&"));
 
     this->clear();
-    this->setId("HomePage");
+    this->setId("UnsubscribeFormPage");
     this->addWidget(Layout());
 }
 
-Home::~Home() = default;
+UnsubscribeForm::~UnsubscribeForm() = default;
 
-WWidget *Home::Layout()
+WWidget *UnsubscribeForm::Layout()
 {
-    Div *container = new Div("Home", "container");
+    Div *container = new Div("UnsubscribeForm", "container");
     Div *noScript = new Div(container);
     noScript->addWidget(new WText(tr("no-script")));
 
     return container;
 }
 
-Home::Impl::Impl(Home *parent)
+UnsubscribeForm::Impl::Impl(UnsubscribeForm *parent)
     : m_parent(parent)
 {
 
 }
 
-Home::Impl::~Impl() = default;
+UnsubscribeForm::Impl::~Impl() = default;
 
