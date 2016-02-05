@@ -47,17 +47,14 @@ using namespace Service;
 
 struct ContactForm::Impl : public Wt::WObject
 {
-private:
-    ContactForm *m_parent;
-
 public:
-    Impl(ContactForm *parent);
+    Impl();
     ~Impl();
 };
 
-ContactForm::ContactForm(CgiRoot *cgi) :
-    Page(cgi),
-    m_pimpl(make_unique<ContactForm::Impl>(this))
+ContactForm::ContactForm(CgiRoot *cgi)
+    : Page(cgi),
+    m_pimpl(make_unique<ContactForm::Impl>())
 {
     m_cgiRoot->setTitle(replace_all_copy(tr("ContactForm-page-title").value(), L"&amp;", "&"));
 
@@ -77,8 +74,7 @@ WWidget *ContactForm::Layout()
     return container;
 }
 
-ContactForm::Impl::Impl(ContactForm *parent)
-    : m_parent(parent)
+ContactForm::Impl::Impl()
 {
 
 }

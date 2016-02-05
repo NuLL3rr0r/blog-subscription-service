@@ -50,17 +50,14 @@ using namespace Service;
 
 struct Home::Impl : public Wt::WObject
 {
-private:
-    Home *m_parent;
-
 public:
-    Impl(Home *parent);
+    Impl();
     ~Impl();
 };
 
-Home::Home(CgiRoot *cgi) :
-    Page(cgi),
-    m_pimpl(make_unique<Home::Impl>(this))
+Home::Home(CgiRoot *cgi)
+    : Page(cgi),
+    m_pimpl(make_unique<Home::Impl>())
 {
     m_cgiRoot->setTitle(replace_all_copy(tr("home-page-title").value(), L"&amp;", "&"));
 
@@ -80,8 +77,7 @@ WWidget *Home::Layout()
     return container;
 }
 
-Home::Impl::Impl(Home *parent)
-    : m_parent(parent)
+Home::Impl::Impl()
 {
 
 }

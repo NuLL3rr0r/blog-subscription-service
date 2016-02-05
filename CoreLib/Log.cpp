@@ -52,6 +52,7 @@ using namespace CoreLib;
 
 struct Log::Impl
 {
+public:
     struct ETypeHasher
     {
         std::size_t operator()(const EType &t) const
@@ -82,9 +83,11 @@ struct Log::Impl
 
     boost::mutex LogMutex;
 
+public:
     Impl();
-    virtual ~Impl();
+    ~Impl();
 
+public:
     StorageStruct *Storage();
 };
 

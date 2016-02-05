@@ -105,7 +105,7 @@ public:
     typedef std::map<VirtualMemory, double> VirtualMemoryInstant;
 
     typedef std::unordered_map<sg_host_state, Wt::WString,
-    CoreLib::Utility::Hasher<sg_host_state>> HostStateHashTable;
+        CoreLib::Utility::Hasher<sg_host_state>> HostStateHashTable;
 
 public:
     Wt::WTimer *Timer;
@@ -131,6 +131,7 @@ public:
 
 public:
     Impl();
+    ~Impl();
 
 private:
     void RefreshResourceUsage();
@@ -139,8 +140,8 @@ public:
     void Initialize();
 };
 
-SysMon::SysMon(CgiRoot *cgi) :
-    Page(cgi),
+SysMon::SysMon(CgiRoot *cgi)
+    : Page(cgi),
     m_pimpl(make_unique<SysMon::Impl>())
 {
     this->clear();
@@ -373,18 +374,20 @@ WWidget *SysMon::Layout()
     return container;
 }
 
-SysMon::Impl::Impl() :
-    Timer(nullptr),
+SysMon::Impl::Impl()
+    : Timer(nullptr),
     HostState {
-{sg_unknown_configuration, tr("system-monitor-host-info-host-state-unknown-configuration")},
-{sg_physical_host, tr("system-monitor-host-info-host-state-physical-host")},
-{sg_virtual_machine, tr("system-monitor-host-info-host-state-virtual-machine")},
-{sg_paravirtual_machine, tr("system-monitor-host-info-host-state-paravirtual-machine")},
-{sg_hardware_virtualized, tr("system-monitor-host-info-host-state-hardware-virtualized")}
-        }
+        {sg_unknown_configuration, tr("system-monitor-host-info-host-state-unknown-configuration")},
+        {sg_physical_host, tr("system-monitor-host-info-host-state-physical-host")},
+        {sg_virtual_machine, tr("system-monitor-host-info-host-state-virtual-machine")},
+        {sg_paravirtual_machine, tr("system-monitor-host-info-host-state-paravirtual-machine")},
+        {sg_hardware_virtualized, tr("system-monitor-host-info-host-state-hardware-virtualized")}
+    }
 {
 
 }
+
+SysMon::Impl::~Impl() = default;
 
 void SysMon::Impl::RefreshResourceUsage()
 {

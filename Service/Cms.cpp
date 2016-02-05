@@ -64,22 +64,25 @@ using namespace Service;
 struct Cms::Impl : public Wt::WObject
 {
 public:
-    Cms *m_parent;
     Wt::WStackedWidget *Contents;
     WText *LastSelectedMenuItem;
 
     SysMon *SystemMonitor;
 
+private:
+    Cms *m_parent;
+
 public:
-    explicit Impl(Cms *parent);
+    Impl();
+    ~Impl();
 
 public:
     void OnMenuItemPressed(WText *sender);
 };
 
-Cms::Cms(CgiRoot *cgi) :
-    Page(cgi),
-    m_pimpl(make_unique<Cms::Impl>(this))
+Cms::Cms(CgiRoot *cgi)
+    : Page(cgi),
+    m_pimpl(make_unique<Cms::Impl>())
 {
     m_cgiRoot->setTitle(tr("cms-page-title"));
 
@@ -187,12 +190,13 @@ WWidget *Cms::Layout()
     return container;
 }
 
-Cms::Impl::Impl(Cms *parent)
-    : m_parent(parent),
-      LastSelectedMenuItem(nullptr)
+Cms::Impl::Impl()
+    : LastSelectedMenuItem(nullptr)
 {
 
 }
+
+Cms::Impl::~Impl() = default;
 
 void Cms::Impl::OnMenuItemPressed(WText *sender)
 {

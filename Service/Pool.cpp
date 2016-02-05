@@ -50,10 +50,12 @@ using namespace Service;
 
 struct Pool::Impl
 {
+public:
     typedef std::unique_ptr<StorageStruct> Storage_ptr;
     typedef std::unique_ptr<CoreLib::Crypto> Crypto_ptr;
     typedef std::unique_ptr<CoreLib::Database> Database_ptr;
 
+public:
     boost::mutex StorageMutex;
     Storage_ptr StorageInstance;
 

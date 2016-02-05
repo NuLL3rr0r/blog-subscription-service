@@ -56,17 +56,13 @@ using namespace Service;
 struct CmsDashboard::Impl : public Wt::WObject
 {
 public:
-    CmsDashboard *m_parent;
-
-public:
-    explicit Impl(CmsDashboard *parent);
-
-public:
+    Impl();
+    ~Impl();
 };
 
-CmsDashboard::CmsDashboard(CgiRoot *cgi) :
-    Page(cgi),
-    m_pimpl(make_unique<CmsDashboard::Impl>(this))
+CmsDashboard::CmsDashboard(CgiRoot *cgi)
+    : Page(cgi),
+    m_pimpl(make_unique<CmsDashboard::Impl>())
 {
     this->clear();
     this->setId("CmsDashboardPage");
@@ -126,9 +122,10 @@ WWidget *CmsDashboard::Layout()
     return container;
 }
 
-CmsDashboard::Impl::Impl(CmsDashboard *parent)
-    : m_parent(parent)
+CmsDashboard::Impl::Impl()
 {
 
 }
+
+CmsDashboard::Impl::~Impl() = default;
 

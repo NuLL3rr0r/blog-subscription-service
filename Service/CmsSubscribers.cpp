@@ -59,12 +59,11 @@ using namespace Service;
 struct CmsSubscribers::Impl : public Wt::WObject
 {
 public:
-    CmsSubscribers *m_parent;
-
     WContainerWidget *SubscribersTableContainer;
 
 public:
-    explicit Impl(CmsSubscribers *parent);
+    Impl();
+    ~Impl();
 
 public:
     void OnAllButtonPressed();
@@ -73,9 +72,9 @@ public:
     void OnFaButtonPressed();
 };
 
-CmsSubscribers::CmsSubscribers(CgiRoot *cgi) :
-    Page(cgi),
-    m_pimpl(make_unique<CmsSubscribers::Impl>(this))
+CmsSubscribers::CmsSubscribers(CgiRoot *cgi)
+    : Page(cgi),
+    m_pimpl(make_unique<CmsSubscribers::Impl>())
 {
     this->clear();
     this->setId("CmsSubscribersPage");
@@ -145,28 +144,29 @@ WWidget *CmsSubscribers::Layout()
     return container;
 }
 
-CmsSubscribers::Impl::Impl(CmsSubscribers *parent)
-    : m_parent(parent)
+CmsSubscribers::Impl::Impl()
 {
 
 }
+
+CmsSubscribers::Impl::~Impl() = default;
 
 void CmsSubscribers::Impl::OnAllButtonPressed()
 {
 
 }
 
-void OnEnFaButtonPressed()
+void CmsSubscribers::Impl::OnEnFaButtonPressed()
 {
 
 }
 
-void OnEnButtonPressed()
+void CmsSubscribers::Impl::OnEnButtonPressed()
 {
 
 }
 
-void OnFaButtonPressed()
+void CmsSubscribers::Impl::OnFaButtonPressed()
 {
 
 }

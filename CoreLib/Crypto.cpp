@@ -63,13 +63,16 @@ using namespace CoreLib;
 
 struct Crypto::Impl
 {
+public:
     Crypto::Byte *Key;
     std::size_t KeyLen;
     Crypto::Byte *IV;
     std::size_t IVLen;
 
+public:
     Impl();
-    virtual ~Impl();
+    ~Impl();
+
 };
 
 bool Crypto::Encrypt(const std::string &plainText, std::string &out_encodedText,

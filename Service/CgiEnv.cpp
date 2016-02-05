@@ -59,11 +59,13 @@ using namespace Service;
 
 struct CgiEnv::Impl
 {
+public:
     typedef boost::bimap<boost::bimaps::unordered_set_of<CgiEnv::Language>,
-    boost::bimaps::unordered_set_of<std::string>> LanguageBiMap;
+        boost::bimaps::unordered_set_of<std::string>> LanguageBiMap;
     typedef std::unordered_map<CgiEnv::Language, CgiEnv::LanguageDirection,
-    CoreLib::Utility::Hasher<CgiEnv::Language>> LanguageDirectionHashTable;
+        CoreLib::Utility::Hasher<CgiEnv::Language>> LanguageDirectionHashTable;
 
+public:
     std::string ClientInfoIP;
     std::string ClientInfoBrowser;
     std::string ClientInfoReferer;
@@ -83,18 +85,19 @@ struct CgiEnv::Impl
     bool IsRootLogoutRequested;
 
 private:
-    CgiEnv *m_cgiEnv;
+    CgiEnv *m_parent;
 
 public:
-    static std::string CStrToStr(const char *cstr);
-
     explicit Impl(CgiEnv *cgiEnv);
+    ~Impl();
+
+    static std::string CStrToStr(const char *cstr);
 
     void ExtractClientInfoDetail();
 };
 
-CgiEnv::CgiEnv(const WEnvironment &env) :
-    m_pimpl(make_unique<CgiEnv::Impl>(this))
+CgiEnv::CgiEnv(const WEnvironment &env)
+    : m_pimpl(make_unique<CgiEnv::Impl>(this))
 {
     m_pimpl->ClientInfoIP = env.clientAddress();
     m_pimpl->ClientInfoBrowser = env.userAgent();
@@ -300,28 +303,30 @@ bool CgiEnv::IsRootLogoutRequested() const
     return m_pimpl->IsRootLogoutRequested;
 }
 
+CgiEnv::Impl::Impl(CgiEnv *cgiEnv)
+    : CurrentLanguage(Language::None),
+      LanguageDirectionMapper {
+          { Language::None, LanguageDirection::None },
+          { Language::Invalid, LanguageDirection::None },
+          { Language::En, LanguageDirection::LeftToRight },
+          { Language::Fa, LanguageDirection::RightToLeft }
+      },
+      FoundXSS(false),
+      IsRootLoginRequested(false),
+      IsRootLogoutRequested(false),
+      m_parent(cgiEnv)
+{
+    LanguageMapper.insert({ Language::None, "none" });
+    LanguageMapper.insert({ Language::Invalid, "invalid" });
+    LanguageMapper.insert({ Language::En, "en" });
+    LanguageMapper.insert({ Language::Fa, "fa" });
+}
+
+CgiEnv::Impl::~Impl() = default;
+
 string CgiEnv::Impl::CStrToStr(const char *cstr)
 {
     return cstr != NULL ? cstr : "";
-}
-
-CgiEnv::Impl::Impl(CgiEnv *cgiEnv) :
-    CurrentLanguage(Language::None),
-    LanguageDirectionMapper {
-{Language::None, LanguageDirection::None},
-{Language::Invalid, LanguageDirection::None},
-{Language::En, LanguageDirection::LeftToRight},
-{Language::Fa, LanguageDirection::RightToLeft}
-        },
-    FoundXSS(false),
-    IsRootLoginRequested(false),
-    IsRootLogoutRequested(false),
-    m_cgiEnv(cgiEnv)
-{
-    LanguageMapper.insert({Language::None, "none"});
-    LanguageMapper.insert({Language::Invalid, "invalid"});
-    LanguageMapper.insert({Language::En, "en"});
-    LanguageMapper.insert({Language::Fa, "fa"});
 }
 
 void CgiEnv::Impl::ExtractClientInfoDetail()
@@ -347,20 +352,20 @@ void CgiEnv::Impl::ExtractClientInfoDetail()
         GeoIPRecordTag *record = GeoIP_record_by_name(geoLiteCity, ClientInfoIP.c_str());
 
         if (record != NULL) {
-            m_cgiEnv->ClientInfoRecord.country_code = CStrToStr(record->country_code);
-            m_cgiEnv->ClientInfoRecord.country_code3 = CStrToStr(record->country_code3);
-            m_cgiEnv->ClientInfoRecord.country_name = CStrToStr(record->country_name);
-            m_cgiEnv->ClientInfoRecord.region = CStrToStr(record->region);
-            m_cgiEnv->ClientInfoRecord.city = CStrToStr(record->city);
-            m_cgiEnv->ClientInfoRecord.postal_code = CStrToStr(record->postal_code);
-            m_cgiEnv->ClientInfoRecord.latitude = lexical_cast<string>(record->latitude);
-            m_cgiEnv->ClientInfoRecord.longitude = lexical_cast<string>(record->longitude);
-            m_cgiEnv->ClientInfoRecord.metro_code = lexical_cast<string>(record->metro_code);
-            m_cgiEnv->ClientInfoRecord.dma_code = lexical_cast<string>(record->dma_code);
-            m_cgiEnv->ClientInfoRecord.area_code = lexical_cast<string>(record->area_code);
-            m_cgiEnv->ClientInfoRecord.charset = lexical_cast<string>(record->charset);
-            m_cgiEnv->ClientInfoRecord.continent_code = CStrToStr(record->continent_code);
-            m_cgiEnv->ClientInfoRecord.netmask = lexical_cast<string>(record->netmask);
+            m_parent->ClientInfoRecord.country_code = CStrToStr(record->country_code);
+            m_parent->ClientInfoRecord.country_code3 = CStrToStr(record->country_code3);
+            m_parent->ClientInfoRecord.country_name = CStrToStr(record->country_name);
+            m_parent->ClientInfoRecord.region = CStrToStr(record->region);
+            m_parent->ClientInfoRecord.city = CStrToStr(record->city);
+            m_parent->ClientInfoRecord.postal_code = CStrToStr(record->postal_code);
+            m_parent->ClientInfoRecord.latitude = lexical_cast<string>(record->latitude);
+            m_parent->ClientInfoRecord.longitude = lexical_cast<string>(record->longitude);
+            m_parent->ClientInfoRecord.metro_code = lexical_cast<string>(record->metro_code);
+            m_parent->ClientInfoRecord.dma_code = lexical_cast<string>(record->dma_code);
+            m_parent->ClientInfoRecord.area_code = lexical_cast<string>(record->area_code);
+            m_parent->ClientInfoRecord.charset = lexical_cast<string>(record->charset);
+            m_parent->ClientInfoRecord.continent_code = CStrToStr(record->continent_code);
+            m_parent->ClientInfoRecord.netmask = lexical_cast<string>(record->netmask);
         }
     } catch(...) {
     }

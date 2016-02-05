@@ -47,17 +47,13 @@ using namespace Service;
 
 struct SubscribeForm::Impl : public Wt::WObject
 {
-private:
-    SubscribeForm *m_parent;
-
-public:
-    Impl(SubscribeForm *parent);
+    Impl();
     ~Impl();
 };
 
 SubscribeForm::SubscribeForm(CgiRoot *cgi) :
     Page(cgi),
-    m_pimpl(make_unique<SubscribeForm::Impl>(this))
+    m_pimpl(make_unique<SubscribeForm::Impl>())
 {
     m_cgiRoot->setTitle(replace_all_copy(tr("SubscribeForm-page-title").value(), L"&amp;", "&"));
 
@@ -77,8 +73,7 @@ WWidget *SubscribeForm::Layout()
     return container;
 }
 
-SubscribeForm::Impl::Impl(SubscribeForm *parent)
-    : m_parent(parent)
+SubscribeForm::Impl::Impl()
 {
 
 }

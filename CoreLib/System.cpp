@@ -152,18 +152,18 @@ int System::GetPidsOfProcess(const std::string &processName, std::vector<int> &p
     int processesFound = 0;
 
     if ((kd = kvm_open("/dev/null", "/dev/null", "/dev/null", O_RDONLY, "kvm_open")) == NULL) {
-        (void)errx(1, "%s", kvm_geterr(kd));
+        LOG_ERROR(kvm_geterr(kd));
     } else {
         p = kvm_getprocs(kd, KERN_PROC_PROC, 0, &nProcesses);
 
-        /// WARNING: HACK
+        /// NOTICE: THIS IS A HACK /// START
         string name;
         if (processName.size() <= 19) {
             name = processName;
         } else {
             name = processName.substr(0, 19);
         }
-        /// WARNING: HACK /// END
+        /// NOTICE: THIS IS A HACK /// END
 
         for (i = 0; i < nProcesses; ++i) {
             if (strncmp(name.c_str(), p[i].ki_comm, COMMLEN + 1) == 0) {

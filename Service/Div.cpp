@@ -41,21 +41,21 @@ using namespace std;
 using namespace Wt;
 using namespace Service;
 
-Div::Div(WContainerWidget *parent, const string& id, const string& cssClass) :
-    WContainerWidget(parent)
+Div::Div(WContainerWidget *parent, const string& id, const string& cssClass)
+    : WContainerWidget(parent)
 {
     setId(id);
     setStyleClass(cssClass);
 }
 
-Div::Div(WContainerWidget *parent, const string& id) :
-    WContainerWidget(parent)
+Div::Div(WContainerWidget *parent, const string& id)
+    : WContainerWidget(parent)
 {
     setId(id);
 }
 
-Div::Div(WContainerWidget *parent) :
-    WContainerWidget(parent)
+Div::Div(WContainerWidget *parent)
+    : WContainerWidget(parent)
 {
 
 }

@@ -64,21 +64,23 @@ using namespace Service;
 struct CmsChangeEmail::Impl : public Wt::WObject
 {
 public:
-    CmsChangeEmail *m_parent;
-
     WLineEdit *EmailLineEdit;
     WLineEdit *PasswordLineEdit;
     WText *ChangeEmailMessageArea;
 
+private:
+    CmsChangeEmail *m_parent;
+
 public:
     explicit Impl(CmsChangeEmail *parent);
+    ~Impl();
 
 public:
     void OnEmailChangeFormSubmitted();
 };
 
-CmsChangeEmail::CmsChangeEmail(CgiRoot *cgi) :
-    Page(cgi),
+CmsChangeEmail::CmsChangeEmail(CgiRoot *cgi)
+    : Page(cgi),
     m_pimpl(make_unique<CmsChangeEmail::Impl>(this))
 {
     this->clear();
@@ -166,6 +168,8 @@ CmsChangeEmail::Impl::Impl(CmsChangeEmail *parent)
 {
 
 }
+
+CmsChangeEmail::Impl::~Impl() = default;
 
 void CmsChangeEmail::Impl::OnEmailChangeFormSubmitted()
 {

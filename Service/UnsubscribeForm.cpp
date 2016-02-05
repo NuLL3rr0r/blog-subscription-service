@@ -47,17 +47,13 @@ using namespace Service;
 
 struct UnsubscribeForm::Impl : public Wt::WObject
 {
-private:
-    UnsubscribeForm *m_parent;
-
-public:
-    Impl(UnsubscribeForm *parent);
+    Impl();
     ~Impl();
 };
 
-UnsubscribeForm::UnsubscribeForm(CgiRoot *cgi) :
-    Page(cgi),
-    m_pimpl(make_unique<UnsubscribeForm::Impl>(this))
+UnsubscribeForm::UnsubscribeForm(CgiRoot *cgi)
+    : Page(cgi),
+    m_pimpl(make_unique<UnsubscribeForm::Impl>())
 {
     m_cgiRoot->setTitle(replace_all_copy(tr("UnsubscribeForm-page-title").value(), L"&amp;", "&"));
 
@@ -77,8 +73,7 @@ WWidget *UnsubscribeForm::Layout()
     return container;
 }
 
-UnsubscribeForm::Impl::Impl(UnsubscribeForm *parent)
-    : m_parent(parent)
+UnsubscribeForm::Impl::Impl()
 {
 
 }

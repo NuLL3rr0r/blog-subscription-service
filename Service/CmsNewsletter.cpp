@@ -64,8 +64,6 @@ using namespace Service;
 struct CmsNewsletter::Impl : public Wt::WObject
 {
 public:
-    CmsNewsletter *m_parent;
-
     WComboBox *RecipientsComboBox;
     WLineEdit *SubjectLineEdit;
     WTextEdit *BodyTextEdit;
@@ -74,7 +72,8 @@ public:
     WText *NewsletterMessageArea;
 
 public:
-    explicit Impl(CmsNewsletter *parent);
+    Impl();
+    ~Impl();
 
 public:
     void OnRecipientsComboBoxSelectionChanged(Wt::WString recipients);
@@ -84,9 +83,9 @@ public:
     void OnClearConfirmDialogClosed(Wt::StandardButton button);
 };
 
-CmsNewsletter::CmsNewsletter(CgiRoot *cgi) :
-    Page(cgi),
-    m_pimpl(make_unique<CmsNewsletter::Impl>(this))
+CmsNewsletter::CmsNewsletter(CgiRoot *cgi)
+    : Page(cgi),
+    m_pimpl(make_unique<CmsNewsletter::Impl>())
 {
     this->clear();
     this->setId("CmsNewsletterPage");
@@ -220,11 +219,12 @@ WWidget *CmsNewsletter::Layout()
     return container;
 }
 
-CmsNewsletter::Impl::Impl(CmsNewsletter *parent)
-    : m_parent(parent)
+CmsNewsletter::Impl::Impl()
 {
 
 }
+
+CmsNewsletter::Impl::~Impl() = default;
 
 void CmsNewsletter::Impl::OnRecipientsComboBoxSelectionChanged(Wt::WString recipients)
 {

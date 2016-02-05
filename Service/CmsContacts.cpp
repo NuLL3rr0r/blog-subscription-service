@@ -70,8 +70,6 @@ using namespace Service;
 struct CmsContacts::Impl : public Wt::WObject
 {
 public:
-    CmsContacts *m_parent;
-
     WLineEdit *RecipientEnLineEdit;
     WLineEdit *RecipientFaLineEdit;
     WLineEdit *EmailLineEdit;
@@ -80,8 +78,12 @@ public:
 
     std::unique_ptr<Wt::WMessageBox> eraseMessageBox;
 
+private:
+    CmsContacts *m_parent;
+
 public:
     explicit Impl(CmsContacts *parent);
+    ~Impl();
 
 public:
     void OnAddContactFormSubmitted();
@@ -97,8 +99,8 @@ public:
                                       Wt::WSignalMapper<Wt::WInPlaceEdit *> *signalMapper);
 };
 
-CmsContacts::CmsContacts(CgiRoot *cgi) :
-    Page(cgi),
+CmsContacts::CmsContacts(CgiRoot *cgi)
+    : Page(cgi),
     m_pimpl(make_unique<CmsContacts::Impl>(this))
 {
     this->clear();
@@ -203,6 +205,8 @@ CmsContacts::Impl::Impl(CmsContacts *parent)
 {
 
 }
+
+CmsContacts::Impl::~Impl() = default;
 
 void CmsContacts::Impl::OnAddContactFormSubmitted()
 {

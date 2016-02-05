@@ -98,7 +98,9 @@ struct HttpStatus::Impl
     typedef unordered_map<HttpStatusCode, std::wstring, Hasher<HttpStatusCode>> StatusCodesHashTable;
     StatusCodesHashTable StatusCodes;
 
+public:
     Impl();
+    ~Impl();
 };
 
 std::unique_ptr<HttpStatus::Impl> HttpStatus::s_pimpl = make_unique<HttpStatus::Impl>();
@@ -151,4 +153,6 @@ HttpStatus::Impl::Impl()
     StatusCodes[HttpStatusCode::HTTP_504] = HTTP_504_DEF;
     StatusCodes[HttpStatusCode::HTTP_505] = HTTP_505_DEF;
 }
+
+HttpStatus::Impl::~Impl() = default;
 

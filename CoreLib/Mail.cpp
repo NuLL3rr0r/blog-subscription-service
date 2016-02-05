@@ -62,6 +62,7 @@ using namespace CoreLib;
 
 struct Mail::Impl
 {
+public:
     static std::queue<Mail *> MailQueue;
     static std::queue<Mail::SendCallback> MailCallbackQueue;
     static bool WorkerThreadIsRunning;
@@ -69,8 +70,10 @@ struct Mail::Impl
     static boost::mutex WorkerMutex;
     static std::unique_ptr<boost::thread> WorkerThread;
 
+public:
     static void DoWork();
 
+public:
     std::string From;
     std::string To;
     std::string Subject;
@@ -79,7 +82,9 @@ struct Mail::Impl
 
     bool DeleteLater;
 
+public:
     Impl();
+    ~Impl();
 };
 
 std::queue<Mail *> Mail::Impl::MailQueue;
@@ -184,16 +189,16 @@ void Mail::Impl::DoWork()
     LOG_INFO("Mail worker thread stopped");
 }
 
-Mail::Mail() :
-    m_pimpl(std::make_shared<Mail::Impl>())
+Mail::Mail()
+    : m_pimpl(std::make_shared<Mail::Impl>())
 {
 
 }
 
 Mail::Mail(const std::string &from, const std::string &to,
            const std::string &subject, const std::string &body,
-           const std::vector<std::string> &attachments) :
-    m_pimpl(std::make_shared<Mail::Impl>())
+           const std::vector<std::string> &attachments)
+    : m_pimpl(std::make_shared<Mail::Impl>())
 {
     m_pimpl->From = from;
     m_pimpl->To = to;
@@ -370,4 +375,6 @@ Mail::Impl::Impl()
 {
 
 }
+
+Mail::Impl::~Impl() = default;
 

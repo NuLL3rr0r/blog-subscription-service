@@ -67,7 +67,9 @@ private:
 
 public:
     explicit Impl(CgiRoot *cgiRoot);
+    ~Impl();
 
+public:
     Wt::WWidget *GetHomePage();
     Wt::WWidget *GetRootLoginPage();
 
@@ -79,8 +81,8 @@ WApplication *CgiRoot::CreateApplication(const WEnvironment &env)
     return new CgiRoot(env);
 }
 
-CgiRoot::CgiRoot(const WEnvironment &env) :
-    WApplication(env),
+CgiRoot::CgiRoot(const WEnvironment &env)
+    : WApplication(env),
     m_pimpl(make_unique<CgiRoot::Impl>(this))
 {
     try {
@@ -173,6 +175,8 @@ CgiRoot::Impl::Impl(CgiRoot *cgiRoot) :
 {
 
 }
+
+CgiRoot::Impl::~Impl() = default;
 
 Wt::WWidget *CgiRoot::Impl::GetHomePage()
 {

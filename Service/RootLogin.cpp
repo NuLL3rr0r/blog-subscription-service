@@ -100,7 +100,8 @@ private:
     RootLogin *m_parent;
 
 public:
-    Impl(RootLogin *parent);
+    explicit Impl(RootLogin *parent);
+    ~Impl();
 
 public:
     void OnLoginFormSubmitted();
@@ -121,8 +122,8 @@ public:
     Wt::WWidget *LogoutPage();
 };
 
-RootLogin::RootLogin(CgiRoot *cgi) :
-    Page(cgi),
+RootLogin::RootLogin(CgiRoot *cgi)
+    : Page(cgi),
     m_pimpl(make_unique<RootLogin::Impl>(this))
 {
     bool hasValidSession = false;
@@ -344,6 +345,8 @@ RootLogin::Impl::Impl(RootLogin *parent)
 {
     PasswordRecoveryFormFlag = false;
 }
+
+RootLogin::Impl::~Impl() = default;
 
 void RootLogin::Impl::OnLoginFormSubmitted()
 {

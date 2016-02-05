@@ -43,8 +43,8 @@ using namespace std;
 using namespace Wt;
 using namespace Service;
 
-Page::Page(CgiRoot *cgiRoot) :
-    WContainerWidget(),
+Page::Page(CgiRoot *cgiRoot)
+    : WContainerWidget(),
     m_cgiRoot(cgiRoot),
     m_htmlRoot(cgiRoot->HtmlRoot),
     m_cgiEnv(cgiRoot->CgiEnvInstance)

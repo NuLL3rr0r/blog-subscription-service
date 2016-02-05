@@ -50,7 +50,7 @@ struct Random::Impl
 {
 public:
     typedef std::unordered_map<const CoreLib::Random::Character, const std::string,
-    CoreLib::Utility::Hasher<const CoreLib::Random::Character>> CharactersHashTable;
+        CoreLib::Utility::Hasher<const CoreLib::Random::Character>> CharactersHashTable;
 
 public:
     static CharactersHashTable &GetLookupTable();

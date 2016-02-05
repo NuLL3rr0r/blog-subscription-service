@@ -63,22 +63,24 @@ using namespace Service;
 struct CmsChangePassword::Impl : public Wt::WObject
 {
 public:
-    CmsChangePassword *m_parent;
-
     WLineEdit *CurrentPasswordLineEdit;
     WLineEdit *NewPasswordLineEdit;
     WLineEdit *ConfirmPasswordLineEdit;
     WText *ChangePasswordMessageArea;
 
+private:
+    CmsChangePassword *m_parent;
+
 public:
     explicit Impl(CmsChangePassword *parent);
+    ~Impl();
 
 public:
     void OnPasswordChangeFormSubmitted();
 };
 
-CmsChangePassword::CmsChangePassword(CgiRoot *cgi) :
-    Page(cgi),
+CmsChangePassword::CmsChangePassword(CgiRoot *cgi)
+    : Page(cgi),
     m_pimpl(make_unique<CmsChangePassword::Impl>(this))
 {
     this->clear();
@@ -179,6 +181,8 @@ CmsChangePassword::Impl::Impl(CmsChangePassword *parent)
 {
 
 }
+
+CmsChangePassword::Impl::~Impl() = default;
 
 void CmsChangePassword::Impl::OnPasswordChangeFormSubmitted()
 {
