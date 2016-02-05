@@ -83,6 +83,7 @@ public:
     bool FoundXSS;
     bool IsRootLoginRequested;
     bool IsRootLogoutRequested;
+    bool IsContactFormRequested;
 
 private:
     CgiEnv *m_parent;
@@ -139,6 +140,8 @@ CgiEnv::CgiEnv(const WEnvironment &env)
 
     bool logout = false;
 
+    SubscriptionData.Subscribe = Subscription::Action::None;
+
     Http::ParameterMap map = env.getParameterMap();
     for (std::map<string, Http::ParameterValues>::const_iterator it = map.begin(); it != map.end(); ++it) {
         if (it->first == "lang") {
@@ -160,14 +163,10 @@ CgiEnv::CgiEnv(const WEnvironment &env)
 
         if (it->first == "subscribe" && it->second[0] != "") {
             try {
-                /// 1st check
-                if (it->second[0] == "0" || it->second[0] == "1" || it->second[0] == "-1") {
+                if (it->second[0] == "1" || it->second[0] == "2"
+                        || it->second[0] == "-1" || it->second[0] == "-2") {
                     auto action = lexical_cast<short>(it->second[0]);
-                    /// 2nd check
-                    if (action >= static_cast<short>(Subscription::Action::Unsubscribe)
-                            && action <= static_cast<short>(Subscription::Action::Confirm)) {
-                        SubscriptionData.Subscribe = static_cast<Subscription::Action>(action);
-                    }
+                    SubscriptionData.Subscribe = static_cast<Subscription::Action>(action);
                 }
             } catch (...) {
                 SubscriptionData.Subscribe = Subscription::Action::Subscribe;
@@ -215,6 +214,10 @@ CgiEnv::CgiEnv(const WEnvironment &env)
                 SubscriptionData.Timestamp = lexical_cast<time_t>(token);
             } catch (...) {
             }
+        }
+
+        if (it->first == "contact-form") {
+            m_pimpl->IsContactFormRequested = true;
         }
     }
 
@@ -303,6 +306,11 @@ bool CgiEnv::IsRootLogoutRequested() const
     return m_pimpl->IsRootLogoutRequested;
 }
 
+bool CgiEnv::IsContactFormRequested() const
+{
+    return m_pimpl->IsContactFormRequested;
+}
+
 CgiEnv::Impl::Impl(CgiEnv *cgiEnv)
     : CurrentLanguage(Language::None),
       LanguageDirectionMapper {
@@ -314,6 +322,7 @@ CgiEnv::Impl::Impl(CgiEnv *cgiEnv)
       FoundXSS(false),
       IsRootLoginRequested(false),
       IsRootLogoutRequested(false),
+      IsContactFormRequested(false),
       m_parent(cgiEnv)
 {
     LanguageMapper.insert({ Language::None, "none" });

@@ -37,11 +37,11 @@
 #include <Wt/WString>
 #include <Wt/WText>
 #include <CoreLib/make_unique.hpp>
+#include "CgiEnv.hpp"
 #include "ContactForm.hpp"
 #include "Div.hpp"
 #include "Home.hpp"
-#include "SubscribeForm.hpp"
-#include "UnsubscribeForm.hpp"
+#include "Subscription.hpp"
 
 using namespace std;
 using namespace boost;
@@ -73,6 +73,12 @@ WWidget *Home::Layout()
     Div *container = new Div("Home", "container");
     Div *noScript = new Div(container);
     noScript->addWidget(new WText(tr("no-script")));
+
+    if (m_cgiEnv->SubscriptionData.Subscribe != CgiEnv::Subscription::Action::None) {
+        container->addWidget(new Subscription(m_cgiRoot));
+    } else if (m_cgiEnv->IsContactFormRequested()) {
+        container->addWidget(new ContactForm(m_cgiRoot));
+    }
 
     return container;
 }

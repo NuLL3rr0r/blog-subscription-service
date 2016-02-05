@@ -29,34 +29,34 @@
  *
  * @section DESCRIPTION
  *
- * The unsubscribe form shown to the end-user.
+ * The subscribe form shown to the end-user.
  */
 
 
-#ifndef SERVICE_UNSUBSCRIBE_FORM_HPP
-#define SERVICE_UNSUBSCRIBE_FORM_HPP
+#ifndef SERVICE_SUBSCRIPTION_HPP
+#define SERVICE_SUBSCRIPTION_HPP
 
 
 #include "Page.hpp"
 
 namespace Service {
-class UnsubscribeForm;
+class Subscription;
 }
 
-class Service::UnsubscribeForm : public Service::Page
+class Service::Subscription : public Service::Page
 {
 private:
     struct Impl;
     std::unique_ptr<Impl> m_pimpl;
 
 public:
-    explicit UnsubscribeForm(CgiRoot *cgiRoot);
-    virtual ~UnsubscribeForm();
+    explicit Subscription(CgiRoot *cgiRoot);
+    virtual ~Subscription();
 
 private:
     Wt::WWidget *Layout() override;
 };
 
 
-#endif /* SERVICE_UNSUBSCRIBE_FORM_HPP */
+#endif /* SERVICE_SUBSCRIPTION_HPP */
 

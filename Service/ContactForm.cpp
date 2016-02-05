@@ -56,7 +56,7 @@ ContactForm::ContactForm(CgiRoot *cgi)
     : Page(cgi),
     m_pimpl(make_unique<ContactForm::Impl>())
 {
-    m_cgiRoot->setTitle(replace_all_copy(tr("ContactForm-page-title").value(), L"&amp;", "&"));
+    m_cgiRoot->setTitle(replace_all_copy(tr("home-contact-form-page-title").value(), L"&amp;", "&"));
 
     this->clear();
     this->setId("ContactFormPage");
@@ -68,8 +68,6 @@ ContactForm::~ContactForm() = default;
 WWidget *ContactForm::Layout()
 {
     Div *container = new Div("ContactForm", "container");
-    Div *noScript = new Div(container);
-    noScript->addWidget(new WText(tr("no-script")));
 
     return container;
 }

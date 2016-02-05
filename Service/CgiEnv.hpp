@@ -115,9 +115,11 @@ public:
 public:
     struct Subscription {
         enum class Action : char {
-            Subscribe=0,
-            Confirm=1,
-            Unsubscribe=-1,
+            Subscribe = 1,
+            Confirm = 2,
+            None = 0,
+            Unsubscribe = -1,
+            Cancel = -2,
         };
 
         enum class Language : unsigned char {
@@ -153,6 +155,7 @@ public:
     bool FoundXSS() const;
     bool IsRootLoginRequested() const;
     bool IsRootLogoutRequested() const;
+    bool IsContactFormRequested() const;
 };
 
 
