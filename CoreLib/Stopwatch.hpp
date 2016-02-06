@@ -64,6 +64,8 @@ public:
         Start();
     }
 
+    virtual ~Stopwatch() = default;
+
 public:
     void Start()
     {

@@ -43,36 +43,14 @@ using namespace std;
 using namespace Wt;
 using namespace Service;
 
-Page::Page(CgiRoot *cgiRoot)
-    : WContainerWidget(),
-    m_cgiRoot(cgiRoot),
-    m_htmlRoot(cgiRoot->HtmlRoot),
-    m_cgiEnv(cgiRoot->CgiEnvInstance)
+Page::Page() : WContainerWidget()
 {
 
 }
 
-Page::~Page()
-{
+Page::~Page() = default;
 
-}
-
-void Page::Redirect(const string& url)
-{
-    m_cgiRoot->Redirect(url);
-}
-
-void Page::Exit(const std::string& url)
-{
-    m_cgiRoot->Exit(url);
-}
-
-void Page::Exit()
-{
-    m_cgiRoot->Exit();
-}
-
-bool Page::Validate(WFormWidget *widget)
+bool Page::Validate(WFormWidget *widget) const
 {
     switch (widget->validate()) {
     case WValidator::Valid:
@@ -87,25 +65,25 @@ bool Page::Validate(WFormWidget *widget)
     return false;
 }
 
-void Page::HtmlError(const string& err, WText *txt)
+void Page::HtmlError(const string& err, WText *txt) const
 {
     txt->setText(err);
     txt->setStyleClass("boldTextErr");
 }
 
-void Page::HtmlError(const wstring& err, WText *txt)
+void Page::HtmlError(const wstring& err, WText *txt) const
 {
     txt->setText(err);
     txt->setStyleClass("boldTextErr");
 }
 
-void Page::HtmlInfo(const string& msg, WText *txt)
+void Page::HtmlInfo(const string& msg, WText *txt) const
 {
     txt->setText(msg);
     txt->setStyleClass("boldText");
 }
 
-void Page::HtmlInfo(const wstring& msg, WText *txt)
+void Page::HtmlInfo(const wstring& msg, WText *txt) const
 {
     txt->setText(msg);
     txt->setStyleClass("boldText");

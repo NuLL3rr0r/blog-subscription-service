@@ -134,13 +134,22 @@ public:
         std::time_t Timestamp;
     } SubscriptionData;
 
+public:
+    static CgiEnv &GetInstance();
+
 private:
     struct Impl;
     std::unique_ptr<Impl> m_pimpl;
 
-public:
-    explicit CgiEnv(const Wt::WEnvironment &env);
+private:
+    CgiEnv();
     virtual ~CgiEnv();
+
+public:
+    CgiEnv(CgiEnv const &) = delete;
+    CgiEnv(CgiEnv &&) = delete;
+    CgiEnv &operator=(CgiEnv const &) = delete;
+    CgiEnv &operator=(CgiEnv &&) = delete;
 
 public:
     std::string GetClientInfo(const ClientInfo &key) const;

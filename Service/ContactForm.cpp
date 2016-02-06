@@ -33,6 +33,7 @@
  */
 
 
+#include <Wt/WApplication>
 #include <Wt/WContainerWidget>
 #include <Wt/WString>
 #include <Wt/WText>
@@ -52,11 +53,11 @@ public:
     ~Impl();
 };
 
-ContactForm::ContactForm(CgiRoot *cgi)
-    : Page(cgi),
+ContactForm::ContactForm()
+    : Page(),
     m_pimpl(make_unique<ContactForm::Impl>())
 {
-    m_cgiRoot->setTitle(replace_all_copy(tr("home-contact-form-page-title").value(), L"&amp;", "&"));
+    WApplication::instance()->setTitle(tr("home-contact-form-page-title"));
 
     this->clear();
     this->setId("ContactFormPage");

@@ -50,7 +50,8 @@ private:
     std::unique_ptr<Impl> m_pimpl;
 
 public:
-    explicit CmsNewsletter(CgiRoot *cgiRoot);
+    explicit CmsNewsletter();
+    virtual ~CmsNewsletter();
 
 private:
     Wt::WWidget *Layout() override;

@@ -50,7 +50,8 @@ private:
     std::unique_ptr<Impl> m_pimpl;
 
 public:
-    explicit RootLogin(CgiRoot *cgiRoot);
+    explicit RootLogin();
+    virtual ~RootLogin();
 
 private:
     Wt::WWidget *Layout() override;

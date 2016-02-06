@@ -50,7 +50,8 @@ private:
     std::unique_ptr<Impl> m_pimpl;
 
 public:
-    explicit CmsChangeEmail(CgiRoot *cgiRoot);
+    explicit CmsChangeEmail();
+    virtual ~CmsChangeEmail();
 
 private:
     Wt::WWidget *Layout() override;

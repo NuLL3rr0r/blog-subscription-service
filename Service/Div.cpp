@@ -77,3 +77,5 @@ Div::Div() : WContainerWidget()
 
 }
 
+Div::~Div() = default;
+

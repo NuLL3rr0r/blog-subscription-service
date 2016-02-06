@@ -46,33 +46,22 @@ class WText;
 class WWidget;
 }
 
-#include "CgiRoot.hpp"
-
 namespace Service {
 class Page;
 }
 
 class Service::Page : public Wt::WContainerWidget
 {
-protected:
-    CgiRoot *m_cgiRoot;
-    Wt::WContainerWidget *m_htmlRoot;
-    CgiRoot::CgiEnv_ptr m_cgiEnv;
-
 public:
-    explicit Page(CgiRoot *cgiRoot);
+    explicit Page();
     virtual ~Page() = 0;
 
 protected:
-    void Redirect(const std::string &url);
-    void Exit(const std::string &url);
-    void Exit();
-
-    bool Validate(Wt::WFormWidget *widget);
-    void HtmlError(const std::string &err, Wt::WText *txt);
-    void HtmlError(const std::wstring &err, Wt::WText *txt);
-    void HtmlInfo(const std::string &msg, Wt::WText *txt);
-    void HtmlInfo(const std::wstring &msg, Wt::WText *txt);
+    bool Validate(Wt::WFormWidget *widget) const;
+    void HtmlError(const std::string &err, Wt::WText *txt) const;
+    void HtmlError(const std::wstring &err, Wt::WText *txt) const;
+    void HtmlInfo(const std::string &msg, Wt::WText *txt) const;
+    void HtmlInfo(const std::wstring &msg, Wt::WText *txt) const;
 
     virtual Wt::WWidget *Layout() = 0;
 };

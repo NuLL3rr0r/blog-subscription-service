@@ -33,6 +33,7 @@
  */
 
 
+#include <Wt/WApplication>
 #include <Wt/WContainerWidget>
 #include <Wt/WString>
 #include <Wt/WTemplate>
@@ -49,11 +50,8 @@ using namespace Service;
 
 struct Subscription::Impl : public Wt::WObject
 {
-private:
-    Subscription *m_parent;
-
 public:
-    explicit Impl(Subscription *parent);
+    Impl();
     ~Impl();
 
 public:
@@ -63,25 +61,27 @@ public:
     Wt::WWidget *GetCancellationPage();
 };
 
-Subscription::Subscription(CgiRoot *cgi) :
-    Page(cgi),
-    m_pimpl(make_unique<Subscription::Impl>(this))
+Subscription::Subscription() :
+    Page(),
+    m_pimpl(make_unique<Subscription::Impl>())
 {
-    switch (m_cgiEnv->SubscriptionData.Subscribe) {
+    WApplication *app = WApplication::instance();
+
+    switch (CgiEnv::GetInstance().SubscriptionData.Subscribe) {
     case CgiEnv::Subscription::Action::Subscribe:
-        m_cgiRoot->setTitle(tr("home-subscription-subscribe-page-title"));
+        app->setTitle(tr("home-subscription-subscribe-page-title"));
         break;
     case CgiEnv::Subscription::Action::Confirm:
-        m_cgiRoot->setTitle(tr("home-subscription-confirmation-page-title"));
+        app->setTitle(tr("home-subscription-confirmation-page-title"));
         break;
     case CgiEnv::Subscription::Action::Unsubscribe:
-        m_cgiRoot->setTitle(tr("home-subscription-unsubscribe-page-title"));
+        app->setTitle(tr("home-subscription-unsubscribe-page-title"));
         break;
     case CgiEnv::Subscription::Action::Cancel:
-        m_cgiRoot->setTitle(tr("home-subscription-cancellation-page-title"));
+        app->setTitle(tr("home-subscription-cancellation-page-title"));
         break;
     case CgiEnv::Subscription::Action::None:
-        m_cgiRoot->setTitle(tr("home-subscription-subscribe-page-title"));
+        app->setTitle(tr("home-subscription-subscribe-page-title"));
         break;
     }
 
@@ -96,7 +96,7 @@ WWidget *Subscription::Layout()
 {
     Div *container = new Div("Subscription", "container");
 
-    switch (m_cgiEnv->SubscriptionData.Subscribe) {
+    switch (CgiEnv::GetInstance().SubscriptionData.Subscribe) {
     case CgiEnv::Subscription::Action::Subscribe:
         container->addWidget(m_pimpl->GetSubscribeForm());
         break;
@@ -117,8 +117,7 @@ WWidget *Subscription::Layout()
     return container;
 }
 
-Subscription::Impl::Impl(Subscription *parent)
-    : m_parent(parent)
+Subscription::Impl::Impl()
 {
 
 }
@@ -133,7 +132,7 @@ Wt::WWidget *Subscription::Impl::GetSubscribeForm()
 
     string htmlData;
     string file;
-    if (m_parent->m_cgiEnv->GetCurrentLanguage() == CgiEnv::Language::Fa) {
+    if (CgiEnv::GetInstance().GetCurrentLanguage() == CgiEnv::Language::Fa) {
         file = "../templates/home-subscription-subscribe-fa.wtml";
     } else {
         file = "../templates/home-subscription-subscribe.wtml";
@@ -153,7 +152,7 @@ Wt::WWidget *Subscription::Impl::GetConfirmationPage()
 
     string htmlData;
     string file;
-    if (m_parent->m_cgiEnv->GetCurrentLanguage() == CgiEnv::Language::Fa) {
+    if (CgiEnv::GetInstance().GetCurrentLanguage() == CgiEnv::Language::Fa) {
         file = "../templates/home-subscription-confirmation-fa.wtml";
     } else {
         file = "../templates/home-subscription-confirmation.wtml";
@@ -172,7 +171,7 @@ Wt::WWidget *Subscription::Impl::GetUnsubscribeForm()
 
     string htmlData;
     string file;
-    if (m_parent->m_cgiEnv->GetCurrentLanguage() == CgiEnv::Language::Fa) {
+    if (CgiEnv::GetInstance().GetCurrentLanguage() == CgiEnv::Language::Fa) {
         file = "../templates/home-subscription-unsubscribe-fa.wtml";
     } else {
         file = "../templates/home-subscription-unsubscribe.wtml";
@@ -188,9 +187,10 @@ Wt::WWidget *Subscription::Impl::GetCancellationPage()
     WTemplate *tmpl = new WTemplate();
     tmpl->setId("Cancellation");
     tmpl->setStyleClass("full-width full-height");
+
     string htmlData;
     string file;
-    if (m_parent->m_cgiEnv->GetCurrentLanguage() == CgiEnv::Language::Fa) {
+    if (CgiEnv::GetInstance().GetCurrentLanguage() == CgiEnv::Language::Fa) {
         file = "../templates/home-subscription-cancellation-fa.wtml";
     } else {
         file = "../templates/home-subscription-cancellation.wtml";

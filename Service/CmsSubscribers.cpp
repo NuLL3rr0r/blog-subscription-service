@@ -72,15 +72,16 @@ public:
     void OnFaButtonPressed();
 };
 
-CmsSubscribers::CmsSubscribers(CgiRoot *cgi)
-    : Page(cgi),
+CmsSubscribers::CmsSubscribers()
+    : Page(),
     m_pimpl(make_unique<CmsSubscribers::Impl>())
 {
     this->clear();
     this->setId("CmsSubscribersPage");
     this->addWidget(Layout());
-    m_htmlRoot->addWidget(this);
 }
+
+CmsSubscribers::~CmsSubscribers() = default;
 
 WWidget *CmsSubscribers::Layout()
 {
@@ -89,7 +90,7 @@ WWidget *CmsSubscribers::Layout()
     try {
         string htmlData;
         string file;
-        if (m_cgiEnv->GetCurrentLanguage() == CgiEnv::Language::Fa) {
+        if (CgiEnv::GetInstance().GetCurrentLanguage() == CgiEnv::Language::Fa) {
             file = "../templates/cms-subscribers-fa.wtml";
         } else {
             file = "../templates/cms-subscribers.wtml";

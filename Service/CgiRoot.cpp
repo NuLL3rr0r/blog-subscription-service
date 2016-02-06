@@ -63,10 +63,10 @@ using namespace Service;
 struct CgiRoot::Impl
 {
 private:
-    CgiRoot *m_cgiRoot;
+    CgiRoot *m_parent;
 
 public:
-    explicit Impl(CgiRoot *cgiRoot);
+    explicit Impl(CgiRoot *parent);
     ~Impl();
 
 public:
@@ -83,7 +83,7 @@ WApplication *CgiRoot::CreateApplication(const WEnvironment &env)
 
 CgiRoot::CgiRoot(const WEnvironment &env)
     : WApplication(env),
-    m_pimpl(make_unique<CgiRoot::Impl>(this))
+      m_pimpl(make_unique<CgiRoot::Impl>(this))
 {
     try {
         this->setInternalPathDefaultValid(false);
@@ -94,46 +94,44 @@ CgiRoot::CgiRoot(const WEnvironment &env)
         bootstrapTheme->setFormControlStyleEnabled(true);
         setTheme(bootstrapTheme);
 
-        CgiEnvInstance = make_shared<CgiEnv>(env);
-        if (CgiEnvInstance->FoundXSS())
+        if (CgiEnv::GetInstance().FoundXSS())
             throw Service::Exception(ALICE);
 
         root()->clear();
-        HtmlRoot = root();
 
-        switch (CgiEnvInstance->GetCurrentLanguage()) {
+        switch (CgiEnv::GetInstance().GetCurrentLanguage()) {
         case CgiEnv::Language::None:
         case CgiEnv::Language::Invalid:
             try {
-                m_pimpl->ReloadWithLanguage(env.getCookie("lang"));
-            } catch (...) {
-                if (algorithm::contains(
-                            CgiEnvInstance->GetClientInfo(CgiEnv::ClientInfo::Location),
-                            "Iran")
-                        || algorithm::starts_with(locale().name(), "fa")) {
-                    m_pimpl->ReloadWithLanguage("fa");
-                } else {
-                    m_pimpl->ReloadWithLanguage("en");
-                }
+            m_pimpl->ReloadWithLanguage(env.getCookie("lang"));
+        } catch (...) {
+            if (algorithm::contains(
+                        CgiEnv::GetInstance().GetClientInfo(CgiEnv::ClientInfo::Location),
+                        "Iran")
+                    || algorithm::starts_with(locale().name(), "fa")) {
+                m_pimpl->ReloadWithLanguage("fa");
+            } else {
+                m_pimpl->ReloadWithLanguage("en");
             }
+        }
             return;
 
         case CgiEnv::Language::En:
         case CgiEnv::Language::Fa:
             if (env.supportsCookies()) {
-                setCookie("lang", CgiEnvInstance->GetCurrentLanguageString(),
+                setCookie("lang", CgiEnv::GetInstance().GetCurrentLanguageString(),
                           Pool::Storage()->LanguageCookieLifespan());
             }
         }
 
-        setLocale(CgiEnvInstance->GetCurrentLanguageString());
+        setLocale(CgiEnv::GetInstance().GetCurrentLanguageString());
         messageResourceBundle().use(appRoot() + "../i18n/localization");
 
-        if (CgiEnvInstance->GetCurrentLanguageDirection() == CgiEnv::LanguageDirection::RightToLeft) {
+        if (CgiEnv::GetInstance().GetCurrentLanguageDirection() == CgiEnv::LanguageDirection::RightToLeft) {
             setLayoutDirection(Wt::LayoutDirection::RightToLeft);
         }
 
-        if (!CgiEnvInstance->IsRootLoginRequested()) {
+        if (!CgiEnv::GetInstance().IsRootLoginRequested()) {
             root()->addWidget(m_pimpl->GetHomePage());
         } else {
             root()->addWidget(m_pimpl->GetRootLoginPage());
@@ -154,10 +152,7 @@ CgiRoot::CgiRoot(const WEnvironment &env)
     }
 }
 
-void CgiRoot::Redirect(const std::string &url)
-{
-    redirect(url);
-}
+CgiRoot::~CgiRoot() = default;
 
 void CgiRoot::Exit(const std::string &url)
 {
@@ -165,13 +160,8 @@ void CgiRoot::Exit(const std::string &url)
     quit();
 }
 
-void CgiRoot::Exit()
-{
-    quit();
-}
-
-CgiRoot::Impl::Impl(CgiRoot *cgiRoot) :
-    m_cgiRoot(cgiRoot)
+CgiRoot::Impl::Impl(CgiRoot *parent) :
+    m_parent(parent)
 {
 
 }
@@ -180,50 +170,50 @@ CgiRoot::Impl::~Impl() = default;
 
 Wt::WWidget *CgiRoot::Impl::GetHomePage()
 {
-    m_cgiRoot->useStyleSheet("css/home.css");
+    m_parent->useStyleSheet("css/home.css");
 
-    switch (m_cgiRoot->CgiEnvInstance->GetCurrentLanguage()) {
+    switch (CgiEnv::GetInstance().GetCurrentLanguage()) {
     case CgiEnv::Language::En:
-        m_cgiRoot->useStyleSheet("css/home-ltr.css");
-        m_cgiRoot->useStyleSheet("css/home-en.css");
+        m_parent->useStyleSheet("css/home-ltr.css");
+        m_parent->useStyleSheet("css/home-en.css");
 
         /// Google Webfonts (Monserrat 400/700, Open Sans 400/600)
-        m_cgiRoot->useStyleSheet("css/wf-montserrat-v6-latin.css");
-        m_cgiRoot->useStyleSheet("css/wf-open-sans-v13-latin.css");
+        m_parent->useStyleSheet("css/wf-montserrat-v6-latin.css");
+        m_parent->useStyleSheet("css/wf-open-sans-v13-latin.css");
 
         /// Load our fonts individually if IE8+, to avoid faux bold & italic rendering
-        m_cgiRoot->useStyleSheet(Wt::WCssStyleSheet("css/wf-montserrat-v6-latin-regular.css"), "IE");
-        m_cgiRoot->useStyleSheet(Wt::WCssStyleSheet("css/wf-montserrat-v6-latin-bold.css"), "IE");
-        m_cgiRoot->useStyleSheet(Wt::WCssStyleSheet("css/wf-open-sans-v13-latin-regular.css"), "IE");
-        m_cgiRoot->useStyleSheet(Wt::WCssStyleSheet("css/wf-open-sans-v13-latin-semibold.css"), "IE");
+        m_parent->useStyleSheet(Wt::WCssStyleSheet("css/wf-montserrat-v6-latin-regular.css"), "IE");
+        m_parent->useStyleSheet(Wt::WCssStyleSheet("css/wf-montserrat-v6-latin-bold.css"), "IE");
+        m_parent->useStyleSheet(Wt::WCssStyleSheet("css/wf-open-sans-v13-latin-regular.css"), "IE");
+        m_parent->useStyleSheet(Wt::WCssStyleSheet("css/wf-open-sans-v13-latin-semibold.css"), "IE");
         break;
     case CgiEnv::Language::Fa:
-        m_cgiRoot->useStyleSheet("css/home-rtl.css");
-        m_cgiRoot->useStyleSheet("css/home-fa.css");
+        m_parent->useStyleSheet("css/home-rtl.css");
+        m_parent->useStyleSheet("css/home-fa.css");
 
         /// Farsi Webfont (Yekan 400)
-        m_cgiRoot->useStyleSheet("css/wf-yekan.css");
+        m_parent->useStyleSheet("css/wf-yekan.css");
         break;
     case CgiEnv::Language::None:
     case CgiEnv::Language::Invalid:
         break;
     }
 
-    return new Home(m_cgiRoot);
+    return new Home();
 }
 
 Wt::WWidget *CgiRoot::Impl::GetRootLoginPage()
 {
-    m_cgiRoot->useStyleSheet("css/root.css");
+    m_parent->useStyleSheet("css/root.css");
 
-    switch (m_cgiRoot->CgiEnvInstance->GetCurrentLanguage()) {
+    switch (CgiEnv::GetInstance().GetCurrentLanguage()) {
     case CgiEnv::Language::En:
-        m_cgiRoot->useStyleSheet("css/root-ltr.css");
-        m_cgiRoot->useStyleSheet("css/root-en.css");
+        m_parent->useStyleSheet("css/root-ltr.css");
+        m_parent->useStyleSheet("css/root-en.css");
         break;
     case CgiEnv::Language::Fa:
-        m_cgiRoot->useStyleSheet("css/root-rtl.css");
-        m_cgiRoot->useStyleSheet("css/root-fa.css");
+        m_parent->useStyleSheet("css/root-rtl.css");
+        m_parent->useStyleSheet("css/root-fa.css");
         break;
     case CgiEnv::Language::None:
     case CgiEnv::Language::Invalid:
@@ -231,29 +221,29 @@ Wt::WWidget *CgiRoot::Impl::GetRootLoginPage()
     }
 
     /// Google Webfonts (Monserrat 400/700, Open Sans 400/600)
-    m_cgiRoot->useStyleSheet("css/wf-montserrat-v6-latin.css");
-    m_cgiRoot->useStyleSheet("css/wf-open-sans-v13-latin.css");
+    m_parent->useStyleSheet("css/wf-montserrat-v6-latin.css");
+    m_parent->useStyleSheet("css/wf-open-sans-v13-latin.css");
 
     /// Load our fonts individually if IE8+, to avoid faux bold & italic rendering
-    m_cgiRoot->useStyleSheet(Wt::WCssStyleSheet("css/wf-montserrat-v6-latin-regular.css"), "IE");
-    m_cgiRoot->useStyleSheet(Wt::WCssStyleSheet("css/wf-montserrat-v6-latin-bold.css"), "IE");
-    m_cgiRoot->useStyleSheet(Wt::WCssStyleSheet("css/wf-open-sans-v13-latin-regular.css"), "IE");
-    m_cgiRoot->useStyleSheet(Wt::WCssStyleSheet("css/wf-open-sans-v13-latin-semibold.css"), "IE");
+    m_parent->useStyleSheet(Wt::WCssStyleSheet("css/wf-montserrat-v6-latin-regular.css"), "IE");
+    m_parent->useStyleSheet(Wt::WCssStyleSheet("css/wf-montserrat-v6-latin-bold.css"), "IE");
+    m_parent->useStyleSheet(Wt::WCssStyleSheet("css/wf-open-sans-v13-latin-regular.css"), "IE");
+    m_parent->useStyleSheet(Wt::WCssStyleSheet("css/wf-open-sans-v13-latin-semibold.css"), "IE");
 
     /// Farsi Webfont (Yekan 400)
-    m_cgiRoot->useStyleSheet("css/wf-yekan.css");
+    m_parent->useStyleSheet("css/wf-yekan.css");
 
-    m_cgiRoot->useStyleSheet("resources/font-awesome/css/font-awesome.min.css");
+    m_parent->useStyleSheet("resources/font-awesome/css/font-awesome.min.css");
 
-    m_cgiRoot->require("js/jquery.min.js");
-    m_cgiRoot->require("js/bootstrap.min.js");
+    m_parent->require("js/jquery.min.js");
+    m_parent->require("js/bootstrap.min.js");
 
-    return new RootLogin(m_cgiRoot);
+    return new RootLogin();
 }
 
 void CgiRoot::Impl::ReloadWithLanguage(const std::string &lang)
 {
-    string queryString(m_cgiRoot->environment().getCgiValue("QUERY_STRING"));
+    string queryString(m_parent->environment().getCgiValue("QUERY_STRING"));
 
     if (algorithm::starts_with(queryString, "?")) {
         boost::replace_first(queryString, "?", "");
@@ -316,6 +306,6 @@ void CgiRoot::Impl::ReloadWithLanguage(const std::string &lang)
         }
     }
 
-    m_cgiRoot->Exit(newQueryString);
+    m_parent->Exit(newQueryString);
 }
 

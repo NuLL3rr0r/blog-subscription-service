@@ -42,7 +42,7 @@ using namespace Service;
 
 Exception::Exception(const std::string &message)
     : CoreLib::Exception(message),
-    m_message(WString::fromUTF8(message))
+    m_message(WString::fromUTF8(message).value())
 {
 
 }

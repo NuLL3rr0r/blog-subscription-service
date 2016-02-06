@@ -66,6 +66,8 @@ Captcha::Captcha()
     m_pimpl->Result = 0;
 }
 
+Captcha::~Captcha() = default;
+
 Wt::WImage *Captcha::Generate()
 {
     size_t n1 = (size_t)Random::Number(1, 10);

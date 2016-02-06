@@ -56,6 +56,7 @@ public:
     Div(const std::string& id, const std::string& cssClass);
     explicit Div(const std::string& id);
     Div();
+    virtual ~Div();
 };
 
 

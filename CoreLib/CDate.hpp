@@ -81,6 +81,7 @@ class CoreLib::CDate::Now
 {
 public:
     Now();
+    virtual ~Now();
 
     time_t RawTime;
     int Hour;

@@ -50,7 +50,8 @@ private:
     std::unique_ptr<Impl> m_pimpl;
 
 public:
-    explicit CmsChangePassword(CgiRoot *cgiRoot);
+    explicit CmsChangePassword();
+    virtual ~CmsChangePassword();
 
 private:
     Wt::WWidget *Layout() override;

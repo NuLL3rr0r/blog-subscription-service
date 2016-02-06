@@ -50,7 +50,7 @@ private:
     std::unique_ptr<Impl> m_pimpl;
 
 public:
-    explicit ContactForm(CgiRoot *cgiRoot);
+    explicit ContactForm();
     virtual ~ContactForm();
 
 private:

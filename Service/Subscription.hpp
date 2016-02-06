@@ -50,7 +50,7 @@ private:
     std::unique_ptr<Impl> m_pimpl;
 
 public:
-    explicit Subscription(CgiRoot *cgiRoot);
+    explicit Subscription();
     virtual ~Subscription();
 
 private:

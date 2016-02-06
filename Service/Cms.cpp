@@ -45,6 +45,7 @@
 #include <CoreLib/Random.hpp>
 #include <CoreLib/System.hpp>
 #include "CgiEnv.hpp"
+#include "CgiRoot.hpp"
 #include "Cms.hpp"
 #include "CmsChangeEmail.hpp"
 #include "CmsChangePassword.hpp"
@@ -69,9 +70,6 @@ public:
 
     SysMon *SystemMonitor;
 
-private:
-    Cms *m_parent;
-
 public:
     Impl();
     ~Impl();
@@ -80,19 +78,22 @@ public:
     void OnMenuItemPressed(WText *sender);
 };
 
-Cms::Cms(CgiRoot *cgi)
-    : Page(cgi),
+Cms::Cms()
+    : Page(),
     m_pimpl(make_unique<Cms::Impl>())
 {
-    m_cgiRoot->setTitle(tr("cms-page-title"));
+    WApplication::instance()->setTitle(tr("cms-page-title"));
 
-    m_htmlRoot->clear();
     this->clear();
     this->setId("CmsPage");
     this->setStyleClass("cms-page container-fluid");
     this->addWidget(Layout());
-    m_htmlRoot->addWidget(this);
+
+    WApplication::instance()->root()->clear();
+    WApplication::instance()->root()->addWidget(this);
 }
+
+Cms::~Cms() = default;
 
 WWidget *Cms::Layout()
 {
@@ -102,7 +103,7 @@ WWidget *Cms::Layout()
 
     string htmlData;
     string file;
-    if (m_cgiEnv->GetCurrentLanguage() == CgiEnv::Language::Fa) {
+    if (CgiEnv::GetInstance().GetCurrentLanguage() == CgiEnv::Language::Fa) {
         file = "../templates/cms-fa.wtml";
     } else {
         file = "../templates/cms.wtml";
@@ -164,13 +165,13 @@ WWidget *Cms::Layout()
         tmpl->bindWidget("exit", exit);
 
         m_pimpl->Contents = new Wt::WStackedWidget();
-        m_pimpl->Contents->addWidget(new CmsDashboard(m_cgiRoot));
-        m_pimpl->Contents->addWidget(new CmsNewsletter(m_cgiRoot));
-        m_pimpl->Contents->addWidget(new CmsSubscribers(m_cgiRoot));
-        m_pimpl->Contents->addWidget(new CmsContacts(m_cgiRoot));
-        m_pimpl->Contents->addWidget(new CmsChangeEmail(m_cgiRoot));
-        m_pimpl->Contents->addWidget(new CmsChangePassword(m_cgiRoot));
-        m_pimpl->SystemMonitor = new SysMon(m_cgiRoot);
+        m_pimpl->Contents->addWidget(new CmsDashboard());
+        m_pimpl->Contents->addWidget(new CmsNewsletter());
+        m_pimpl->Contents->addWidget(new CmsSubscribers());
+        m_pimpl->Contents->addWidget(new CmsContacts());
+        m_pimpl->Contents->addWidget(new CmsChangeEmail());
+        m_pimpl->Contents->addWidget(new CmsChangePassword());
+        m_pimpl->SystemMonitor = new SysMon();
         m_pimpl->Contents->addWidget(m_pimpl->SystemMonitor);
         tmpl->bindWidget("stcked-widget", m_pimpl->Contents);
 
@@ -206,13 +207,15 @@ void Cms::Impl::OnMenuItemPressed(WText *sender)
     LastSelectedMenuItem = sender;
     LastSelectedMenuItem->setStyleClass("selected");
 
-     if (sender->id() == "menu-item-system-monitor") {
-         SystemMonitor->Resume();
-         Contents->setCurrentIndex(6);
-         return;
-     } else {
-         SystemMonitor->Pause();
-     }
+    if (sender->id() == "menu-item-system-monitor") {
+        SystemMonitor->Resume();
+        Contents->setCurrentIndex(6);
+        return;
+    } else {
+        SystemMonitor->Pause();
+    }
+
+    WApplication *app = WApplication::instance();
 
     if (sender->id() == "menu-item-dashboard") {
         Contents->setCurrentIndex(0);
@@ -226,30 +229,25 @@ void Cms::Impl::OnMenuItemPressed(WText *sender)
         Contents->setCurrentIndex(4);
     } else if (sender->id() == "menu-item-change-password") {
         Contents->setCurrentIndex(5);
-
     } else if (sender->id() == "menu-item-switch-language") {
-        switch (m_parent->m_cgiEnv->GetCurrentLanguage()) {
+        switch (CgiEnv::GetInstance().GetCurrentLanguage()) {
         case CgiEnv::Language::None:
         case CgiEnv::Language::Invalid:
             break;
         case CgiEnv::Language::En:
-            m_parent->Redirect("/?root&lang=fa");
+            app->redirect("/?root&lang=fa");
             break;
         case CgiEnv::Language::Fa:
-            m_parent->Redirect("/?root&lang=en");
+            app->redirect("/?root&lang=en");
             break;
         }
-
         return;
-
     } else if (sender->id() == "menu-item-exit") {
         srand((unsigned int)System::RandSeed());
-
-        m_parent->m_cgiRoot->removeCookie("cms-session-user");
-        m_parent->m_cgiRoot->removeCookie("cms-session-token");
-        m_parent->Exit("/?root&logout");
+        app->removeCookie("cms-session-user");
+        app->removeCookie("cms-session-token");
+        static_cast<CgiRoot *>(app)->Exit("/?root&logout");
         return;
-
     } else {
         LOG_WARNING("ERROR: INVALID STACKED-WIDGET PAGE ID!");
     }

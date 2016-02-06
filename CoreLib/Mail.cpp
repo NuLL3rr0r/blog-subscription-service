@@ -207,6 +207,8 @@ Mail::Mail(const std::string &from, const std::string &to,
     SetAttachments(attachments);
 }
 
+Mail::~Mail() = default;
+
 std::string Mail::GetFrom()
 {
     return m_pimpl->From;

@@ -46,33 +46,24 @@ class WEnvironment;
 }
 
 namespace Service {
-class CgiEnv;
 class CgiRoot;
 }
 
 class Service::CgiRoot : public Wt::WApplication
 {
-public:
-    typedef std::shared_ptr<Service::CgiEnv> CgiEnv_ptr;
-
 private:
     struct Impl;
     std::unique_ptr<Impl> m_pimpl;
-
-public:
-    Wt::WContainerWidget *HtmlRoot;
-    CgiEnv_ptr CgiEnvInstance;
 
 public:
     static Wt::WApplication *CreateApplication(const Wt::WEnvironment &env);
 
 public:
     explicit CgiRoot(const Wt::WEnvironment &env);
+    virtual ~CgiRoot();
 
 public:
-    void Redirect(const std::string &url);
     void Exit(const std::string &url);
-    void Exit();
 };
 
 

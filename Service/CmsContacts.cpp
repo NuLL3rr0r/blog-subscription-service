@@ -99,15 +99,16 @@ public:
                                       Wt::WSignalMapper<Wt::WInPlaceEdit *> *signalMapper);
 };
 
-CmsContacts::CmsContacts(CgiRoot *cgi)
-    : Page(cgi),
+CmsContacts::CmsContacts()
+    : Page(),
     m_pimpl(make_unique<CmsContacts::Impl>(this))
 {
     this->clear();
     this->setId("CmsContactsPage");
     this->addWidget(Layout());
-    m_htmlRoot->addWidget(this);
 }
+
+CmsContacts::~CmsContacts() = default;
 
 WWidget *CmsContacts::Layout()
 {
@@ -116,7 +117,7 @@ WWidget *CmsContacts::Layout()
     try {
         string htmlData;
         string file;
-        if (m_cgiEnv->GetCurrentLanguage() == CgiEnv::Language::Fa) {
+        if (CgiEnv::GetInstance().GetCurrentLanguage() == CgiEnv::Language::Fa) {
             file = "../templates/cms-contacts-fa.wtml";
         } else {
             file = "../templates/cms-contacts.wtml";
@@ -373,7 +374,7 @@ void CmsContacts::Impl::OnEraseButtonPressed(Wt::WPushButton *button)
         WString dbKey(button->attributeValue("db-key"));
 
         WString question;
-        if (m_parent->m_cgiEnv->GetCurrentLanguage() == CgiEnv::Language::Fa) {
+        if (CgiEnv::GetInstance().GetCurrentLanguage() == CgiEnv::Language::Fa) {
             transaction guard(Service::Pool::Database()->Sql());
             result r = Pool::Database()->Sql()
                     << (format("SELECT recipient_fa FROM \"%1%\""

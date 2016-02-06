@@ -78,7 +78,7 @@ public:
 
 public:
     Log(EType type, const std::string &file, const std::string &func, int line, ...);
-    ~Log();
+    virtual ~Log();
 
 public:
     template<typename T>

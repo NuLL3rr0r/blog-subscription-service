@@ -67,6 +67,8 @@ Now::Now()
     Year = TimeInfo->tm_year + 1900; //  year since 1900
 }
 
+Now::~Now() = default;
+
 std::string DateConv::IntToStr(int num)
 {
     return lexical_cast<string>(num);

@@ -51,7 +51,8 @@ private:
     std::unique_ptr<Impl> m_pimpl;
 
 public:
-    explicit SysMon(CgiRoot *cgiRoot);
+    explicit SysMon();
+    virtual ~SysMon();
 
 public:
     void Pause();

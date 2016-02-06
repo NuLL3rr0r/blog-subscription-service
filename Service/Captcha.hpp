@@ -55,6 +55,7 @@ private:
 
 public:
     Captcha();
+    virtual ~Captcha();
 
 public:
     Wt::WImage *Generate();

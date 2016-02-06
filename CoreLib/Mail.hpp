@@ -60,6 +60,7 @@ public:
     Mail(const std::string &from, const std::string &to,
          const std::string &subject, const std::string &body,
          const std::vector<std::string> &attachments = {  });
+    virtual ~Mail();
 
 public:
     std::string GetFrom();

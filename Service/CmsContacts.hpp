@@ -50,7 +50,8 @@ private:
     std::unique_ptr<Impl> m_pimpl;
 
 public:
-    explicit CmsContacts(CgiRoot *cgiRoot);
+    explicit CmsContacts();
+    virtual ~CmsContacts();
 
 private:
     Wt::WWidget *Layout() override;

@@ -40,6 +40,7 @@
 #include <boost/format.hpp>
 #include <boost/lexical_cast.hpp>
 #include <boost/regex.hpp>
+#include <Wt/WApplication>
 #include <Wt/WEnvironment>
 #include <GeoIP.h>
 #include <GeoIPCity.h>
@@ -97,12 +98,18 @@ public:
     void ExtractClientInfoDetail();
 };
 
-CgiEnv::CgiEnv(const WEnvironment &env)
+CgiEnv &CgiEnv::GetInstance()
+{
+    static CgiEnv instance;
+    return instance;
+}
+
+CgiEnv::CgiEnv()
     : m_pimpl(make_unique<CgiEnv::Impl>(this))
 {
-    m_pimpl->ClientInfoIP = env.clientAddress();
-    m_pimpl->ClientInfoBrowser = env.userAgent();
-    m_pimpl->ClientInfoReferer = env.referer();
+    m_pimpl->ClientInfoIP = WApplication::instance()->environment().clientAddress();
+    m_pimpl->ClientInfoBrowser = WApplication::instance()->environment().userAgent();
+    m_pimpl->ClientInfoReferer = WApplication::instance()->environment().referer();
 
     m_pimpl->ExtractClientInfoDetail();
 
@@ -122,14 +129,14 @@ CgiEnv::CgiEnv(const WEnvironment &env)
     }
     algorithm::trim(m_pimpl->ClientInfoLocation);
 
-    m_pimpl->ServerInfoHost = env.hostName();
-    m_pimpl->ServerInfoURL = env.urlScheme() + "://" + m_pimpl->ServerInfoHost;
+    m_pimpl->ServerInfoHost = WApplication::instance()->environment().hostName();
+    m_pimpl->ServerInfoURL = WApplication::instance()->environment().urlScheme() + "://" + m_pimpl->ServerInfoHost;
     m_pimpl->ServerInfoRootLoginUrl = m_pimpl->ServerInfoURL
             + (algorithm::ends_with(m_pimpl->ServerInfoURL, "/") ? "" : "/")
             + "?root";
     m_pimpl->ServerInfoNoReplyAddr = "no-reply@" + m_pimpl->ServerInfoHost;
 
-    string queryStr = env.getCgiValue("QUERY_STRING");
+    string queryStr = WApplication::instance()->environment().getCgiValue("QUERY_STRING");
     m_pimpl->FoundXSS = (queryStr.find("<") != string::npos ||
             queryStr.find(">") != string::npos ||
             queryStr.find("%3C") != string::npos ||
@@ -142,7 +149,7 @@ CgiEnv::CgiEnv(const WEnvironment &env)
 
     SubscriptionData.Subscribe = Subscription::Action::None;
 
-    Http::ParameterMap map = env.getParameterMap();
+    Http::ParameterMap map = WApplication::instance()->environment().getParameterMap();
     for (std::map<string, Http::ParameterValues>::const_iterator it = map.begin(); it != map.end(); ++it) {
         if (it->first == "lang") {
             auto itLang = m_pimpl->LanguageMapper.right.find(it->second[0]);
@@ -226,10 +233,7 @@ CgiEnv::CgiEnv(const WEnvironment &env)
     }
 }
 
-CgiEnv::~CgiEnv()
-{
-
-}
+CgiEnv::~CgiEnv() = default;
 
 string CgiEnv::GetClientInfo(const CgiEnv::ClientInfo &key) const
 {

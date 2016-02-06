@@ -33,6 +33,7 @@
  */
 
 
+#include <Wt/WApplication>
 #include <Wt/WContainerWidget>
 #include <Wt/WString>
 #include <Wt/WText>
@@ -55,11 +56,11 @@ public:
     ~Impl();
 };
 
-Home::Home(CgiRoot *cgi)
-    : Page(cgi),
+Home::Home()
+    : Page(),
     m_pimpl(make_unique<Home::Impl>())
 {
-    m_cgiRoot->setTitle(replace_all_copy(tr("home-page-title").value(), L"&amp;", "&"));
+    WApplication::instance()->setTitle(replace_all_copy(tr("home-page-title").value(), L"&amp;", "&"));
 
     this->clear();
     this->setId("HomePage");
@@ -74,10 +75,10 @@ WWidget *Home::Layout()
     Div *noScript = new Div(container);
     noScript->addWidget(new WText(tr("no-script")));
 
-    if (m_cgiEnv->SubscriptionData.Subscribe != CgiEnv::Subscription::Action::None) {
-        container->addWidget(new Subscription(m_cgiRoot));
-    } else if (m_cgiEnv->IsContactFormRequested()) {
-        container->addWidget(new ContactForm(m_cgiRoot));
+    if (CgiEnv::GetInstance().SubscriptionData.Subscribe != CgiEnv::Subscription::Action::None) {
+        container->addWidget(new Subscription());
+    } else if (CgiEnv::GetInstance().IsContactFormRequested()) {
+        container->addWidget(new ContactForm());
     }
 
     return container;

@@ -50,7 +50,7 @@ private:
     std::unique_ptr<Impl> m_pimpl;
 
 public:
-    explicit Home(CgiRoot *cgiRoot);
+    explicit Home();
     virtual ~Home();
 
 private:

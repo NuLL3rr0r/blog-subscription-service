@@ -140,17 +140,18 @@ public:
     void Initialize();
 };
 
-SysMon::SysMon(CgiRoot *cgi)
-    : Page(cgi),
+SysMon::SysMon()
+    : Page(),
     m_pimpl(make_unique<SysMon::Impl>())
 {
     this->clear();
     this->setId("SysMonPage");
     this->addWidget(Layout());
-    m_htmlRoot->addWidget(this);
 
     m_pimpl->Initialize();
 }
+
+SysMon::~SysMon() = default;
 
 void SysMon::Pause()
 {
@@ -174,7 +175,7 @@ WWidget *SysMon::Layout()
 
     string htmlData;
     string file;
-    if (m_cgiEnv->GetCurrentLanguage() == CgiEnv::Language::Fa) {
+    if (CgiEnv::GetInstance().GetCurrentLanguage() == CgiEnv::Language::Fa) {
         file = "../templates/system-monitor-fa.wtml";
     } else {
         file = "../templates/system-monitor.wtml";
