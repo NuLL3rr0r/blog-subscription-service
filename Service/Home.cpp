@@ -39,6 +39,7 @@
 #include <Wt/WText>
 #include <CoreLib/make_unique.hpp>
 #include "CgiEnv.hpp"
+#include "CgiRoot.hpp"
 #include "ContactForm.hpp"
 #include "Div.hpp"
 #include "Home.hpp"
@@ -61,7 +62,6 @@ Home::Home()
     m_pimpl(make_unique<Home::Impl>())
 {
     WApplication *app = WApplication::instance();
-
     app->setTitle(tr("home-page-title").value());
 
     this->clear();
@@ -77,7 +77,8 @@ WWidget *Home::Layout()
     Div *noScript = new Div(container);
     noScript->addWidget(new WText(tr("no-script")));
 
-    CgiEnv *cgiEnv = CgiEnv::GetInstance();
+    CgiRoot *cgiRoot = static_cast<CgiRoot *>(WApplication::instance());
+    CgiEnv *cgiEnv = cgiRoot->GetCgiEnvInstance();
 
     if (cgiEnv->SubscriptionData.Subscribe != CgiEnv::Subscription::Action::None) {
         container->addWidget(new Subscription());

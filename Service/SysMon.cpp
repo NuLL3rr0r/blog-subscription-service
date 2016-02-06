@@ -56,6 +56,7 @@
 #include <CoreLib/make_unique.hpp>
 #include <CoreLib/Utility.hpp>
 #include "CgiEnv.hpp"
+#include "CgiRoot.hpp"
 #include "Div.hpp"
 #include "SysMon.hpp"
 
@@ -173,7 +174,8 @@ WWidget *SysMon::Layout()
 {
     Div *container = new Div("SysMon", "container-fluid");
 
-    CgiEnv *cgiEnv = CgiEnv::GetInstance();
+    CgiRoot *cgiRoot = static_cast<CgiRoot *>(WApplication::instance());
+    CgiEnv *cgiEnv = cgiRoot->GetCgiEnvInstance();
 
     string htmlData;
     string file;

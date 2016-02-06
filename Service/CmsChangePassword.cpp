@@ -36,6 +36,7 @@
 #include <boost/exception/diagnostic_information.hpp>
 #include <boost/format.hpp>
 #include <cppdb/frontend.h>
+#include <Wt/WApplication>
 #include <Wt/WLengthValidator>
 #include <Wt/WLineEdit>
 #include <Wt/WPushButton>
@@ -48,6 +49,7 @@
 #include <CoreLib/FileSystem.hpp>
 #include <CoreLib/Log.hpp>
 #include "CgiEnv.hpp"
+#include "CgiRoot.hpp"
 #include "CmsChangePassword.hpp"
 #include "Div.hpp"
 #include "Pool.hpp"
@@ -95,7 +97,8 @@ WWidget *CmsChangePassword::Layout()
     Div *container = new Div("CmsChangePassword", "container-fluid");
 
     try {
-        CgiEnv *cgiEnv = CgiEnv::GetInstance();
+        CgiRoot *cgiRoot = static_cast<CgiRoot *>(WApplication::instance());
+        CgiEnv *cgiEnv = cgiRoot->GetCgiEnvInstance();
 
         string htmlData;
         string file;
@@ -198,7 +201,8 @@ void CmsChangePassword::Impl::OnPasswordChangeFormSubmitted()
     transaction guard(Service::Pool::Database()->Sql());
 
     try {
-        CgiEnv *cgiEnv = CgiEnv::GetInstance();
+        CgiRoot *cgiRoot = static_cast<CgiRoot *>(WApplication::instance());
+        CgiEnv *cgiEnv = cgiRoot->GetCgiEnvInstance();
 
         string encryptedPwd;
         Pool::Crypto()->Hash(CurrentPasswordLineEdit->text().toUTF8(), encryptedPwd);

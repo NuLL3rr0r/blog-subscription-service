@@ -36,6 +36,7 @@
 #include <boost/exception/diagnostic_information.hpp>
 #include <boost/format.hpp>
 #include <cppdb/frontend.h>
+#include <Wt/WApplication>
 #include <Wt/WComboBox>
 #include <Wt/WLengthValidator>
 #include <Wt/WLineEdit>
@@ -51,6 +52,7 @@
 #include <CoreLib/FileSystem.hpp>
 #include <CoreLib/Log.hpp>
 #include "CgiEnv.hpp"
+#include "CgiRoot.hpp"
 #include "CmsNewsletter.hpp"
 #include "Div.hpp"
 #include "Pool.hpp"
@@ -99,7 +101,8 @@ WWidget *CmsNewsletter::Layout()
     Div *container = new Div("CmsNewsletter", "container-fluid");
 
     try {
-        CgiEnv *cgiEnv = CgiEnv::GetInstance();
+        CgiRoot *cgiRoot = static_cast<CgiRoot *>(WApplication::instance());
+        CgiEnv *cgiEnv = cgiRoot->GetCgiEnvInstance();
 
         string htmlData;
         string file;

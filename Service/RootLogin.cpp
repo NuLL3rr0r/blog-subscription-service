@@ -130,23 +130,23 @@ RootLogin::RootLogin()
 {
     bool hasValidSession = false;
 
-    WApplication *app = WApplication::instance();
-    CgiEnv *cgiEnv = CgiEnv::GetInstance();
+    CgiRoot *cgiRoot = static_cast<CgiRoot *>(WApplication::instance());
+    CgiEnv *cgiEnv = cgiRoot->GetCgiEnvInstance();
 
     try {
         if (cgiEnv->IsRootLogoutRequested()) {
             try {
-                app->removeCookie("cms-session-user");
+                cgiRoot->removeCookie("cms-session-user");
             } catch (...) {
             }
             try {
-                app->removeCookie("cms-session-token");
+                cgiRoot->removeCookie("cms-session-token");
             } catch (...) {
             }
             hasValidSession = false;
         } else {
-            string user(app->environment().getCookie("cms-session-user"));
-            string token(app->environment().getCookie("cms-session-token"));
+            string user(cgiRoot->environment().getCookie("cms-session-user"));
+            string token(cgiRoot->environment().getCookie("cms-session-token"));
             Pool::Crypto()->Decrypt(user, user);
             Pool::Crypto()->Decrypt(token, token);
 
@@ -229,13 +229,13 @@ RootLogin::RootLogin()
 
     if (!hasValidSession) {
         if (cgiEnv->IsRootLogoutRequested()) {
-            app->setTitle(tr("root-logout-page-title"));
+            cgiRoot->setTitle(tr("root-logout-page-title"));
             this->clear();
             this->setId("RootLogoutPage");
             this->setStyleClass("root-logout-page full-width full-height");
             this->addWidget(m_pimpl->LogoutPage());
         } else {
-            app->setTitle(tr("root-login-page-title"));
+            cgiRoot->setTitle(tr("root-login-page-title"));
 
             this->clear();
             this->setId("RootLoginPage");
@@ -256,7 +256,8 @@ WWidget *RootLogin::Layout()
     Div *noScript = new Div(container);
     noScript->addWidget(new WText(tr("no-script")));
 
-    CgiEnv *cgiEnv = CgiEnv::GetInstance();
+    CgiRoot *cgiRoot = static_cast<CgiRoot *>(WApplication::instance());
+    CgiEnv *cgiEnv = cgiRoot->GetCgiEnvInstance();
 
     string htmlData;
     string file;
@@ -413,7 +414,8 @@ void RootLogin::Impl::OnLoginFormSubmitted()
 
         CDate::Now n;
 
-        CgiEnv *cgiEnv = CgiEnv::GetInstance();
+        CgiRoot *cgiRoot = static_cast<CgiRoot *>(WApplication::instance());
+        CgiEnv *cgiEnv = cgiRoot->GetCgiEnvInstance();
 
         try {
             r >> cgiEnv->SignedInUser.Username
@@ -541,14 +543,14 @@ void RootLogin::Impl::OnPasswordRecoveryFormSubmitted()
 
 void RootLogin::Impl::OnGoToHomePageButtonPressed()
 {
-    WApplication *app = WApplication::instance();
-    static_cast<CgiRoot *>(app)->Exit("/");
+    CgiRoot *cgiRoot = static_cast<CgiRoot *>(WApplication::instance());
+    cgiRoot->Exit("/");
 }
 
 void RootLogin::Impl::OnSignInAgainButtonPressed()
 {
-    WApplication *app = WApplication::instance();
-    static_cast<CgiRoot *>(app)->Exit("/?root");
+    CgiRoot *cgiRoot = static_cast<CgiRoot *>(WApplication::instance());
+    cgiRoot->Exit("/?root");
 }
 
 void RootLogin::Impl::GenerateCaptcha()
@@ -568,7 +570,8 @@ void RootLogin::Impl::PasswordRecoveryForm()
     if (!PasswordRecoveryFormFlag) {
         PasswordRecoveryDiv->clear();
 
-        CgiEnv *cgiEnv = CgiEnv::GetInstance();
+        CgiRoot *cgiRoot = static_cast<CgiRoot *>(WApplication::instance());
+        CgiEnv *cgiEnv = cgiRoot->GetCgiEnvInstance();
 
         if (PasswordRecoveryHtmlData == "") {
             string file;
@@ -631,8 +634,8 @@ void RootLogin::Impl::PasswordRecoveryForm()
 void RootLogin::Impl::PreserveSessionData(const CDate::Now &n, const std::string &username, const bool saveLocally)
 {
     try {
-        WApplication *app = WApplication::instance();
-        CgiEnv *cgiEnv = CgiEnv::GetInstance();
+        CgiRoot *cgiRoot = static_cast<CgiRoot *>(WApplication::instance());
+        CgiEnv *cgiEnv = cgiRoot->GetCgiEnvInstance();
 
         Pool::Database()->Update("ROOT",
                                  "username", username,
@@ -661,11 +664,11 @@ void RootLogin::Impl::PreserveSessionData(const CDate::Now &n, const std::string
             Pool::Crypto()->Encrypt(lexical_cast<std::string>(n.RawTime), token);
         }
 
-        if (app->environment().supportsCookies()) {
-            app->setCookie("cms-session-user",
+        if (cgiRoot->environment().supportsCookies()) {
+            cgiRoot->setCookie("cms-session-user",
                            user,
                            Pool::Storage()->RootSessionLifespan());
-            app->setCookie("cms-session-token",
+            cgiRoot->setCookie("cms-session-token",
                            token,
                            Pool::Storage()->RootSessionLifespan());
         }
@@ -686,7 +689,8 @@ void RootLogin::Impl::PreserveSessionData(const CDate::Now &n, const std::string
 
 void RootLogin::Impl::SendLoginAlertEmail(const std::string &email, const std::string &username, CDate::Now &n)
 {
-    CgiEnv *cgiEnv = CgiEnv::GetInstance();
+    CgiRoot *cgiRoot = static_cast<CgiRoot *>(WApplication::instance());
+    CgiEnv *cgiEnv = cgiRoot->GetCgiEnvInstance();
 
     string htmlData;
     string file;
@@ -726,7 +730,8 @@ void RootLogin::Impl::SendPasswordRecoveryEmail(const std::string &email,
                                                 const std::string &username, const std::string &password,
                                                 CDate::Now &n)
 {
-    CgiEnv *cgiEnv = CgiEnv::GetInstance();
+    CgiRoot *cgiRoot = static_cast<CgiRoot *>(WApplication::instance());
+    CgiEnv *cgiEnv = cgiRoot->GetCgiEnvInstance();
 
     string htmlData;
     string file;
@@ -767,15 +772,15 @@ void RootLogin::Impl::SendPasswordRecoveryEmail(const std::string &email,
 
 Wt::WWidget *RootLogin::Impl::LogoutPage()
 {
-    WApplication *app = WApplication::instance();
-    CgiEnv *cgiEnv = CgiEnv::GetInstance();
+    CgiRoot *cgiRoot = static_cast<CgiRoot *>(WApplication::instance());
+    CgiEnv *cgiEnv = cgiRoot->GetCgiEnvInstance();
 
     try {
-        app->removeCookie("cms-session-user");
+        cgiRoot->removeCookie("cms-session-user");
     } catch (...) {
     }
     try {
-        app->removeCookie("cms-session-token");
+        cgiRoot->removeCookie("cms-session-token");
     } catch (...) {
     }
 

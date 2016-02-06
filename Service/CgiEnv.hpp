@@ -37,6 +37,7 @@
 #define SERVICE_CGIENV_HPP
 
 
+#include <memory>
 #include <string>
 #include <vector>
 #include <ctime>
@@ -134,14 +135,11 @@ public:
         std::time_t Timestamp;
     } SubscriptionData;
 
-public:
-    static CgiEnv *GetInstance();
-
 private:
     struct Impl;
     std::unique_ptr<Impl> m_pimpl;
 
-private:
+protected:
     CgiEnv();
 public:
     virtual ~CgiEnv();

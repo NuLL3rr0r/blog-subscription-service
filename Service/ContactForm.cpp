@@ -39,6 +39,8 @@
 #include <Wt/WText>
 #include <CoreLib/make_unique.hpp>
 #include "Div.hpp"
+#include "CgiEnv.hpp"
+#include "CgiRoot.hpp"
 #include "ContactForm.hpp"
 
 using namespace std;
@@ -58,7 +60,6 @@ ContactForm::ContactForm()
     m_pimpl(make_unique<ContactForm::Impl>())
 {
     WApplication *app = WApplication::instance();
-
     app->setTitle(tr("home-contact-form-page-title"));
 
     this->clear();

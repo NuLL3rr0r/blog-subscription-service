@@ -37,6 +37,7 @@
 #include <boost/exception/diagnostic_information.hpp>
 #include <boost/format.hpp>
 #include <cppdb/frontend.h>
+#include <Wt/WApplication>
 #include <Wt/WInPlaceEdit>
 #include <Wt/WLengthValidator>
 #include <Wt/WLineEdit>
@@ -55,6 +56,7 @@
 #include <CoreLib/Log.hpp>
 #include <CoreLib/make_unique.hpp>
 #include "CgiEnv.hpp"
+#include "CgiRoot.hpp"
 #include "CmsContacts.hpp"
 #include "Div.hpp"
 #include "Pool.hpp"
@@ -115,7 +117,8 @@ WWidget *CmsContacts::Layout()
     Div *container = new Div("CmsContacts", "container-fluid");
 
     try {
-        CgiEnv *cgiEnv = CgiEnv::GetInstance();
+        CgiRoot *cgiRoot = static_cast<CgiRoot *>(WApplication::instance());
+        CgiEnv *cgiEnv = cgiRoot->GetCgiEnvInstance();
 
         string htmlData;
         string file;
@@ -375,7 +378,8 @@ void CmsContacts::Impl::OnEraseButtonPressed(Wt::WPushButton *button)
     try {
         WString dbKey(button->attributeValue("db-key"));
 
-        CgiEnv *cgiEnv = CgiEnv::GetInstance();
+        CgiRoot *cgiRoot = static_cast<CgiRoot *>(WApplication::instance());
+        CgiEnv *cgiEnv = cgiRoot->GetCgiEnvInstance();
 
         WString question;
         if (cgiEnv->GetCurrentLanguage() == CgiEnv::Language::Fa) {

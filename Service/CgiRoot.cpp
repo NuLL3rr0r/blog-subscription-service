@@ -36,6 +36,8 @@
 
 #include <boost/algorithm/string.hpp>
 #include <boost/format.hpp>
+#include <boost/thread/lock_guard.hpp>
+#include <boost/thread/mutex.hpp>
 #include <Wt/WApplication>
 #include <Wt/WBootstrapTheme>
 #include <Wt/WContainerWidget>
@@ -62,6 +64,10 @@ using namespace Service;
 
 struct CgiRoot::Impl
 {
+public:
+    boost::mutex *CgiEnvMutex;
+    unique_ptr<CgiEnv> CgiEnvInstance;
+
 private:
     CgiRoot *m_parent;
 
@@ -94,7 +100,7 @@ CgiRoot::CgiRoot(const WEnvironment &env)
         bootstrapTheme->setFormControlStyleEnabled(true);
         setTheme(bootstrapTheme);
 
-        CgiEnv *cgiEnv = CgiEnv::GetInstance();
+        CgiEnv *cgiEnv = this->GetCgiEnvInstance();
 
         if (cgiEnv->FoundXSS())
             throw Service::Exception(ALICE);
@@ -156,6 +162,24 @@ CgiRoot::CgiRoot(const WEnvironment &env)
 
 CgiRoot::~CgiRoot() = default;
 
+CgiEnv *CgiRoot::GetCgiEnvInstance()
+{
+    if (m_pimpl->CgiEnvInstance == nullptr) {
+        struct make_unique_enabler : public CgiEnv {
+            /// if it has non-default constructors,
+            /// you will also need to expose them
+            //template <typename ..._ARGS>
+            //make_unique_enabler(_ARGS &&...args)
+            //    : CgiEnv(std::forward<_ARGS>(args)...)
+            //{
+            //}
+        };
+        m_pimpl->CgiEnvInstance = make_unique<make_unique_enabler>();
+    }
+
+    return m_pimpl->CgiEnvInstance.get();
+}
+
 void CgiRoot::Exit(const std::string &url)
 {
     redirect(url);
@@ -172,7 +196,7 @@ CgiRoot::Impl::~Impl() = default;
 
 Wt::WWidget *CgiRoot::Impl::GetHomePage()
 {
-    CgiEnv *cgiEnv = CgiEnv::GetInstance();
+    CgiEnv *cgiEnv = m_parent->GetCgiEnvInstance();
 
     m_parent->useStyleSheet("css/home.css");
 
@@ -208,7 +232,7 @@ Wt::WWidget *CgiRoot::Impl::GetHomePage()
 
 Wt::WWidget *CgiRoot::Impl::GetRootLoginPage()
 {
-    CgiEnv *cgiEnv = CgiEnv::GetInstance();
+    CgiEnv *cgiEnv = m_parent->GetCgiEnvInstance();
 
     m_parent->useStyleSheet("css/root.css");
 

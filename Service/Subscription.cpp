@@ -40,6 +40,7 @@
 #include <Wt/WText>
 #include <CoreLib/make_unique.hpp>
 #include "CgiEnv.hpp"
+#include "CgiRoot.hpp"
 #include "Div.hpp"
 #include "Subscription.hpp"
 
@@ -65,24 +66,24 @@ Subscription::Subscription() :
     Page(),
     m_pimpl(make_unique<Subscription::Impl>())
 {
-    WApplication *app = WApplication::instance();
-    CgiEnv *cgiEnv = CgiEnv::GetInstance();
+    CgiRoot *cgiRoot = static_cast<CgiRoot *>(WApplication::instance());
+    CgiEnv *cgiEnv = cgiRoot->GetCgiEnvInstance();
 
     switch (cgiEnv->SubscriptionData.Subscribe) {
     case CgiEnv::Subscription::Action::Subscribe:
-        app->setTitle(tr("home-subscription-subscribe-page-title"));
+        cgiRoot->setTitle(tr("home-subscription-subscribe-page-title"));
         break;
     case CgiEnv::Subscription::Action::Confirm:
-        app->setTitle(tr("home-subscription-confirmation-page-title"));
+        cgiRoot->setTitle(tr("home-subscription-confirmation-page-title"));
         break;
     case CgiEnv::Subscription::Action::Unsubscribe:
-        app->setTitle(tr("home-subscription-unsubscribe-page-title"));
+        cgiRoot->setTitle(tr("home-subscription-unsubscribe-page-title"));
         break;
     case CgiEnv::Subscription::Action::Cancel:
-        app->setTitle(tr("home-subscription-cancellation-page-title"));
+        cgiRoot->setTitle(tr("home-subscription-cancellation-page-title"));
         break;
     case CgiEnv::Subscription::Action::None:
-        app->setTitle(tr("home-subscription-subscribe-page-title"));
+        cgiRoot->setTitle(tr("home-subscription-subscribe-page-title"));
         break;
     }
 
@@ -97,7 +98,8 @@ WWidget *Subscription::Layout()
 {
     Div *container = new Div("Subscription", "container");
 
-    CgiEnv *cgiEnv = CgiEnv::GetInstance();
+    CgiRoot *cgiRoot = static_cast<CgiRoot *>(WApplication::instance());
+    CgiEnv *cgiEnv = cgiRoot->GetCgiEnvInstance();
 
     switch (cgiEnv->SubscriptionData.Subscribe) {
     case CgiEnv::Subscription::Action::Subscribe:
@@ -133,7 +135,8 @@ Wt::WWidget *Subscription::Impl::GetSubscribeForm()
     tmpl->setId("Subscribe");
     tmpl->setStyleClass("full-width full-height");
 
-    CgiEnv *cgiEnv = CgiEnv::GetInstance();
+    CgiRoot *cgiRoot = static_cast<CgiRoot *>(WApplication::instance());
+    CgiEnv *cgiEnv = cgiRoot->GetCgiEnvInstance();
 
     string htmlData;
     string file;
@@ -155,7 +158,8 @@ Wt::WWidget *Subscription::Impl::GetConfirmationPage()
     tmpl->setId("Confirmation");
     tmpl->setStyleClass("full-width full-height");
 
-    CgiEnv *cgiEnv = CgiEnv::GetInstance();
+    CgiRoot *cgiRoot = static_cast<CgiRoot *>(WApplication::instance());
+    CgiEnv *cgiEnv = cgiRoot->GetCgiEnvInstance();
 
     string htmlData;
     string file;
@@ -176,7 +180,8 @@ Wt::WWidget *Subscription::Impl::GetUnsubscribeForm()
     tmpl->setId("Unsubscribe");
     tmpl->setStyleClass("full-width full-height");
 
-    CgiEnv *cgiEnv = CgiEnv::GetInstance();
+    CgiRoot *cgiRoot = static_cast<CgiRoot *>(WApplication::instance());
+    CgiEnv *cgiEnv = cgiRoot->GetCgiEnvInstance();
 
     string htmlData;
     string file;
@@ -197,7 +202,8 @@ Wt::WWidget *Subscription::Impl::GetCancellationPage()
     tmpl->setId("Cancellation");
     tmpl->setStyleClass("full-width full-height");
 
-    CgiEnv *cgiEnv = CgiEnv::GetInstance();
+    CgiRoot *cgiRoot = static_cast<CgiRoot *>(WApplication::instance());
+    CgiEnv *cgiEnv = cgiRoot->GetCgiEnvInstance();
 
     string htmlData;
     string file;

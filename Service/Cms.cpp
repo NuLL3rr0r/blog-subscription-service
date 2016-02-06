@@ -83,7 +83,6 @@ Cms::Cms()
     m_pimpl(make_unique<Cms::Impl>())
 {
     WApplication *app = WApplication::instance();
-
     app->setTitle(tr("cms-page-title"));
 
     this->clear();
@@ -103,7 +102,8 @@ WWidget *Cms::Layout()
     Div *noScript = new Div(container);
     noScript->addWidget(new WText(tr("no-script")));
 
-    CgiEnv *cgiEnv = CgiEnv::GetInstance();
+    CgiRoot *cgiRoot = static_cast<CgiRoot *>(WApplication::instance());
+    CgiEnv *cgiEnv = cgiRoot->GetCgiEnvInstance();
 
     string htmlData;
     string file;
@@ -219,8 +219,8 @@ void Cms::Impl::OnMenuItemPressed(WText *sender)
         SystemMonitor->Pause();
     }
 
-    WApplication *app = WApplication::instance();
-    CgiEnv *cgiEnv = CgiEnv::GetInstance();
+    CgiRoot *cgiRoot = static_cast<CgiRoot *>(WApplication::instance());
+    CgiEnv *cgiEnv = cgiRoot->GetCgiEnvInstance();
 
     if (sender->id() == "menu-item-dashboard") {
         Contents->setCurrentIndex(0);
@@ -240,18 +240,18 @@ void Cms::Impl::OnMenuItemPressed(WText *sender)
         case CgiEnv::Language::Invalid:
             break;
         case CgiEnv::Language::En:
-            app->redirect("/?root&lang=fa");
+            cgiRoot->redirect("/?root&lang=fa");
             break;
         case CgiEnv::Language::Fa:
-            app->redirect("/?root&lang=en");
+            cgiRoot->redirect("/?root&lang=en");
             break;
         }
         return;
     } else if (sender->id() == "menu-item-exit") {
         srand((unsigned int)System::RandSeed());
-        app->removeCookie("cms-session-user");
-        app->removeCookie("cms-session-token");
-        static_cast<CgiRoot *>(app)->Exit("/?root&logout");
+        cgiRoot->removeCookie("cms-session-user");
+        cgiRoot->removeCookie("cms-session-token");
+        cgiRoot->Exit("/?root&logout");
         return;
     } else {
         LOG_WARNING("ERROR: INVALID STACKED-WIDGET PAGE ID!");

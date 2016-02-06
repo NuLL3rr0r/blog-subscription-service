@@ -46,6 +46,7 @@ class WEnvironment;
 }
 
 namespace Service {
+class CgiEnv;
 class CgiRoot;
 }
 
@@ -63,6 +64,8 @@ public:
     virtual ~CgiRoot();
 
 public:
+    CgiEnv *GetCgiEnvInstance();
+
     void Exit(const std::string &url);
 };
 

@@ -68,9 +68,6 @@ public:
         CoreLib::Utility::Hasher<CgiEnv::Language>> LanguageDirectionHashTable;
 
 public:
-    static std::unique_ptr<CgiEnv> Instance;
-    static boost::once_flag OnceFlag;
-
     std::string ClientInfoIP;
     std::string ClientInfoBrowser;
     std::string ClientInfoReferer;
@@ -101,26 +98,6 @@ public:
 
     void ExtractClientInfoDetail();
 };
-
-std::unique_ptr<CgiEnv> CgiEnv::Impl::Instance;
-boost::once_flag CgiEnv::Impl::OnceFlag;
-
-CgiEnv *CgiEnv::GetInstance()
-{
-    boost::call_once(Impl::OnceFlag, [] {
-        struct make_unique_enabler : public CgiEnv {
-            /// if it has non-default constructors,
-            /// you will also need to expose them
-            //template <typename ..._ARGS>
-            //make_unique_enabler(_ARGS &&...args)
-            //    : CgiEnv(std::forward<_ARGS>(args)...)
-            //{
-            //}
-        };
-        Impl::Instance = make_unique<make_unique_enabler>();
-    });
-    return Impl::Instance.get();
-}
 
 CgiEnv::CgiEnv()
     : m_pimpl(make_unique<CgiEnv::Impl>(this))

@@ -36,6 +36,7 @@
 #include <boost/exception/diagnostic_information.hpp>
 #include <boost/format.hpp>
 #include <cppdb/frontend.h>
+#include <Wt/WApplication>
 #include <Wt/WPushButton>
 #include <Wt/WString>
 #include <Wt/WTemplate>
@@ -46,6 +47,7 @@
 #include <CoreLib/FileSystem.hpp>
 #include <CoreLib/Log.hpp>
 #include "CgiEnv.hpp"
+#include "CgiRoot.hpp"
 #include "CmsSubscribers.hpp"
 #include "Div.hpp"
 #include "Pool.hpp"
@@ -88,7 +90,8 @@ WWidget *CmsSubscribers::Layout()
     Div *container = new Div("CmsSubscribers", "container-fluid");
 
     try {
-        CgiEnv *cgiEnv = CgiEnv::GetInstance();
+        CgiRoot *cgiRoot = static_cast<CgiRoot *>(WApplication::instance());
+        CgiEnv *cgiEnv = cgiRoot->GetCgiEnvInstance();
 
         string htmlData;
         string file;
