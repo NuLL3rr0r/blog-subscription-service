@@ -36,8 +36,7 @@
 #include <boost/algorithm/string.hpp>
 #include <boost/filesystem/path.hpp>
 #include <boost/format.hpp>
-#include <boost/thread/lock_guard.hpp>
-#include <boost/thread/mutex.hpp>
+#include <boost/thread/once.hpp>
 #include <CoreLib/Crypto.hpp>
 #include <CoreLib/Database.hpp>
 #include <CoreLib/make_unique.hpp>
@@ -48,25 +47,26 @@ using namespace std;
 using namespace boost;
 using namespace Service;
 
-struct Pool::Impl
-{
+struct Pool::Impl {
 public:
-    typedef std::unique_ptr<StorageStruct> Storage_ptr;
-    typedef std::unique_ptr<CoreLib::Crypto> Crypto_ptr;
-    typedef std::unique_ptr<CoreLib::Database> Database_ptr;
+    static boost::once_flag StorageOnceFlag;
+    static unique_ptr<StorageStruct> StorageInstance;
 
-public:
-    boost::mutex StorageMutex;
-    Storage_ptr StorageInstance;
+    static boost::once_flag CryptoOnceFlag;
+    static unique_ptr<CoreLib::Crypto> CryptoInstance;
 
-    boost::mutex CryptoMutex;
-    Crypto_ptr CryptoInstance;
-
-    boost::mutex DatabaseMutex;
-    Database_ptr DatabaseInstance;
+    static boost::once_flag DatabaseOnceFlag;
+    static unique_ptr<CoreLib::Database> DatabaseInstance;
 };
 
-std::unique_ptr<Pool::Impl> Pool::s_pimpl = make_unique<Pool::Impl>();
+boost::once_flag Pool::Impl::StorageOnceFlag;
+unique_ptr<Pool::StorageStruct> Pool::Impl::StorageInstance = nullptr;
+
+boost::once_flag Pool::Impl::CryptoOnceFlag;
+unique_ptr<CoreLib::Crypto> Pool::Impl::CryptoInstance = nullptr;
+
+boost::once_flag Pool::Impl::DatabaseOnceFlag;
+unique_ptr<CoreLib::Database> Pool::Impl::DatabaseInstance = nullptr;
 
 const int &Pool::StorageStruct::LanguageCookieLifespan() const
 {
@@ -210,40 +210,29 @@ const std::string &Pool::StorageStruct::RegexLanguageArray() const
 
 Pool::StorageStruct *Pool::Storage()
 {
-    boost::lock_guard<boost::mutex> lock(s_pimpl->StorageMutex);
-    (void)lock;
+    boost::call_once(Impl::StorageOnceFlag, [] {
+        Impl::StorageInstance = make_unique<StorageStruct>();
+    });
 
-    if (s_pimpl->StorageInstance == nullptr) {
-        s_pimpl->StorageInstance = make_unique<Pool::StorageStruct>();
-    }
-
-    return s_pimpl->StorageInstance.get();
+    return Impl::StorageInstance.get();
 }
 
 CoreLib::Crypto *Pool::Crypto()
 {
-    boost::lock_guard<boost::mutex> lock(s_pimpl->CryptoMutex);
-    (void)lock;
-
-    if (s_pimpl->CryptoInstance == nullptr) {
+    boost::call_once(Impl::CryptoOnceFlag, [] {
         static const string KEY = CoreLib::Crypto::HexStringToString(CRYPTO_KEY);
         static const string IV = CoreLib::Crypto::HexStringToString(CRYPTO_IV);
 
-        s_pimpl->CryptoInstance =
-                make_unique<CoreLib::Crypto>(reinterpret_cast<const CoreLib::Crypto::Byte *>(KEY.c_str()), KEY.size(),
-                                             reinterpret_cast<const CoreLib::Crypto::Byte *>(IV.c_str()), IV.size());
-    }
+        Impl::CryptoInstance = make_unique<CoreLib::Crypto>(reinterpret_cast<const CoreLib::Crypto::Byte *>(KEY.c_str()), KEY.size(),
+                                                            reinterpret_cast<const CoreLib::Crypto::Byte *>(IV.c_str()), IV.size());
+    });
 
-    return s_pimpl->CryptoInstance.get();
+    return Impl::CryptoInstance.get();
 }
 
 CoreLib::Database *Pool::Database()
 {
-    boost::lock_guard<boost::mutex> lock(s_pimpl->DatabaseMutex);
-    (void)lock;
-
-    if (s_pimpl->DatabaseInstance == nullptr) {
-
+    boost::call_once(Impl::DatabaseOnceFlag, [] {
 #if DATABASE_BACKEND == PGSQL
 
 #ifdef CORELIB_STATIC
@@ -343,9 +332,9 @@ CoreLib::Database *Pool::Database()
 
 #endif // DATABASE_BACKEND == PGSQL
 
-        s_pimpl->DatabaseInstance = make_unique<CoreLib::Database>(CONNECTION_STRING);
-    }
+        Impl::DatabaseInstance = make_unique<CoreLib::Database>(CONNECTION_STRING);
+    });
 
-    return s_pimpl->DatabaseInstance.get();
+    return Impl::DatabaseInstance.get();
 }
 

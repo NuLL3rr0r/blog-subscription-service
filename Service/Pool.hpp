@@ -84,7 +84,6 @@ public:
 
 private:
     struct Impl;
-    static std::unique_ptr<Impl> s_pimpl;
 
 public:
     static StorageStruct *Storage();
