@@ -1,6 +1,10 @@
 @charset "utf-8";
 
-.no-script {
+html, body {
     font-family: 'Yekan' 'Montserrat' 'Open Sans';
+}
+
+.no-script {
+    direction: rtl;
 }
 
