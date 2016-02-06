@@ -1,8 +1,10 @@
 <div class="contacts row">
-    <div class="col-xs-12 col-sm-10 col-md-8 col-lg-6 h-center">
+    <div class="col-xs-12 col-sm-10 col-md-8 col-lg-6 h-center form-horizontal">
         <div class="text-center">
             <h3>${edit-contacts-title}</h3>
         </div>
+
+        <br />
 
         <div class="form-group">
             <div class="col-sm-8">
@@ -36,8 +38,6 @@
         </div>
 
         <div class="clearfix"></div>
-
-        <br />
 
         <div class="text-center">
             ${add-button}

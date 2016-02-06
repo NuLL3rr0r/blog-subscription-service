@@ -182,7 +182,7 @@ WWidget *CmsNewsletter::Layout()
 
             tmpl->bindWidget("newsletter-title", new WText(tr("cms-newsletter-page-title")));
 
-            tmpl->bindString("recipients-input-id", m_pimpl->RecipientsComboBox->id());
+            tmpl->bindString("recipients-select-id", m_pimpl->RecipientsComboBox->id());
             tmpl->bindString("subject-input-id", m_pimpl->SubjectLineEdit->id());
             tmpl->bindString("body-textarea-id", m_pimpl->BodyTextEdit->id());
 
@@ -190,7 +190,7 @@ WWidget *CmsNewsletter::Layout()
             tmpl->bindWidget("subject-label-text", new WText(tr("cms-newsletter-subject")));
             tmpl->bindWidget("body-label-text", new WText(tr("cms-newsletter-body")));
 
-            tmpl->bindWidget("recipients-input", m_pimpl->RecipientsComboBox);
+            tmpl->bindWidget("recipients-select", m_pimpl->RecipientsComboBox);
             tmpl->bindWidget("subject-input", m_pimpl->SubjectLineEdit);
             tmpl->bindWidget("body-textarea", m_pimpl->BodyTextEdit);
 

@@ -1,15 +1,15 @@
 <div class="newsletter row">
-    <div class="col-xs-12 col-sm-12 col-md-12 col-lg-12 h-center">
+    <div class="col-xs-12 col-sm-12 col-md-12 col-lg-12 h-center form-horizontal">
         <div class="text-center">
             <h3>${newsletter-title}</h3>
         </div>
 
         <div class="form-group">
-            <label for="${recipients-input-id}" class="control-label">
+            <label for="${recipients-select-id}" class="control-label">
                 ${recipients-label-text}
             </label>
             <div>
-                ${recipients-input}
+                ${recipients-select}
             </div>
         </div>
 

@@ -1,5 +1,5 @@
 <div class="root-login-box row v-center">
-    <div class="panel panel-default col-xs-10 col-sm-8 col-md-6 col-lg-4 h-center">
+    <div class="panel panel-default col-xs-10 col-sm-8 col-md-6 col-lg-4 h-center form-horizontal">
         <div class="form-group">
             <label for="${username-input-id}" class="col-sm-2 col-lg-3 control-label">${username-label-text}</label>
             <div class="col-sm-9 col-sm-offset-1 col-lg-8 col-lg-offset-1">
