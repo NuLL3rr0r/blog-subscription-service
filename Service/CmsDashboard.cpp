@@ -76,9 +76,11 @@ WWidget *CmsDashboard::Layout()
     Div *container = new Div("CmsDashboard", "container-fluid");
 
     try {
+        CgiEnv *cgiEnv = CgiEnv::GetInstance();
+
         string htmlData;
         string file;
-        if (CgiEnv::GetInstance()->GetCurrentLanguage() == CgiEnv::Language::Fa) {
+        if (cgiEnv->GetCurrentLanguage() == CgiEnv::Language::Fa) {
             file = "../templates/cms-dashboard-fa.wtml";
         } else {
             file = "../templates/cms-dashboard.wtml";
@@ -98,13 +100,13 @@ WWidget *CmsDashboard::Layout()
             tmpl->bindWidget("last-login-referer-label", new WText(tr("cms-dashboard-last-login-info-referer")));
             tmpl->bindWidget("last-login-time-label", new WText(tr("cms-dashboard-last-login-info-time")));
 
-            tmpl->bindWidget("last-login-ip", new WText(WString::fromUTF8(CgiEnv::GetInstance()->SignedInUser.LastLogin.IP)));
-            tmpl->bindWidget("last-login-location", new WText(WString::fromUTF8(CgiEnv::GetInstance()->SignedInUser.LastLogin.Location)));
-            tmpl->bindWidget("last-login-user-agent", new WText(WString::fromUTF8(CgiEnv::GetInstance()->SignedInUser.LastLogin.UserAgent)));
-            tmpl->bindWidget("last-login-referer", new WText(WString::fromUTF8(CgiEnv::GetInstance()->SignedInUser.LastLogin.Referer)));
-            tmpl->bindWidget("last-login-time-gdate", new WText(WString::fromUTF8(CgiEnv::GetInstance()->SignedInUser.LastLogin.LoginGDate)));
-            tmpl->bindWidget("last-login-time-jdate", new WText(WString::fromUTF8(CgiEnv::GetInstance()->SignedInUser.LastLogin.LoginJDate)));
-            tmpl->bindWidget("last-login-time", new WText(WString::fromUTF8(CgiEnv::GetInstance()->SignedInUser.LastLogin.LoginTime)));
+            tmpl->bindWidget("last-login-ip", new WText(WString::fromUTF8(cgiEnv->SignedInUser.LastLogin.IP)));
+            tmpl->bindWidget("last-login-location", new WText(WString::fromUTF8(cgiEnv->SignedInUser.LastLogin.Location)));
+            tmpl->bindWidget("last-login-user-agent", new WText(WString::fromUTF8(cgiEnv->SignedInUser.LastLogin.UserAgent)));
+            tmpl->bindWidget("last-login-referer", new WText(WString::fromUTF8(cgiEnv->SignedInUser.LastLogin.Referer)));
+            tmpl->bindWidget("last-login-time-gdate", new WText(WString::fromUTF8(cgiEnv->SignedInUser.LastLogin.LoginGDate)));
+            tmpl->bindWidget("last-login-time-jdate", new WText(WString::fromUTF8(cgiEnv->SignedInUser.LastLogin.LoginJDate)));
+            tmpl->bindWidget("last-login-time", new WText(WString::fromUTF8(cgiEnv->SignedInUser.LastLogin.LoginTime)));
         }
     }
 

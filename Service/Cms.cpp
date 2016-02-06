@@ -82,15 +82,17 @@ Cms::Cms()
     : Page(),
     m_pimpl(make_unique<Cms::Impl>())
 {
-    WApplication::instance()->setTitle(tr("cms-page-title"));
+    WApplication *app = WApplication::instance();
+
+    app->setTitle(tr("cms-page-title"));
 
     this->clear();
     this->setId("CmsPage");
     this->setStyleClass("cms-page container-fluid");
     this->addWidget(Layout());
 
-    WApplication::instance()->root()->clear();
-    WApplication::instance()->root()->addWidget(this);
+    app->root()->clear();
+    app->root()->addWidget(this);
 }
 
 Cms::~Cms() = default;
@@ -101,9 +103,11 @@ WWidget *Cms::Layout()
     Div *noScript = new Div(container);
     noScript->addWidget(new WText(tr("no-script")));
 
+    CgiEnv *cgiEnv = CgiEnv::GetInstance();
+
     string htmlData;
     string file;
-    if (CgiEnv::GetInstance()->GetCurrentLanguage() == CgiEnv::Language::Fa) {
+    if (cgiEnv->GetCurrentLanguage() == CgiEnv::Language::Fa) {
         file = "../templates/cms-fa.wtml";
     } else {
         file = "../templates/cms.wtml";
@@ -216,6 +220,7 @@ void Cms::Impl::OnMenuItemPressed(WText *sender)
     }
 
     WApplication *app = WApplication::instance();
+    CgiEnv *cgiEnv = CgiEnv::GetInstance();
 
     if (sender->id() == "menu-item-dashboard") {
         Contents->setCurrentIndex(0);
@@ -230,7 +235,7 @@ void Cms::Impl::OnMenuItemPressed(WText *sender)
     } else if (sender->id() == "menu-item-change-password") {
         Contents->setCurrentIndex(5);
     } else if (sender->id() == "menu-item-switch-language") {
-        switch (CgiEnv::GetInstance()->GetCurrentLanguage()) {
+        switch (cgiEnv->GetCurrentLanguage()) {
         case CgiEnv::Language::None:
         case CgiEnv::Language::Invalid:
             break;

@@ -95,9 +95,11 @@ WWidget *CmsChangeEmail::Layout()
     Div *container = new Div("CmsChangeEmail", "container-fluid");
 
     try {
+        CgiEnv *cgiEnv = CgiEnv::GetInstance();
+
         string htmlData;
         string file;
-        if (CgiEnv::GetInstance()->GetCurrentLanguage() == CgiEnv::Language::Fa) {
+        if (cgiEnv->GetCurrentLanguage() == CgiEnv::Language::Fa) {
             file = "../templates/cms-change-email-fa.wtml";
         } else {
             file = "../templates/cms-change-email.wtml";
@@ -113,7 +115,7 @@ WWidget *CmsChangeEmail::Layout()
             WRegExpValidator *emailValidator = new WRegExpValidator(Pool::Storage()->RegexEmail());
             emailValidator->setMandatory(true);
             m_pimpl->EmailLineEdit->setValidator(emailValidator);
-            m_pimpl->EmailLineEdit->setText(WString::fromUTF8(CgiEnv::GetInstance()->SignedInUser.Email));
+            m_pimpl->EmailLineEdit->setText(WString::fromUTF8(cgiEnv->SignedInUser.Email));
 
             m_pimpl->PasswordLineEdit = new WLineEdit();
             m_pimpl->PasswordLineEdit->setEchoMode(WLineEdit::Password);
@@ -182,6 +184,8 @@ void CmsChangeEmail::Impl::OnEmailChangeFormSubmitted()
     transaction guard(Service::Pool::Database()->Sql());
 
     try {
+        CgiEnv *cgiEnv = CgiEnv::GetInstance();
+
         string encryptedPwd;
         Pool::Crypto()->Hash(PasswordLineEdit->text().toUTF8(), encryptedPwd);
         Pool::Crypto()->Encrypt(encryptedPwd, encryptedPwd);
@@ -190,7 +194,7 @@ void CmsChangeEmail::Impl::OnEmailChangeFormSubmitted()
                 << (format("SELECT email FROM \"%1%\""
                                   " WHERE username=? AND pwd=?;")
                     % Pool::Database()->GetTableName("ROOT")).str()
-                << CgiEnv::GetInstance()->SignedInUser.Username
+                << cgiEnv->SignedInUser.Username
                 << encryptedPwd
                 << row;
 
@@ -202,13 +206,13 @@ void CmsChangeEmail::Impl::OnEmailChangeFormSubmitted()
         }
 
         Pool::Database()->Update("ROOT",
-                                 "username", CgiEnv::GetInstance()->SignedInUser.Username,
+                                 "username", cgiEnv->SignedInUser.Username,
                                  "email=?",
                                  { EmailLineEdit->text().toUTF8() });
 
         guard.commit();
 
-        CgiEnv::GetInstance()->SignedInUser.Email = EmailLineEdit->text().toUTF8();
+        cgiEnv->SignedInUser.Email = EmailLineEdit->text().toUTF8();
 
         PasswordLineEdit->setText("");
         EmailLineEdit->setFocus();

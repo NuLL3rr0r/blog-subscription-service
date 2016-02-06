@@ -125,9 +125,11 @@ CgiEnv *CgiEnv::GetInstance()
 CgiEnv::CgiEnv()
     : m_pimpl(make_unique<CgiEnv::Impl>(this))
 {
-    m_pimpl->ClientInfoIP = WApplication::instance()->environment().clientAddress();
-    m_pimpl->ClientInfoBrowser = WApplication::instance()->environment().userAgent();
-    m_pimpl->ClientInfoReferer = WApplication::instance()->environment().referer();
+    WApplication *app = WApplication::instance();
+
+    m_pimpl->ClientInfoIP = app->environment().clientAddress();
+    m_pimpl->ClientInfoBrowser = app->environment().userAgent();
+    m_pimpl->ClientInfoReferer = app->environment().referer();
 
     m_pimpl->ExtractClientInfoDetail();
 
@@ -147,14 +149,14 @@ CgiEnv::CgiEnv()
     }
     algorithm::trim(m_pimpl->ClientInfoLocation);
 
-    m_pimpl->ServerInfoHost = WApplication::instance()->environment().hostName();
-    m_pimpl->ServerInfoURL = WApplication::instance()->environment().urlScheme() + "://" + m_pimpl->ServerInfoHost;
+    m_pimpl->ServerInfoHost = app->environment().hostName();
+    m_pimpl->ServerInfoURL = app->environment().urlScheme() + "://" + m_pimpl->ServerInfoHost;
     m_pimpl->ServerInfoRootLoginUrl = m_pimpl->ServerInfoURL
             + (algorithm::ends_with(m_pimpl->ServerInfoURL, "/") ? "" : "/")
             + "?root";
     m_pimpl->ServerInfoNoReplyAddr = "no-reply@" + m_pimpl->ServerInfoHost;
 
-    string queryStr = WApplication::instance()->environment().getCgiValue("QUERY_STRING");
+    string queryStr = app->environment().getCgiValue("QUERY_STRING");
     m_pimpl->FoundXSS = (queryStr.find("<") != string::npos ||
             queryStr.find(">") != string::npos ||
             queryStr.find("%3C") != string::npos ||
@@ -167,7 +169,7 @@ CgiEnv::CgiEnv()
 
     SubscriptionData.Subscribe = Subscription::Action::None;
 
-    Http::ParameterMap map = WApplication::instance()->environment().getParameterMap();
+    Http::ParameterMap map = app->environment().getParameterMap();
     for (std::map<string, Http::ParameterValues>::const_iterator it = map.begin(); it != map.end(); ++it) {
         if (it->first == "lang") {
             auto itLang = m_pimpl->LanguageMapper.right.find(it->second[0]);

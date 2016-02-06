@@ -115,9 +115,11 @@ WWidget *CmsContacts::Layout()
     Div *container = new Div("CmsContacts", "container-fluid");
 
     try {
+        CgiEnv *cgiEnv = CgiEnv::GetInstance();
+
         string htmlData;
         string file;
-        if (CgiEnv::GetInstance()->GetCurrentLanguage() == CgiEnv::Language::Fa) {
+        if (cgiEnv->GetCurrentLanguage() == CgiEnv::Language::Fa) {
             file = "../templates/cms-contacts-fa.wtml";
         } else {
             file = "../templates/cms-contacts.wtml";
@@ -373,8 +375,10 @@ void CmsContacts::Impl::OnEraseButtonPressed(Wt::WPushButton *button)
     try {
         WString dbKey(button->attributeValue("db-key"));
 
+        CgiEnv *cgiEnv = CgiEnv::GetInstance();
+
         WString question;
-        if (CgiEnv::GetInstance()->GetCurrentLanguage() == CgiEnv::Language::Fa) {
+        if (cgiEnv->GetCurrentLanguage() == CgiEnv::Language::Fa) {
             transaction guard(Service::Pool::Database()->Sql());
             result r = Pool::Database()->Sql()
                     << (format("SELECT recipient_fa FROM \"%1%\""

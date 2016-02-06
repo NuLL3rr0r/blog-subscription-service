@@ -88,9 +88,11 @@ WWidget *CmsSubscribers::Layout()
     Div *container = new Div("CmsSubscribers", "container-fluid");
 
     try {
+        CgiEnv *cgiEnv = CgiEnv::GetInstance();
+
         string htmlData;
         string file;
-        if (CgiEnv::GetInstance()->GetCurrentLanguage() == CgiEnv::Language::Fa) {
+        if (cgiEnv->GetCurrentLanguage() == CgiEnv::Language::Fa) {
             file = "../templates/cms-subscribers-fa.wtml";
         } else {
             file = "../templates/cms-subscribers.wtml";

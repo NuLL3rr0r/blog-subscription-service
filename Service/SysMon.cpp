@@ -173,9 +173,11 @@ WWidget *SysMon::Layout()
 {
     Div *container = new Div("SysMon", "container-fluid");
 
+    CgiEnv *cgiEnv = CgiEnv::GetInstance();
+
     string htmlData;
     string file;
-    if (CgiEnv::GetInstance()->GetCurrentLanguage() == CgiEnv::Language::Fa) {
+    if (cgiEnv->GetCurrentLanguage() == CgiEnv::Language::Fa) {
         file = "../templates/system-monitor-fa.wtml";
     } else {
         file = "../templates/system-monitor.wtml";

@@ -95,9 +95,11 @@ WWidget *CmsChangePassword::Layout()
     Div *container = new Div("CmsChangePassword", "container-fluid");
 
     try {
+        CgiEnv *cgiEnv = CgiEnv::GetInstance();
+
         string htmlData;
         string file;
-        if (CgiEnv::GetInstance()->GetCurrentLanguage() == CgiEnv::Language::Fa) {
+        if (cgiEnv->GetCurrentLanguage() == CgiEnv::Language::Fa) {
             file = "../templates/cms-change-password-fa.wtml";
         } else {
             file = "../templates/cms-change-password.wtml";
@@ -196,6 +198,8 @@ void CmsChangePassword::Impl::OnPasswordChangeFormSubmitted()
     transaction guard(Service::Pool::Database()->Sql());
 
     try {
+        CgiEnv *cgiEnv = CgiEnv::GetInstance();
+
         string encryptedPwd;
         Pool::Crypto()->Hash(CurrentPasswordLineEdit->text().toUTF8(), encryptedPwd);
         Pool::Crypto()->Encrypt(encryptedPwd, encryptedPwd);
@@ -204,7 +208,7 @@ void CmsChangePassword::Impl::OnPasswordChangeFormSubmitted()
                 << (format("SELECT pwd FROM \"%1%\""
                                   " WHERE username=? AND pwd=?;")
                     % Pool::Database()->GetTableName("ROOT")).str()
-                << CgiEnv::GetInstance()->SignedInUser.Username
+                << cgiEnv->SignedInUser.Username
                 << encryptedPwd
                 << row;
 
@@ -234,7 +238,7 @@ void CmsChangePassword::Impl::OnPasswordChangeFormSubmitted()
         Pool::Crypto()->Encrypt(encryptedPwd, encryptedPwd);
 
         Pool::Database()->Update("ROOT",
-                                 "username", CgiEnv::GetInstance()->SignedInUser.Username,
+                                 "username", cgiEnv->SignedInUser.Username,
                                  "pwd=?",
                                  { encryptedPwd });
 

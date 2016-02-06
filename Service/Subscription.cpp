@@ -66,8 +66,9 @@ Subscription::Subscription() :
     m_pimpl(make_unique<Subscription::Impl>())
 {
     WApplication *app = WApplication::instance();
+    CgiEnv *cgiEnv = CgiEnv::GetInstance();
 
-    switch (CgiEnv::GetInstance()->SubscriptionData.Subscribe) {
+    switch (cgiEnv->SubscriptionData.Subscribe) {
     case CgiEnv::Subscription::Action::Subscribe:
         app->setTitle(tr("home-subscription-subscribe-page-title"));
         break;
@@ -96,7 +97,9 @@ WWidget *Subscription::Layout()
 {
     Div *container = new Div("Subscription", "container");
 
-    switch (CgiEnv::GetInstance()->SubscriptionData.Subscribe) {
+    CgiEnv *cgiEnv = CgiEnv::GetInstance();
+
+    switch (cgiEnv->SubscriptionData.Subscribe) {
     case CgiEnv::Subscription::Action::Subscribe:
         container->addWidget(m_pimpl->GetSubscribeForm());
         break;
@@ -130,9 +133,11 @@ Wt::WWidget *Subscription::Impl::GetSubscribeForm()
     tmpl->setId("Subscribe");
     tmpl->setStyleClass("full-width full-height");
 
+    CgiEnv *cgiEnv = CgiEnv::GetInstance();
+
     string htmlData;
     string file;
-    if (CgiEnv::GetInstance()->GetCurrentLanguage() == CgiEnv::Language::Fa) {
+    if (cgiEnv->GetCurrentLanguage() == CgiEnv::Language::Fa) {
         file = "../templates/home-subscription-subscribe-fa.wtml";
     } else {
         file = "../templates/home-subscription-subscribe.wtml";
@@ -150,9 +155,11 @@ Wt::WWidget *Subscription::Impl::GetConfirmationPage()
     tmpl->setId("Confirmation");
     tmpl->setStyleClass("full-width full-height");
 
+    CgiEnv *cgiEnv = CgiEnv::GetInstance();
+
     string htmlData;
     string file;
-    if (CgiEnv::GetInstance()->GetCurrentLanguage() == CgiEnv::Language::Fa) {
+    if (cgiEnv->GetCurrentLanguage() == CgiEnv::Language::Fa) {
         file = "../templates/home-subscription-confirmation-fa.wtml";
     } else {
         file = "../templates/home-subscription-confirmation.wtml";
@@ -169,9 +176,11 @@ Wt::WWidget *Subscription::Impl::GetUnsubscribeForm()
     tmpl->setId("Unsubscribe");
     tmpl->setStyleClass("full-width full-height");
 
+    CgiEnv *cgiEnv = CgiEnv::GetInstance();
+
     string htmlData;
     string file;
-    if (CgiEnv::GetInstance()->GetCurrentLanguage() == CgiEnv::Language::Fa) {
+    if (cgiEnv->GetCurrentLanguage() == CgiEnv::Language::Fa) {
         file = "../templates/home-subscription-unsubscribe-fa.wtml";
     } else {
         file = "../templates/home-subscription-unsubscribe.wtml";
@@ -188,9 +197,11 @@ Wt::WWidget *Subscription::Impl::GetCancellationPage()
     tmpl->setId("Cancellation");
     tmpl->setStyleClass("full-width full-height");
 
+    CgiEnv *cgiEnv = CgiEnv::GetInstance();
+
     string htmlData;
     string file;
-    if (CgiEnv::GetInstance()->GetCurrentLanguage() == CgiEnv::Language::Fa) {
+    if (cgiEnv->GetCurrentLanguage() == CgiEnv::Language::Fa) {
         file = "../templates/home-subscription-cancellation-fa.wtml";
     } else {
         file = "../templates/home-subscription-cancellation.wtml";

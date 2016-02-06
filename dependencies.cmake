@@ -204,4 +204,3 @@ IF ( NOT DEFINED CPPDB_MYSQL_DRIVER_FOUND
     MESSAGE ( FATAL_ERROR "Could not find a suitable CppDB driver." )
 ENDIF (  )
 
-

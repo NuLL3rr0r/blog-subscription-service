@@ -99,9 +99,11 @@ WWidget *CmsNewsletter::Layout()
     Div *container = new Div("CmsNewsletter", "container-fluid");
 
     try {
+        CgiEnv *cgiEnv = CgiEnv::GetInstance();
+
         string htmlData;
         string file;
-        if (CgiEnv::GetInstance()->GetCurrentLanguage() == CgiEnv::Language::Fa) {
+        if (cgiEnv->GetCurrentLanguage() == CgiEnv::Language::Fa) {
             file = "../templates/cms-newsletter-fa.wtml";
         } else {
             file = "../templates/cms-newsletter.wtml";
@@ -131,7 +133,7 @@ WWidget *CmsNewsletter::Layout()
             /// http://tinymce.moxiecode.com/wiki.php/Configuration
             m_pimpl->BodyTextEdit->setConfigurationSetting("valid_elements", std::string("*[*]"));
 
-            switch (CgiEnv::GetInstance()->GetCurrentLanguage()) {
+            switch (cgiEnv->GetCurrentLanguage()) {
             case CgiEnv::Language::Fa:
                 m_pimpl->BodyTextEdit->setConfigurationSetting("language", string("fa_IR"));
                 break;

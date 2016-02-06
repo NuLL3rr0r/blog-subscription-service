@@ -29,4 +29,3 @@ IF ( WIN32 AND MINGW )
     )
 ENDIF ( WIN32 AND MINGW )
 
-

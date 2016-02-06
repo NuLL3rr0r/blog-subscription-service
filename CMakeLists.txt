@@ -416,4 +416,3 @@ INCLUDE ( resources.cmake )
 
 SUBDIRS( CoreLib Utils Service )
 
-

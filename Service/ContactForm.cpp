@@ -57,7 +57,9 @@ ContactForm::ContactForm()
     : Page(),
     m_pimpl(make_unique<ContactForm::Impl>())
 {
-    WApplication::instance()->setTitle(tr("home-contact-form-page-title"));
+    WApplication *app = WApplication::instance();
+
+    app->setTitle(tr("home-contact-form-page-title"));
 
     this->clear();
     this->setId("ContactFormPage");
