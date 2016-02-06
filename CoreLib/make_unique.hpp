@@ -46,10 +46,10 @@
 #include <utility>
 
 namespace std {
-template<typename T, typename ...Args>
-std::unique_ptr<T> make_unique(Args&& ...args)
+template<typename _T, typename ..._ARGS>
+std::unique_ptr<_T> make_unique(_ARGS &&...args)
 {
-    return std::unique_ptr<T>(new T(std::forward<Args>(args)...));
+    return std::unique_ptr<_T>(new _T(std::forward<_ARGS>(args)...));
 }
 }
 

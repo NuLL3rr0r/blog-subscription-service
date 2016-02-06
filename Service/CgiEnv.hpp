@@ -135,7 +135,7 @@ public:
     } SubscriptionData;
 
 public:
-    static CgiEnv &GetInstance();
+    static CgiEnv *GetInstance();
 
 private:
     struct Impl;
@@ -143,13 +143,8 @@ private:
 
 private:
     CgiEnv();
-    virtual ~CgiEnv();
-
 public:
-    CgiEnv(CgiEnv const &) = delete;
-    CgiEnv(CgiEnv &&) = delete;
-    CgiEnv &operator=(CgiEnv const &) = delete;
-    CgiEnv &operator=(CgiEnv &&) = delete;
+    virtual ~CgiEnv();
 
 public:
     std::string GetClientInfo(const ClientInfo &key) const;

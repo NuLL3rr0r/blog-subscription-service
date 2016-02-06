@@ -94,19 +94,19 @@ CgiRoot::CgiRoot(const WEnvironment &env)
         bootstrapTheme->setFormControlStyleEnabled(true);
         setTheme(bootstrapTheme);
 
-        if (CgiEnv::GetInstance().FoundXSS())
+        if (CgiEnv::GetInstance()->FoundXSS())
             throw Service::Exception(ALICE);
 
         root()->clear();
 
-        switch (CgiEnv::GetInstance().GetCurrentLanguage()) {
+        switch (CgiEnv::GetInstance()->GetCurrentLanguage()) {
         case CgiEnv::Language::None:
         case CgiEnv::Language::Invalid:
             try {
             m_pimpl->ReloadWithLanguage(env.getCookie("lang"));
         } catch (...) {
             if (algorithm::contains(
-                        CgiEnv::GetInstance().GetClientInfo(CgiEnv::ClientInfo::Location),
+                        CgiEnv::GetInstance()->GetClientInfo(CgiEnv::ClientInfo::Location),
                         "Iran")
                     || algorithm::starts_with(locale().name(), "fa")) {
                 m_pimpl->ReloadWithLanguage("fa");
@@ -119,19 +119,19 @@ CgiRoot::CgiRoot(const WEnvironment &env)
         case CgiEnv::Language::En:
         case CgiEnv::Language::Fa:
             if (env.supportsCookies()) {
-                setCookie("lang", CgiEnv::GetInstance().GetCurrentLanguageString(),
+                setCookie("lang", CgiEnv::GetInstance()->GetCurrentLanguageString(),
                           Pool::Storage()->LanguageCookieLifespan());
             }
         }
 
-        setLocale(CgiEnv::GetInstance().GetCurrentLanguageString());
+        setLocale(CgiEnv::GetInstance()->GetCurrentLanguageString());
         messageResourceBundle().use(appRoot() + "../i18n/localization");
 
-        if (CgiEnv::GetInstance().GetCurrentLanguageDirection() == CgiEnv::LanguageDirection::RightToLeft) {
+        if (CgiEnv::GetInstance()->GetCurrentLanguageDirection() == CgiEnv::LanguageDirection::RightToLeft) {
             setLayoutDirection(Wt::LayoutDirection::RightToLeft);
         }
 
-        if (!CgiEnv::GetInstance().IsRootLoginRequested()) {
+        if (!CgiEnv::GetInstance()->IsRootLoginRequested()) {
             root()->addWidget(m_pimpl->GetHomePage());
         } else {
             root()->addWidget(m_pimpl->GetRootLoginPage());
@@ -172,7 +172,7 @@ Wt::WWidget *CgiRoot::Impl::GetHomePage()
 {
     m_parent->useStyleSheet("css/home.css");
 
-    switch (CgiEnv::GetInstance().GetCurrentLanguage()) {
+    switch (CgiEnv::GetInstance()->GetCurrentLanguage()) {
     case CgiEnv::Language::En:
         m_parent->useStyleSheet("css/home-ltr.css");
         m_parent->useStyleSheet("css/home-en.css");
@@ -206,7 +206,7 @@ Wt::WWidget *CgiRoot::Impl::GetRootLoginPage()
 {
     m_parent->useStyleSheet("css/root.css");
 
-    switch (CgiEnv::GetInstance().GetCurrentLanguage()) {
+    switch (CgiEnv::GetInstance()->GetCurrentLanguage()) {
     case CgiEnv::Language::En:
         m_parent->useStyleSheet("css/root-ltr.css");
         m_parent->useStyleSheet("css/root-en.css");

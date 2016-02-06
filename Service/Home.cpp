@@ -60,7 +60,7 @@ Home::Home()
     : Page(),
     m_pimpl(make_unique<Home::Impl>())
 {
-    WApplication::instance()->setTitle(replace_all_copy(tr("home-page-title").value(), L"&amp;", "&"));
+    WApplication::instance()->setTitle(tr("home-page-title").value());
 
     this->clear();
     this->setId("HomePage");
@@ -75,9 +75,9 @@ WWidget *Home::Layout()
     Div *noScript = new Div(container);
     noScript->addWidget(new WText(tr("no-script")));
 
-    if (CgiEnv::GetInstance().SubscriptionData.Subscribe != CgiEnv::Subscription::Action::None) {
+    if (CgiEnv::GetInstance()->SubscriptionData.Subscribe != CgiEnv::Subscription::Action::None) {
         container->addWidget(new Subscription());
-    } else if (CgiEnv::GetInstance().IsContactFormRequested()) {
+    } else if (CgiEnv::GetInstance()->IsContactFormRequested()) {
         container->addWidget(new ContactForm());
     }
 

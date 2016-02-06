@@ -97,7 +97,7 @@ WWidget *CmsChangePassword::Layout()
     try {
         string htmlData;
         string file;
-        if (CgiEnv::GetInstance().GetCurrentLanguage() == CgiEnv::Language::Fa) {
+        if (CgiEnv::GetInstance()->GetCurrentLanguage() == CgiEnv::Language::Fa) {
             file = "../templates/cms-change-password-fa.wtml";
         } else {
             file = "../templates/cms-change-password.wtml";
@@ -204,7 +204,7 @@ void CmsChangePassword::Impl::OnPasswordChangeFormSubmitted()
                 << (format("SELECT pwd FROM \"%1%\""
                                   " WHERE username=? AND pwd=?;")
                     % Pool::Database()->GetTableName("ROOT")).str()
-                << CgiEnv::GetInstance().SignedInUser.Username
+                << CgiEnv::GetInstance()->SignedInUser.Username
                 << encryptedPwd
                 << row;
 
@@ -234,7 +234,7 @@ void CmsChangePassword::Impl::OnPasswordChangeFormSubmitted()
         Pool::Crypto()->Encrypt(encryptedPwd, encryptedPwd);
 
         Pool::Database()->Update("ROOT",
-                                 "username", CgiEnv::GetInstance().SignedInUser.Username,
+                                 "username", CgiEnv::GetInstance()->SignedInUser.Username,
                                  "pwd=?",
                                  { encryptedPwd });
 

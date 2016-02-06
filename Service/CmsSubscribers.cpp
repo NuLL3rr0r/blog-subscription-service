@@ -90,7 +90,7 @@ WWidget *CmsSubscribers::Layout()
     try {
         string htmlData;
         string file;
-        if (CgiEnv::GetInstance().GetCurrentLanguage() == CgiEnv::Language::Fa) {
+        if (CgiEnv::GetInstance()->GetCurrentLanguage() == CgiEnv::Language::Fa) {
             file = "../templates/cms-subscribers-fa.wtml";
         } else {
             file = "../templates/cms-subscribers.wtml";

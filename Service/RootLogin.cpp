@@ -131,7 +131,7 @@ RootLogin::RootLogin()
     bool hasValidSession = false;
 
     try {
-        if (CgiEnv::GetInstance().IsRootLogoutRequested()) {
+        if (CgiEnv::GetInstance()->IsRootLogoutRequested()) {
             try {
                 WApplication::instance()->removeCookie("cms-session-user");
             } catch (...) {
@@ -167,20 +167,20 @@ RootLogin::RootLogin()
                                 << user << row;
 
                         if (!r.empty()) {
-                            r >> CgiEnv::GetInstance().SignedInUser.Username
-                                    >> CgiEnv::GetInstance().SignedInUser.Email
-                                    >> CgiEnv::GetInstance().SignedInUser.LastLogin.IP
-                                    >> CgiEnv::GetInstance().SignedInUser.LastLogin.Location
-                                    >> CgiEnv::GetInstance().SignedInUser.LastLogin.LoginRawTime
-                                    >> CgiEnv::GetInstance().SignedInUser.LastLogin.LoginGDate
-                                    >> CgiEnv::GetInstance().SignedInUser.LastLogin.LoginJDate
-                                    >> CgiEnv::GetInstance().SignedInUser.LastLogin.LoginTime
-                                    >> CgiEnv::GetInstance().SignedInUser.LastLogin.UserAgent
-                                    >> CgiEnv::GetInstance().SignedInUser.LastLogin.Referer;
+                            r >> CgiEnv::GetInstance()->SignedInUser.Username
+                                    >> CgiEnv::GetInstance()->SignedInUser.Email
+                                    >> CgiEnv::GetInstance()->SignedInUser.LastLogin.IP
+                                    >> CgiEnv::GetInstance()->SignedInUser.LastLogin.Location
+                                    >> CgiEnv::GetInstance()->SignedInUser.LastLogin.LoginRawTime
+                                    >> CgiEnv::GetInstance()->SignedInUser.LastLogin.LoginGDate
+                                    >> CgiEnv::GetInstance()->SignedInUser.LastLogin.LoginJDate
+                                    >> CgiEnv::GetInstance()->SignedInUser.LastLogin.LoginTime
+                                    >> CgiEnv::GetInstance()->SignedInUser.LastLogin.UserAgent
+                                    >> CgiEnv::GetInstance()->SignedInUser.LastLogin.Referer;
 
-                            m_pimpl->PreserveSessionData(n, CgiEnv::GetInstance().SignedInUser.Username, true);
-                            m_pimpl->SendLoginAlertEmail(CgiEnv::GetInstance().SignedInUser.Email,
-                                                         CgiEnv::GetInstance().SignedInUser.Username,
+                            m_pimpl->PreserveSessionData(n, CgiEnv::GetInstance()->SignedInUser.Username, true);
+                            m_pimpl->SendLoginAlertEmail(CgiEnv::GetInstance()->SignedInUser.Email,
+                                                         CgiEnv::GetInstance()->SignedInUser.Username,
                                                          n);
 
                             hasValidSession = true;
@@ -225,7 +225,7 @@ RootLogin::RootLogin()
     }
 
     if (!hasValidSession) {
-        if (CgiEnv::GetInstance().IsRootLogoutRequested()) {
+        if (CgiEnv::GetInstance()->IsRootLogoutRequested()) {
             WApplication::instance()->setTitle(tr("root-logout-page-title"));
             this->clear();
             this->setId("RootLogoutPage");
@@ -255,7 +255,7 @@ WWidget *RootLogin::Layout()
 
     string htmlData;
     string file;
-    if (CgiEnv::GetInstance().GetCurrentLanguage() == CgiEnv::Language::Fa) {
+    if (CgiEnv::GetInstance()->GetCurrentLanguage() == CgiEnv::Language::Fa) {
         file = "../templates/root-login-fa.wtml";
     } else {
         file = "../templates/root-login.wtml";
@@ -409,16 +409,16 @@ void RootLogin::Impl::OnLoginFormSubmitted()
         CDate::Now n;
 
         try {
-            r >> CgiEnv::GetInstance().SignedInUser.Username
-                    >> CgiEnv::GetInstance().SignedInUser.Email
-                    >> CgiEnv::GetInstance().SignedInUser.LastLogin.IP
-                    >> CgiEnv::GetInstance().SignedInUser.LastLogin.Location
-                    >> CgiEnv::GetInstance().SignedInUser.LastLogin.LoginRawTime
-                    >> CgiEnv::GetInstance().SignedInUser.LastLogin.LoginGDate
-                    >> CgiEnv::GetInstance().SignedInUser.LastLogin.LoginJDate
-                    >> CgiEnv::GetInstance().SignedInUser.LastLogin.LoginTime
-                    >> CgiEnv::GetInstance().SignedInUser.LastLogin.UserAgent
-                    >> CgiEnv::GetInstance().SignedInUser.LastLogin.Referer;
+            r >> CgiEnv::GetInstance()->SignedInUser.Username
+                    >> CgiEnv::GetInstance()->SignedInUser.Email
+                    >> CgiEnv::GetInstance()->SignedInUser.LastLogin.IP
+                    >> CgiEnv::GetInstance()->SignedInUser.LastLogin.Location
+                    >> CgiEnv::GetInstance()->SignedInUser.LastLogin.LoginRawTime
+                    >> CgiEnv::GetInstance()->SignedInUser.LastLogin.LoginGDate
+                    >> CgiEnv::GetInstance()->SignedInUser.LastLogin.LoginJDate
+                    >> CgiEnv::GetInstance()->SignedInUser.LastLogin.LoginTime
+                    >> CgiEnv::GetInstance()->SignedInUser.LastLogin.UserAgent
+                    >> CgiEnv::GetInstance()->SignedInUser.LastLogin.Referer;
         }
 
         catch (boost::exception &ex) {
@@ -433,10 +433,10 @@ void RootLogin::Impl::OnLoginFormSubmitted()
             LOG_ERROR(UNKNOWN_ERROR);
         }
 
-        PreserveSessionData(n, CgiEnv::GetInstance().SignedInUser.Username,
+        PreserveSessionData(n, CgiEnv::GetInstance()->SignedInUser.Username,
                             RememberMeCheckBox->checkState() == Wt::Checked);
-        SendLoginAlertEmail(CgiEnv::GetInstance().SignedInUser.Email,
-                            CgiEnv::GetInstance().SignedInUser.Username,
+        SendLoginAlertEmail(CgiEnv::GetInstance()->SignedInUser.Email,
+                            CgiEnv::GetInstance()->SignedInUser.Username,
                             n);
 
         guard.commit();
@@ -561,7 +561,7 @@ void RootLogin::Impl::PasswordRecoveryForm()
 
         if (PasswordRecoveryHtmlData == "") {
             string file;
-            if (CgiEnv::GetInstance().GetCurrentLanguage() == CgiEnv::Language::Fa) {
+            if (CgiEnv::GetInstance()->GetCurrentLanguage() == CgiEnv::Language::Fa) {
                 file = "../templates/root-login-password-recovery-fa.wtml";
             } else {
                 file = "../templates/root-login-password-recovery.wtml";
@@ -629,14 +629,14 @@ void RootLogin::Impl::PreserveSessionData(const CDate::Now &n, const std::string
                                  " last_login_user_agent=?,"
                                  " last_login_referer=?",
                                  {
-                                     CgiEnv::GetInstance().GetClientInfo(CgiEnv::ClientInfo::IP),
-                                     CgiEnv::GetInstance().GetClientInfo(CgiEnv::ClientInfo::Location),
+                                     CgiEnv::GetInstance()->GetClientInfo(CgiEnv::ClientInfo::IP),
+                                     CgiEnv::GetInstance()->GetClientInfo(CgiEnv::ClientInfo::Location),
                                      lexical_cast<std::string>(n.RawTime),
                                      DateConv::ToGregorian(n),
                                      DateConv::DateConv::ToJalali(n),
                                      DateConv::Time(n),
-                                     CgiEnv::GetInstance().GetClientInfo(CgiEnv::ClientInfo::Browser),
-                                     CgiEnv::GetInstance().GetClientInfo(CgiEnv::ClientInfo::Referer)
+                                     CgiEnv::GetInstance()->GetClientInfo(CgiEnv::ClientInfo::Browser),
+                                     CgiEnv::GetInstance()->GetClientInfo(CgiEnv::ClientInfo::Referer)
                                  });
 
         string user;
@@ -674,7 +674,7 @@ void RootLogin::Impl::SendLoginAlertEmail(const std::string &email, const std::s
 {
     string htmlData;
     string file;
-    if (CgiEnv::GetInstance().GetCurrentLanguage() == CgiEnv::Language::Fa) {
+    if (CgiEnv::GetInstance()->GetCurrentLanguage() == CgiEnv::Language::Fa) {
         file = "../templates/email-root-login-alert-fa.wtml";
     } else {
         file = "../templates/email-root-login-alert.wtml";
@@ -683,22 +683,22 @@ void RootLogin::Impl::SendLoginAlertEmail(const std::string &email, const std::s
     if (CoreLib::FileSystem::Read(file, htmlData)) {
         replace_all(htmlData, "${username}", username);
         replace_all(htmlData, "${client-ip}",
-                           CgiEnv::GetInstance().GetClientInfo(CgiEnv::ClientInfo::IP));
+                           CgiEnv::GetInstance()->GetClientInfo(CgiEnv::ClientInfo::IP));
         replace_all(htmlData, "${client-location}",
-                           CgiEnv::GetInstance().GetClientInfo(CgiEnv::ClientInfo::Location));
+                           CgiEnv::GetInstance()->GetClientInfo(CgiEnv::ClientInfo::Location));
         replace_all(htmlData, "${client-user-agent}",
-                           CgiEnv::GetInstance().GetClientInfo(CgiEnv::ClientInfo::Browser));
+                           CgiEnv::GetInstance()->GetClientInfo(CgiEnv::ClientInfo::Browser));
         replace_all(htmlData, "${client-referer}",
-                           CgiEnv::GetInstance().GetClientInfo(CgiEnv::ClientInfo::Referer));
+                           CgiEnv::GetInstance()->GetClientInfo(CgiEnv::ClientInfo::Referer));
         replace_all(htmlData, "${time}",
                            DateConv::ToJalali(n)
                            + " ~ "
                            + algorithm::trim_copy(DateConv::RawLocalDateTime(n)));
 
         CoreLib::Mail *mail = new CoreLib::Mail(
-                    CgiEnv::GetInstance().GetServerInfo(CgiEnv::ServerInfo::NoReplyAddr), email,
+                    CgiEnv::GetInstance()->GetServerInfo(CgiEnv::ServerInfo::NoReplyAddr), email,
                     (format(tr("root-login-alert-email-subject").toUTF8())
-                     % CgiEnv::GetInstance().GetServerInfo(CgiEnv::ServerInfo::Host)
+                     % CgiEnv::GetInstance()->GetServerInfo(CgiEnv::ServerInfo::Host)
                      % username).str(),
                     htmlData);
         mail->SetDeleteLater(true);
@@ -712,7 +712,7 @@ void RootLogin::Impl::SendPasswordRecoveryEmail(const std::string &email,
 {
     string htmlData;
     string file;
-    if (CgiEnv::GetInstance().GetCurrentLanguage() == CgiEnv::Language::Fa) {
+    if (CgiEnv::GetInstance()->GetCurrentLanguage() == CgiEnv::Language::Fa) {
         file = "../templates/email-root-password-recovery-fa.wtml";
     } else {
         file = "../templates/email-root-password-recovery.wtml";
@@ -720,26 +720,26 @@ void RootLogin::Impl::SendPasswordRecoveryEmail(const std::string &email,
 
     if (CoreLib::FileSystem::Read(file, htmlData)) {
         replace_all(htmlData, "${login-url}",
-                           CgiEnv::GetInstance().GetServerInfo(CgiEnv::ServerInfo::RootLoginUrl));
+                           CgiEnv::GetInstance()->GetServerInfo(CgiEnv::ServerInfo::RootLoginUrl));
         replace_all(htmlData, "${username}", username);
         replace_all(htmlData, "${password}", password);
         replace_all(htmlData, "${client-ip}",
-                           CgiEnv::GetInstance().GetClientInfo(CgiEnv::ClientInfo::IP));
+                           CgiEnv::GetInstance()->GetClientInfo(CgiEnv::ClientInfo::IP));
         replace_all(htmlData, "${client-location}",
-                           CgiEnv::GetInstance().GetClientInfo(CgiEnv::ClientInfo::Location));
+                           CgiEnv::GetInstance()->GetClientInfo(CgiEnv::ClientInfo::Location));
         replace_all(htmlData, "${client-user-agent}",
-                           CgiEnv::GetInstance().GetClientInfo(CgiEnv::ClientInfo::Browser));
+                           CgiEnv::GetInstance()->GetClientInfo(CgiEnv::ClientInfo::Browser));
         replace_all(htmlData, "${client-referer}",
-                           CgiEnv::GetInstance().GetClientInfo(CgiEnv::ClientInfo::Referer));
+                           CgiEnv::GetInstance()->GetClientInfo(CgiEnv::ClientInfo::Referer));
         replace_all(htmlData, "${time}",
                            DateConv::ToJalali(n)
                            + " ~ "
                            + algorithm::trim_copy(DateConv::RawLocalDateTime(n)));
 
         CoreLib::Mail *mail = new CoreLib::Mail(
-                    CgiEnv::GetInstance().GetServerInfo(CgiEnv::ServerInfo::NoReplyAddr), email,
+                    CgiEnv::GetInstance()->GetServerInfo(CgiEnv::ServerInfo::NoReplyAddr), email,
                     (format(tr("root-login-password-recovery-email-subject").toUTF8())
-                     % CgiEnv::GetInstance().GetServerInfo(CgiEnv::ServerInfo::Host)
+                     % CgiEnv::GetInstance()->GetServerInfo(CgiEnv::ServerInfo::Host)
                      % username).str(),
                     htmlData);
         mail->SetDeleteLater(true);
@@ -764,7 +764,7 @@ Wt::WWidget *RootLogin::Impl::LogoutPage()
 
     string htmlData;
     string file;
-    if (CgiEnv::GetInstance().GetCurrentLanguage() == CgiEnv::Language::Fa) {
+    if (CgiEnv::GetInstance()->GetCurrentLanguage() == CgiEnv::Language::Fa) {
         file = "../templates/root-logout-fa.wtml";
     } else {
         file = "../templates/root-logout.wtml";

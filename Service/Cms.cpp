@@ -103,7 +103,7 @@ WWidget *Cms::Layout()
 
     string htmlData;
     string file;
-    if (CgiEnv::GetInstance().GetCurrentLanguage() == CgiEnv::Language::Fa) {
+    if (CgiEnv::GetInstance()->GetCurrentLanguage() == CgiEnv::Language::Fa) {
         file = "../templates/cms-fa.wtml";
     } else {
         file = "../templates/cms.wtml";
@@ -230,7 +230,7 @@ void Cms::Impl::OnMenuItemPressed(WText *sender)
     } else if (sender->id() == "menu-item-change-password") {
         Contents->setCurrentIndex(5);
     } else if (sender->id() == "menu-item-switch-language") {
-        switch (CgiEnv::GetInstance().GetCurrentLanguage()) {
+        switch (CgiEnv::GetInstance()->GetCurrentLanguage()) {
         case CgiEnv::Language::None:
         case CgiEnv::Language::Invalid:
             break;

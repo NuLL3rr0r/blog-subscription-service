@@ -67,7 +67,7 @@ Subscription::Subscription() :
 {
     WApplication *app = WApplication::instance();
 
-    switch (CgiEnv::GetInstance().SubscriptionData.Subscribe) {
+    switch (CgiEnv::GetInstance()->SubscriptionData.Subscribe) {
     case CgiEnv::Subscription::Action::Subscribe:
         app->setTitle(tr("home-subscription-subscribe-page-title"));
         break;
@@ -96,7 +96,7 @@ WWidget *Subscription::Layout()
 {
     Div *container = new Div("Subscription", "container");
 
-    switch (CgiEnv::GetInstance().SubscriptionData.Subscribe) {
+    switch (CgiEnv::GetInstance()->SubscriptionData.Subscribe) {
     case CgiEnv::Subscription::Action::Subscribe:
         container->addWidget(m_pimpl->GetSubscribeForm());
         break;
@@ -132,7 +132,7 @@ Wt::WWidget *Subscription::Impl::GetSubscribeForm()
 
     string htmlData;
     string file;
-    if (CgiEnv::GetInstance().GetCurrentLanguage() == CgiEnv::Language::Fa) {
+    if (CgiEnv::GetInstance()->GetCurrentLanguage() == CgiEnv::Language::Fa) {
         file = "../templates/home-subscription-subscribe-fa.wtml";
     } else {
         file = "../templates/home-subscription-subscribe.wtml";
@@ -152,7 +152,7 @@ Wt::WWidget *Subscription::Impl::GetConfirmationPage()
 
     string htmlData;
     string file;
-    if (CgiEnv::GetInstance().GetCurrentLanguage() == CgiEnv::Language::Fa) {
+    if (CgiEnv::GetInstance()->GetCurrentLanguage() == CgiEnv::Language::Fa) {
         file = "../templates/home-subscription-confirmation-fa.wtml";
     } else {
         file = "../templates/home-subscription-confirmation.wtml";
@@ -171,7 +171,7 @@ Wt::WWidget *Subscription::Impl::GetUnsubscribeForm()
 
     string htmlData;
     string file;
-    if (CgiEnv::GetInstance().GetCurrentLanguage() == CgiEnv::Language::Fa) {
+    if (CgiEnv::GetInstance()->GetCurrentLanguage() == CgiEnv::Language::Fa) {
         file = "../templates/home-subscription-unsubscribe-fa.wtml";
     } else {
         file = "../templates/home-subscription-unsubscribe.wtml";
@@ -190,7 +190,7 @@ Wt::WWidget *Subscription::Impl::GetCancellationPage()
 
     string htmlData;
     string file;
-    if (CgiEnv::GetInstance().GetCurrentLanguage() == CgiEnv::Language::Fa) {
+    if (CgiEnv::GetInstance()->GetCurrentLanguage() == CgiEnv::Language::Fa) {
         file = "../templates/home-subscription-cancellation-fa.wtml";
     } else {
         file = "../templates/home-subscription-cancellation.wtml";
