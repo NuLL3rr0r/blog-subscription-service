@@ -76,6 +76,8 @@ public:
         const int &MinEmailBodyLength() const;
         const int &MaxEmailBodyLength() const;
 
+        const std::string &RegexHttpUrl() const;
+
         const std::string &RegexUuid() const;
         const std::string &RegexLanguageArray() const;
 

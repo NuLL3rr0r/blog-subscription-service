@@ -196,6 +196,21 @@ const int &Pool::StorageStruct::MaxEmailBodyLength() const
     return LENGTH;
 }
 
+const std::string &Pool::StorageStruct::RegexHttpUrl() const
+{
+    static const string regex("^(https?://)"
+                              "?(([0-9a-z_!~*'().&=+$%-]+: )?[0-9a-z_!~*'().&=+$%-]+@)?" //user@
+                              "(([0-9]{1,3}\\.){3}[0-9]{1,3}" // IP
+                              "|" // allows either IP or domain
+                              "([0-9a-z_!~*'()-]+\\.)*" // tertiary domain(s)- www.
+                              "([0-9a-z][0-9a-z-]{0,61})?[0-9a-z]\\." // second level domain
+                              "[a-z]{2,6})" // first level domain- .com or .museum
+                              "(:[0-9]{1,4})?" // port number- :80
+                              "((/?)|" // a slash isn't required if there is no file name
+                              "(/[0-9a-z_!~*'().;?:@&=+$,%#-]+)+/?)$");
+    return regex;
+}
+
 const std::string &Pool::StorageStruct::RegexUuid() const
 {
     static const string regex("^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$");
