@@ -1,22 +1,26 @@
 <div class="root-login-box row v-center">
     <div class="panel panel-default col-xs-10 col-sm-8 col-md-6 col-lg-4 h-center form-horizontal">
+        <div class="text-center">
+            <h3><i class="fa fa-hand-stop-o fa-lg"></i> ${root-login-title}</h3>
+        </div>
+
         <div class="form-group">
-            <label for="${username-input-id}" class="col-sm-2 col-lg-3 control-label">${username-label-text}</label>
-            <div class="col-sm-9 col-sm-offset-1 col-lg-8 col-lg-offset-1">
+            <label for="${username-input-id}" class="control-label">${username-label-text}</label>
+            <div>
                 ${username-input}
             </div>
         </div>
 
         <div class="form-group">
-            <label for="${password-input-id}" class="col-sm-2 col-lg-3 control-label">${password-label-text}</label>
-            <div class="col-sm-9 col-sm-offset-1 col-lg-8 col-lg-offset-1">
+            <label for="${password-input-id}" class="control-label">${password-label-text}</label>
+            <div>
                 ${password-input}
             </div>
         </div>
 
         <div class="form-group">
-            <label for="${captcha-input-id}" class="col-sm-2 col-lg-3 control-label">${captcha-label-text}</label>
-            <div class="col-sm-9 col-sm-offset-1 col-lg-8 col-lg-offset-1">
+            <label for="${captcha-input-id}" class="control-label">${captcha-label-text}</label>
+            <div>
                 ${captcha-input}
             </div>
         </div>
@@ -24,7 +28,7 @@
         <div class="clearfix"></div>
 
         <div class="form-group">
-            <div class="col-sm-9 col-sm-offset-3 col-lg-8 col-lg-offset-4">
+            <div>
                 <div class="checkbox">
                     <label>
                         ${remember-me-input} ${remember-me-text}

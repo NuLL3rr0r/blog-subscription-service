@@ -66,6 +66,7 @@ Home::Home()
 
     this->clear();
     this->setId("HomePage");
+    this->setStyleClass("full-width full-height");
     this->addWidget(Layout());
 }
 
@@ -73,7 +74,7 @@ Home::~Home() = default;
 
 WWidget *Home::Layout()
 {
-    Div *container = new Div("Home", "container");
+    Div *container = new Div("Home", "full-width full-height");
     Div *noScript = new Div(container);
     noScript->addWidget(new WText(tr("no-script")));
 

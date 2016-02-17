@@ -172,7 +172,6 @@ WWidget *CmsContacts::Layout()
             tmpl->bindString("recipient-en-input-id", m_pimpl->RecipientEnLineEdit->id());
             tmpl->bindString("recipient-fa-input-id", m_pimpl->RecipientFaLineEdit->id());
             tmpl->bindString("email-input-id", m_pimpl->EmailLineEdit->id());
-            tmpl->bindString("is-default-recipient-input-id", m_pimpl->IsDefaultRecipientCheckBox->id());
 
             tmpl->bindWidget("edit-contacts-title", new WText(tr("cms-contacts-page-title")));
 

@@ -66,14 +66,11 @@ html, body {
 
 .root-login-box, .root-logout-box {
     letter-spacing: 1px;
-    font: bold 1em "Comic Sans MS";
+    font-weight: bold;
+    font-size: 1.0em;
 
     .panel {
-        padding: 25px;
-    }
-
-    .form-group {
-        padding: 16px 0 !important;
+        padding: 25px 50px;
     }
 
     .captcha {
@@ -280,12 +277,8 @@ html, body {
 .newsletter, .subscribers, .contacts, .change-email, .change-password {
     letter-spacing: 1px;
 
-    .form-group {
-        padding: 16px 0 !important;
-    }
-
     button {
-        margin: 12px;
+        margin-top: 12px;
     }
 }
 

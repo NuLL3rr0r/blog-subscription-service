@@ -268,6 +268,7 @@ WWidget *RootLogin::Layout()
     }
 
     if (CoreLib::FileSystem::Read(file, htmlData)) {
+        /// Fill the template
         WTemplate *tmpl = new WTemplate(container);
         tmpl->setStyleClass("container-table");
         tmpl->setTemplateText(WString(htmlData), TextFormat::XHTMLUnsafeText);
@@ -290,6 +291,7 @@ WWidget *RootLogin::Layout()
         m_pimpl->Captcha = new Service::Captcha();
         m_pimpl->CaptchaImage = m_pimpl->Captcha->Generate();
         m_pimpl->CaptchaImage->setAlternateText(tr("root-login-captcha-hint"));
+        m_pimpl->CaptchaImage->setAttributeValue("title", tr("root-login-captcha-hint"));
 
         int captchaResult = (int)m_pimpl->Captcha->GetResult();
 
@@ -316,6 +318,7 @@ WWidget *RootLogin::Layout()
         tmpl->bindString("captcha-input-id", m_pimpl->CaptchaLineEdit->id());
         tmpl->bindString("captcha-input-id", m_pimpl->CaptchaLineEdit->id());
 
+        tmpl->bindWidget("root-login-title", new WText(tr("root-login-page-title")));
         tmpl->bindWidget("username-label-text", new WText(tr("root-login-username")));
         tmpl->bindWidget("password-label-text", new WText(tr("root-login-password")));
         tmpl->bindWidget("captcha-label-text", new WText(tr("root-login-captcha")));

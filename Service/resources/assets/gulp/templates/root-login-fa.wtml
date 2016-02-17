@@ -1,33 +1,40 @@
 <div class="root-login-box row v-center">
     <div class="panel panel-default col-xs-10 col-sm-8 col-md-6 col-lg-4 h-center form-horizontal">
+        <div class="text-center">
+            <h3><i class="fa fa-hand-stop-o fa-lg"></i> ${root-login-title}</h3>
+        </div>
+
         <div class="form-group">
-            <div class="col-sm-7">
+            <label for="${username-input-id}" class="control-label">${username-label-text}</label>
+            <div>
                 ${username-input}
             </div>
-            <label for="${username-input-id}" class="col-sm-4 col-sm-offset-1 control-label">${username-label-text}</label>
         </div>
 
         <div class="form-group">
-            <div class="col-sm-7">
+            <label for="${password-input-id}" class="control-label">${password-label-text}</label>
+            <div>
                 ${password-input}
             </div>
-            <label for="${password-input-id}" class="col-sm-4 col-sm-offset-1 control-label">${password-label-text}</label>
         </div>
 
         <div class="form-group">
-            <div class="col-sm-7">
+            <label for="${captcha-input-id}" class="control-label">${captcha-label-text}</label>
+            <div>
                 ${captcha-input}
             </div>
-            <label for="${captcha-input-id}" class="col-sm-4 col-sm-offset-1 control-label">${captcha-label-text}</label>
         </div>
 
         <div class="clearfix"></div>
 
         <div class="form-group">
-            <div class="col-sm-7">
+            <div>
                 <div class="checkbox">
                     <label>
-                        ${remember-me-input} ${remember-me-text}
+                        ${remember-me-input}
+                        <span style="margin-right: 20px !important;">
+                            ${remember-me-text}
+                        </span>
                     </label>
                 </div>
             </div>
@@ -48,11 +55,11 @@
         </div>
 
         <div class="extra">
-            <div class="pull-right">
-                <a href="?lang=en&root">EN</a>
+            <div class="pull-left">
+                <a href="?lang=en&root">FA</a>
             </div>
 
-            <div class="pull-left">
+            <div class="pull-right">
                 ${forgot-password-link}
             </div>
         </div>

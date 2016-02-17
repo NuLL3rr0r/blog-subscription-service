@@ -64,3 +64,21 @@ html, body {
     clear: both;
 }
 
+.contact-form {
+    letter-spacing: 1px;
+    font-weight: bold;
+    font-size: 1.0em;
+
+    .panel {
+        padding: 25px 50px;
+    }
+
+    .captcha {
+        margin: 12px;
+    }
+
+    button {
+        margin-top: 12px;
+    }
+}
+

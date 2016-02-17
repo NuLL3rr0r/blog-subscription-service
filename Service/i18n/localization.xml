@@ -9,6 +9,23 @@
             </div>
         </noscript>
     </message>
+    <message id="home-captcha">Captcha</message>
+    <message id="home-captcha-hint">e.g. 5 x 5 = 25</message>
+    <message id="home-contact-form-page-title">Contact Form</message>
+    <message id="home-contact-form-admin">Admin</message>
+    <message id="home-contact-form-recipient">Recipient</message>
+    <message id="home-contact-form-from">From</message>
+    <message id="home-contact-form-from-placeholder">Your Name</message>
+    <message id="home-contact-form-email">Email</message>
+    <message id="home-contact-form-email-placeholder">Your Email</message>
+    <message id="home-contact-form-url">URL</message>
+    <message id="home-contact-form-url-placeholder">Your Home Page</message>
+    <message id="home-contact-form-subject">Subject</message>
+    <message id="home-contact-form-subject-placeholder">Message Subject</message>
+    <message id="home-contact-form-body">Body</message>
+    <message id="home-contact-form-body-placeholder">Message Body</message>
+    <message id="home-contact-form-send">Send</message>
+    <message id="home-contact-form-clear">Clear</message>
     <message id="root-login-page-title">Admin Login</message>
     <message id="root-login-username">Username</message>
     <message id="root-login-username-placeholder">Your user name</message>

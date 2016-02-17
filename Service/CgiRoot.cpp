@@ -227,6 +227,8 @@ Wt::WWidget *CgiRoot::Impl::GetHomePage()
         break;
     }
 
+    m_parent->useStyleSheet("resources/font-awesome/css/font-awesome.min.css");
+
     return new Home();
 }
 

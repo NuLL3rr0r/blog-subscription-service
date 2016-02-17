@@ -9,6 +9,23 @@
             </div>
         </noscript>
     </message>
+    <message id="home-captcha">کد امنیتی</message>
+    <message id="home-captcha-hint">مثال: ۲۵ = ۵ × ۵</message>
+    <message id="home-contact-form-page-title">فرم تماس</message>
+    <message id="home-contact-form-admin">مدیر</message>
+    <message id="home-contact-form-recipient">مخاطب</message>
+    <message id="home-contact-form-from">نام فرستنده</message>
+    <message id="home-contact-form-from-placeholder">نام فرستنده</message>
+    <message id="home-contact-form-email">پست الکترونیک</message>
+    <message id="home-contact-form-email-placeholder">پست الکترونیک</message>
+    <message id="home-contact-form-url">صفحه ی وب</message>
+    <message id="home-contact-form-url-placeholder">صفحه ی وب</message>
+    <message id="home-contact-form-subject">موضوع پیام</message>
+    <message id="home-contact-form-subject-placeholder">موضوع پیام</message>
+    <message id="home-contact-form-body">متن پیام</message>
+    <message id="home-contact-form-body-placeholder">متن پیام</message>
+    <message id="home-contact-form-send">ارسال</message>
+    <message id="home-contact-form-clear">پیام جدید</message>
     <message id="root-login-page-title">ورود مدیر</message>
     <message id="root-login-username">نام کاربری</message>
     <message id="root-login-username-placeholder">نام کاربری</message>
