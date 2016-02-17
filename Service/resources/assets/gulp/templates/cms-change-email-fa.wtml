@@ -29,8 +29,14 @@
         <div class="clearfix"></div>
 
         <div class="text-center">
-            ${change-email-button}
+            <div class="btn-group">
+                ${change-email-button}
+            </div>
+
+            <div class="clearfix"></div>
         </div>
+
+        <div class="clearfix"></div>
 
         <br />
 

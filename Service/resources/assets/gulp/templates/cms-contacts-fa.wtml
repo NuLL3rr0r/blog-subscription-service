@@ -55,8 +55,14 @@
         <div class="clearfix"></div>
 
         <div class="text-center">
-            ${add-button}
+            <div class="btn-group">
+                ${add-button}
+            </div>
+
+            <div class="clearfix"></div>
         </div>
+
+        <div class="clearfix"></div>
 
         <br />
 

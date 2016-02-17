@@ -48,8 +48,14 @@
         </div>
 
         <div class="text-center">
-            ${sign-in-button}
+            <div class="btn-group">
+                ${sign-in-button}
+            </div>
+
+            <div class="clearfix"></div>
         </div>
+
+        <div class="clearfix"></div>
 
         <div class="extra">
             <div class="pull-left">

@@ -88,9 +88,15 @@
         </div>
 
         <div class="text-center">
-            ${send-button}
-            ${clear-button}
+            <div class="btn-group">
+                ${send-button}
+                ${clear-button}
+            </div>
+
+            <div class="clearfix"></div>
         </div>
+
+        <div class="clearfix"></div>
     </div>
 
     <div class="clearfix"></div>

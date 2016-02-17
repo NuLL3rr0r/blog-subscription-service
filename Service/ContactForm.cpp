@@ -218,10 +218,10 @@ WWidget *ContactForm::Layout()
             m_pimpl->CaptchaLineEdit->setValidator(m_pimpl->CaptchaValidator);
 
             WPushButton *sendPushButton = new WPushButton(tr("home-contact-form-send"));
-            sendPushButton->setStyleClass("btn btn-default");
+            sendPushButton->setStyleClass("btn btn-primary");
 
             WPushButton *clearPushButton = new WPushButton(tr("home-contact-form-clear"));
-            clearPushButton->setStyleClass("btn btn-default");
+            clearPushButton->setStyleClass("btn btn-warning");
 
             tmpl->bindString("recipient-select-id", m_pimpl->RecipientComboBox->id());
             tmpl->bindString("from-input-id", m_pimpl->FromLineEdit->id());
