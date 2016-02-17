@@ -79,6 +79,8 @@ public:
     static bool Sqlite3Vacuum(const std::string &databaseFile);
 #endif  // defined ( HAS_SQLITE3 )
 
+    static bool IsTrue(const std::string &value);
+
 public:
     explicit Database(const std::string &connectionString);
     virtual ~Database();
@@ -110,8 +112,8 @@ public:
     void RegisterTable(const std::string &id,
                        const std::string &name,
                        const std::string &fields);
-    std::string GetTableName(const std::string &id);
-    std::string GetTableFields(const std::string &id);
+    std::string GetTableName(const std::string &id) const;
+    std::string GetTableFields(const std::string &id) const;
     bool SetTableName(const std::string &id, const std::string &newName);
     bool SetTableFields(const std::string &id, const std::string &fields);
 

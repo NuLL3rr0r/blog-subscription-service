@@ -183,6 +183,20 @@ bool Database::Sqlite3Vacuum(const std::string &databaseFile)
 }
 #endif  // defined ( HAS_SQLITE3 )
 
+bool Database::IsTrue(const std::string &value)
+{
+    if (value == "TRUE"
+            || value == "t"
+            || value == "true"
+            || value == "y"
+            || value == "yes"
+            || value == "on"
+            || value == "1") {
+       return true;
+    }
+
+    return false;
+}
 
 Database::Database(const std::string &connectionString) :
     m_pimpl(make_unique<Database::Impl>())
@@ -403,7 +417,7 @@ void Database::RegisterTable(const std::string &id,
     m_pimpl->TableFields[id] = fields;
 }
 
-std::string Database::GetTableName(const std::string &id)
+std::string Database::GetTableName(const std::string &id) const
 {
     if (m_pimpl->TableNames.find(id) != m_pimpl->TableNames.end()) {
         return m_pimpl->TableNames[id];
@@ -412,7 +426,7 @@ std::string Database::GetTableName(const std::string &id)
     return "{?}";
 }
 
-std::string Database::GetTableFields(const std::string &id)
+std::string Database::GetTableFields(const std::string &id) const
 {
     if (m_pimpl->TableFields.find(id) != m_pimpl->TableFields.end()) {
         return m_pimpl->TableFields[id];

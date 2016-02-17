@@ -38,6 +38,7 @@
 #include <boost/format.hpp>
 #include <cppdb/frontend.h>
 #include <Wt/WApplication>
+#include <Wt/WCheckBox>
 #include <Wt/WInPlaceEdit>
 #include <Wt/WLengthValidator>
 #include <Wt/WLineEdit>
@@ -67,16 +68,18 @@ using namespace std;
 using namespace boost;
 using namespace Wt;
 using namespace cppdb;
+using namespace CoreLib;
 using namespace Service;
 
 struct CmsContacts::Impl : public Wt::WObject
 {
 public:
-    WLineEdit *RecipientEnLineEdit;
-    WLineEdit *RecipientFaLineEdit;
-    WLineEdit *EmailLineEdit;
-    WText *EditContactsMessageArea;
-    WContainerWidget *ContactsTableContainer;
+    Wt::WLineEdit *RecipientEnLineEdit;
+    Wt::WLineEdit *RecipientFaLineEdit;
+    Wt::WLineEdit *EmailLineEdit;
+    Wt::WCheckBox *IsDefaultRecipientCheckBox;
+    Wt::WText *EditContactsMessageArea;
+    Wt::WContainerWidget *ContactsTableContainer;
 
     std::unique_ptr<Wt::WMessageBox> eraseMessageBox;
 
@@ -90,6 +93,7 @@ public:
 public:
     void OnAddContactFormSubmitted();
     void OnCellSaveButtonPressed(Wt::WInPlaceEdit *inPlaceEdit);
+    void OnSetDefaultCheckBoxStateChanged(Wt::WCheckBox *checkbox);
     void OnEraseButtonPressed(Wt::WPushButton *button);
     void OnEraseDialogClosed(Wt::StandardButton button);
 
@@ -153,8 +157,11 @@ WWidget *CmsContacts::Layout()
             emailValidator->setMandatory(true);
             m_pimpl->EmailLineEdit->setValidator(emailValidator);
 
+            m_pimpl->IsDefaultRecipientCheckBox = new WCheckBox();
+            m_pimpl->IsDefaultRecipientCheckBox->setStyleClass("checkbox");
+
             WPushButton *addPushButton = new WPushButton(tr("cms-contacts-add"));
-            addPushButton->setStyleClass("btn btn-default");
+            addPushButton ->setStyleClass("btn btn-default");
 
             m_pimpl->EditContactsMessageArea = new WText();
             HtmlInfo(tr("cms-contacts-edit-hint").value(), m_pimpl->EditContactsMessageArea);
@@ -165,16 +172,19 @@ WWidget *CmsContacts::Layout()
             tmpl->bindString("recipient-en-input-id", m_pimpl->RecipientEnLineEdit->id());
             tmpl->bindString("recipient-fa-input-id", m_pimpl->RecipientFaLineEdit->id());
             tmpl->bindString("email-input-id", m_pimpl->EmailLineEdit->id());
+            tmpl->bindString("is-default-recipient-input-id", m_pimpl->IsDefaultRecipientCheckBox->id());
 
             tmpl->bindWidget("edit-contacts-title", new WText(tr("cms-contacts-page-title")));
 
             tmpl->bindWidget("recipient-en-label-text", new WText(tr("cms-contacts-recipient-name-en")));
             tmpl->bindWidget("recipient-fa-label-text", new WText(tr("cms-contacts-recipient-name-fa")));
             tmpl->bindWidget("email-label-text", new WText(tr("cms-contacts-email-address")));
+            tmpl->bindWidget("is-default-recipient-label-text", new WText(tr("cms-contacts-is-default-recipient")));
 
             tmpl->bindWidget("recipient-en-input", m_pimpl->RecipientEnLineEdit);
             tmpl->bindWidget("recipient-fa-input", m_pimpl->RecipientFaLineEdit);
             tmpl->bindWidget("email-input", m_pimpl->EmailLineEdit);
+            tmpl->bindWidget("is-default-recipient-input", m_pimpl->IsDefaultRecipientCheckBox);
 
             tmpl->bindWidget("add-button", addPushButton);
 
@@ -246,10 +256,18 @@ void CmsContacts::Impl::OnAddContactFormSubmitted()
         string recipient_fa(trim_copy(RecipientFaLineEdit->text().toUTF8()));
         string email(trim_copy(EmailLineEdit->text().toUTF8()));
 
+        if (IsDefaultRecipientCheckBox->isChecked()) {
+            Pool::Database()->Update("CONTACTS",
+                                     "1",
+                                     "1",
+                                     "is_default=?",
+                                     { "FALSE" });
+        }
 
         Pool::Database()->Insert("CONTACTS",
-                                 "recipient, recipient_fa, address",
-                                 { recipient, recipient_fa, email });
+                                 "recipient, recipient_fa, address, is_default",
+                                 { recipient, recipient_fa, email,
+                                   lexical_cast<string>(IsDefaultRecipientCheckBox->isChecked()) });
 
         guard.commit();
 
@@ -373,6 +391,55 @@ void CmsContacts::Impl::OnCellSaveButtonPressed(Wt::WInPlaceEdit *inPlaceEdit)
     guard.rollback();
 }
 
+void CmsContacts::Impl::OnSetDefaultCheckBoxStateChanged(Wt::WCheckBox *checkbox)
+{
+    try {
+        string recipient(checkbox->attributeValue("db-key").toUTF8());
+
+        transaction guard(Service::Pool::Database()->Sql());
+
+        result r = Pool::Database()->Sql()
+                << (format("SELECT recipient FROM \"%1%\""
+                           " WHERE recipient=?;")
+                    % Pool::Database()->GetTableName("CONTACTS")).str()
+                << recipient
+                << row;
+
+        if (!r.empty()) {
+            if (checkbox->isChecked()) {
+                Pool::Database()->Update("CONTACTS",
+                                         "1",
+                                         "1",
+                                         "is_default=?",
+                                         { "FALSE" });
+            }
+
+            Pool::Database()->Update("CONTACTS",
+                                     "recipient",
+                                     recipient,
+                                     "is_default=?",
+                                     { boost::lexical_cast<string>(checkbox->isChecked()) });
+            guard.commit();
+        } else {
+            guard.rollback();
+        }
+
+        FillContactsDataTable();
+    }
+
+    catch (boost::exception &ex) {
+        LOG_ERROR(boost::diagnostic_information(ex));
+    }
+
+    catch (std::exception &ex) {
+        LOG_ERROR(ex.what());
+    }
+
+    catch (...) {
+        LOG_ERROR(UNKNOWN_ERROR);
+    }
+}
+
 void CmsContacts::Impl::OnEraseButtonPressed(Wt::WPushButton *button)
 {
     try {
@@ -478,21 +545,22 @@ void CmsContacts::Impl::FillContactsDataTable()
     table->elementAt(0, 0)->addWidget(new WText(tr("cms-contacts-recipient-name-en")));
     table->elementAt(0, 1)->addWidget(new WText(tr("cms-contacts-recipient-name-fa")));
     table->elementAt(0, 2)->addWidget(new WText(tr("cms-contacts-email-address")));
-    table->elementAt(0, 3)->addWidget(new WText(tr("cms-contacts-erase")));
+    table->elementAt(0, 3)->addWidget(new WText(tr("cms-contacts-is-default-recipient")));
+    table->elementAt(0, 4)->addWidget(new WText(tr("cms-contacts-erase")));
 
     transaction guard(Service::Pool::Database()->Sql());
 
     try {
         result r = Pool::Database()->Sql()
-                << (format("SELECT recipient, recipient_fa, address"
+                << (format("SELECT recipient, recipient_fa, address, is_default"
                            " FROM \"%1%\" ORDER BY recipient ASC;")
                     % Pool::Database()->GetTableName("CONTACTS")).str();
 
         int i = 0;
         while(r.next()) {
             ++i;
-            string recipient, recipient_fa, address;
-            r >> recipient >> recipient_fa >> address;
+            string recipient, recipient_fa, address, is_default;
+            r >> recipient >> recipient_fa >> address >> is_default;
 
             WSignalMapper<WInPlaceEdit *> *cellSignalMapper = new WSignalMapper<WInPlaceEdit *>(this);
             cellSignalMapper->mapped().connect(this, &CmsContacts::Impl::OnCellSaveButtonPressed);
@@ -501,13 +569,29 @@ void CmsContacts::Impl::FillContactsDataTable()
             table->elementAt(i, 1)->addWidget(GetContactsCell(recipient_fa, recipient, "recipient_fa", cellSignalMapper));
             table->elementAt(i, 2)->addWidget(GetContactsCell(address, recipient, "address", cellSignalMapper));
 
+            WSignalMapper<WCheckBox *> *setDefaultSignalMapper = new WSignalMapper<WCheckBox *>(this);
+            setDefaultSignalMapper->mapped().connect(this, &CmsContacts::Impl::OnSetDefaultCheckBoxStateChanged);
+            WCheckBox *setDefaultCheckBox = new WCheckBox();
+            setDefaultSignalMapper->mapConnect(setDefaultCheckBox->checked(), setDefaultCheckBox);
+            setDefaultSignalMapper->mapConnect(setDefaultCheckBox->unChecked(), setDefaultCheckBox);
+            setDefaultCheckBox->setStyleClass("checkbox");
+            setDefaultCheckBox->setAttributeValue("db-key", WString::fromUTF8(recipient));
+            setDefaultCheckBox->setChecked(Database::IsTrue(is_default));
+            table->elementAt(i, 3)->addWidget(setDefaultCheckBox);
+
             WSignalMapper<WPushButton *> *eraseSignalMapper = new WSignalMapper<WPushButton *>(this);
             eraseSignalMapper->mapped().connect(this, &CmsContacts::Impl::OnEraseButtonPressed);
             WPushButton *eraseButton = new WPushButton(tr("cms-contacts-erase-mark"));
             eraseSignalMapper->mapConnect(eraseButton->clicked(), eraseButton);
             eraseButton->setStyleClass("btn btn-default");
             eraseButton->setAttributeValue("db-key", WString::fromUTF8(recipient));
-            table->elementAt(i, 3)->addWidget(eraseButton);
+            table->elementAt(i, 4)->addWidget(eraseButton);
+        }
+
+        if (i != 0) {
+            IsDefaultRecipientCheckBox->setChecked(false);
+        } else {
+            IsDefaultRecipientCheckBox->setChecked(true);
         }
     }
 
@@ -546,8 +630,7 @@ Wt::WInPlaceEdit *CmsContacts::Impl::GetContactsCell(const std::string &cellValu
                                                            Pool::Storage()->MaxEmailRecipientNameLength());
         validator->setMandatory(true);
         edit->lineEdit()->setValidator(validator);
-    }
-    else {
+    } else {
         WRegExpValidator *validator = new WRegExpValidator(Pool::Storage()->RegexEmail());
         validator->setFlags(MatchCaseInsensitive);
         validator->setMandatory(true);

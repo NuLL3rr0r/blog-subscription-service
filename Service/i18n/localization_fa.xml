@@ -70,6 +70,7 @@
     <message id="cms-contacts-recipient-name-fa-placeholder">نام گیرنده به فارسی</message>
     <message id="cms-contacts-email-address">آدرس ایمیل</message>
     <message id="cms-contacts-email-address-placeholder">آدرس ایمیل</message>
+    <message id="cms-contacts-is-default-recipient">پیش فرض ؟</message>
     <message id="cms-contacts-add">افزودن</message>
     <message id="cms-contacts-edit-hint">جهت ویرایش اطلاعات تماس بر روی خانه موردنظر از جدول کلیک نمائید.</message>
     <message id="cms-contacts-erase">حذف</message>

@@ -232,7 +232,8 @@ void InitializeDatabase()
         Service::Pool::Database()->RegisterTable("CONTACTS", "contacts",
                                                  " recipient TEXT NOT NULL PRIMARY KEY, "
                                                  " recipient_fa TEXT NOT NULL UNIQUE, "
-                                                 " address TEXT NOT NULL ");
+                                                 " address TEXT NOT NULL, "
+                                                 " is_default BOOLEAN NOT NULL DEFAULT FALSE ");
 
         Service::Pool::Database()->RegisterTable("SUBSCRIBERS", "subscribers",
                                                  " inbox TEXT NOT NULL PRIMARY KEY, "
