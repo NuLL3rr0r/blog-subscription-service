@@ -236,7 +236,7 @@ void CmsContacts::Impl::OnAddContactFormSubmitted()
     transaction guard(Service::Pool::Database()->Sql());
 
     try {
-        string recipient(trim_copy(RecipientEnLineEdit->text().toUTF8()));
+        string recipient(RecipientEnLineEdit->text().trim().toUTF8());
 
         result r = Pool::Database()->Sql()
                 << (format("SELECT recipient FROM \"%1%\""
@@ -252,8 +252,8 @@ void CmsContacts::Impl::OnAddContactFormSubmitted()
             return;
         }
 
-        string recipient_fa(trim_copy(RecipientFaLineEdit->text().toUTF8()));
-        string email(trim_copy(EmailLineEdit->text().toUTF8()));
+        string recipient_fa(RecipientFaLineEdit->text().trim().toUTF8());
+        string email(EmailLineEdit->text().trim().toUTF8());
 
         if (IsDefaultRecipientCheckBox->isChecked()) {
             Pool::Database()->Update("CONTACTS",
@@ -321,7 +321,7 @@ void CmsContacts::Impl::OnCellSaveButtonPressed(Wt::WInPlaceEdit *inPlaceEdit)
         }
 
         string field(inPlaceEdit->attributeValue("db-field").toUTF8());
-        string value(trim_copy(inPlaceEdit->text().toUTF8()));
+        string value(inPlaceEdit->text().trim().toUTF8());
 
         if (field == "recipient" && recipient != value) {
             r = Pool::Database()->Sql()

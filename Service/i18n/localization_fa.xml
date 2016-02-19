@@ -26,6 +26,14 @@
     <message id="home-contact-form-body-placeholder">متن پیام</message>
     <message id="home-contact-form-send">ارسال</message>
     <message id="home-contact-form-clear">پیام جدید</message>
+    <message id="home-contact-form-email-subject">[%1%] پیام از طرف %2%</message>
+    <message id="home-contact-form-send-success-dialog-title">ارسال موفقیت آمیز</message>
+    <message id="home-contact-form-send-success-dialog-message">با تشکر! پیام با موفقیت ارسال شد. بزودی با شما تماس خواهیم گرفت.</message>
+    <message id="home-contact-form-no-recipient-error-dialog-title">عدم وجود مخاطب</message>
+    <message id="home-contact-form-no-recipient-error-dialog-message">آدرس مخاطب در پایگاه داده پیدا نشد!</message>
+    <message id="home-contact-form-send-error-dialog-title">خطا در ارسال</message>
+    <message id="home-contact-form-send-error-dialog-message">امکان ارسال پیام وجود ندارد. لطفا دوباره سعی کنید!</message>
+    <message id="home-contact-form-dialog-button-ok">تائید</message>
     <message id="root-login-page-title">ورود مدیر</message>
     <message id="root-login-username">نام کاربری</message>
     <message id="root-login-username-placeholder">نام کاربری</message>

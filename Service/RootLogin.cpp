@@ -182,14 +182,14 @@ RootLogin::RootLogin()
                                     >> cgiEnv->SignedInUser.LastLogin.Referer;
 
                             m_pimpl->PreserveSessionData(n, cgiEnv->SignedInUser.Username, true);
+                            guard.commit();
+
                             m_pimpl->SendLoginAlertEmail(cgiEnv->SignedInUser.Email,
                                                          cgiEnv->SignedInUser.Username,
                                                          n);
 
                             hasValidSession = true;
                         }
-
-                        guard.commit();
                     }
 
                     catch (boost::exception &ex) {
@@ -447,11 +447,11 @@ void RootLogin::Impl::OnLoginFormSubmitted()
 
         PreserveSessionData(n, cgiEnv->SignedInUser.Username,
                             RememberMeCheckBox->checkState() == Wt::Checked);
+        guard.commit();
+
         SendLoginAlertEmail(cgiEnv->SignedInUser.Email,
                             cgiEnv->SignedInUser.Username,
                             n);
-
-        guard.commit();
 
         /// It's absolutely safe (even in case of throwing an exception in the constructor)
         /// since we attach it to Wt's WObject hierarchy in it's constructor.
@@ -519,13 +519,14 @@ void RootLogin::Impl::OnPasswordRecoveryFormSubmitted()
                                  "recovery_pwd=?",
                                  { encryptedPwd });
 
+        guard.commit();
+
         SendPasswordRecoveryEmail(email, user, pwd, n);
 
         m_parent->HtmlInfo(tr("root-login-password-recovery-success"), PasswordRecoveryMessageArea);
         UsernameLineEdit->setFocus();
         GenerateCaptcha();
 
-        guard.commit();
         return;
     }
 

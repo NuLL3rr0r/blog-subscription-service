@@ -33,6 +33,7 @@
  */
 
 
+#include <boost/algorithm/string.hpp>
 #include <boost/exception/diagnostic_information.hpp>
 #include <boost/format.hpp>
 #include <Wt/WApplication>
@@ -49,9 +50,11 @@
 #include <Wt/WTemplate>
 #include <Wt/WText>
 #include <Wt/WTextArea>
+#include <CoreLib/CDate.hpp>
 #include <CoreLib/Database.hpp>
 #include <CoreLib/FileSystem.hpp>
 #include <CoreLib/Log.hpp>
+#include <CoreLib/Mail.hpp>
 #include <CoreLib/make_unique.hpp>
 #include "Captcha.hpp"
 #include "CgiEnv.hpp"
@@ -67,6 +70,7 @@ using namespace boost;
 using namespace cppdb;
 using namespace Wt;
 using namespace CoreLib;
+using namespace CDate;
 using namespace Service;
 
 struct ContactForm::Impl : public Wt::WObject
@@ -85,14 +89,30 @@ public:
 
     std::unique_ptr<Wt::WMessageBox> MessageBox;
 
+    bool UseRootEmailAsRecipient;
+    int DefaultRecipientId;
+
+private:
+    ContactForm *m_parent;
+
 public:
-    Impl();
+    explicit Impl(ContactForm *parent);
     ~Impl();
+
+public:
+    void OnContactFormSubmitted();
+    void OnClearButtonPressed();
+    void OnDialogClosed(Wt::StandardButton button);
+
+private:
+    void GenerateCaptcha();
+    void SendUserMessageEmail(const std::string &to, CDate::Now &n);
+    void ClearForm();
 };
 
 ContactForm::ContactForm()
     : Page(),
-    m_pimpl(make_unique<ContactForm::Impl>())
+    m_pimpl(make_unique<ContactForm::Impl>(this))
 {
     WApplication *app = WApplication::instance();
     app->setTitle(tr("home-contact-form-page-title"));
@@ -129,42 +149,36 @@ WWidget *ContactForm::Layout()
 
             m_pimpl->RecipientComboBox = new WComboBox();
 
-            string recipientsQuery;
-            if (cgiEnv->GetCurrentLanguage() == CgiEnv::Language::Fa) {
-                recipientsQuery = (format("SELECT recipient_fa, is_default"
-                                          " FROM \"%1%\" ORDER BY recipient_fa ASC;")
-                                   % Pool::Database()->GetTableName("CONTACTS")).str();
-            } else {
-                recipientsQuery = (format("SELECT recipient, is_default"
-                                          " FROM \"%1%\" ORDER BY recipient ASC;")
-                                   % Pool::Database()->GetTableName("CONTACTS")).str();
-            }
+            {
+                string recipientsQuery;
+                if (cgiEnv->GetCurrentLanguage() == CgiEnv::Language::Fa) {
+                    recipientsQuery = (format("SELECT recipient_fa, is_default"
+                                              " FROM \"%1%\" ORDER BY recipient_fa ASC;")
+                                       % Pool::Database()->GetTableName("CONTACTS")).str();
+                } else {
+                    recipientsQuery = (format("SELECT recipient, is_default"
+                                              " FROM \"%1%\" ORDER BY recipient ASC;")
+                                       % Pool::Database()->GetTableName("CONTACTS")).str();
+                }
 
-            result r = Pool::Database()->Sql() << recipientsQuery;
+                result r = Pool::Database()->Sql() << recipientsQuery;
 
-            if (!r.empty()) {
+                int count = 0;
                 string recipient;
                 string is_default;
-                int i = 0;
+
                 while (r.next()) {
                     r >> recipient >> is_default;
                     m_pimpl->RecipientComboBox->addItem(WString::fromUTF8(recipient));
                     if (Database::IsTrue(is_default)) {
-                        m_pimpl->RecipientComboBox->setCurrentIndex(i);
+                        m_pimpl->RecipientComboBox->setCurrentIndex(count);
+                        m_pimpl->DefaultRecipientId = count;
                     }
-                    ++i;
+                    ++count;
                 }
-            } else {
-                r = Pool::Database()->Sql()
-                        << (format("SELECT email"
-                                   " FROM \"%1%\" WHERE username=?;")
-                            % Pool::Database()->GetTableName("ROOT")).str()
-                        << Service::Pool::Storage()->RootUsername() << row;
 
-                if (!r.empty()) {
-                    string email;
-                    r >> email;
-
+                if (count == 0) {
+                    m_pimpl->UseRootEmailAsRecipient = true;
                     m_pimpl->RecipientComboBox->addItem(tr("home-contact-form-admin"));
                 }
             }
@@ -187,7 +201,7 @@ WWidget *ContactForm::Layout()
             m_pimpl->UrlLineEdit->setPlaceholderText(tr("home-contact-form-url-placeholder"));
             WRegExpValidator *urlValidator = new WRegExpValidator(Pool::Storage()->RegexHttpUrl());
             urlValidator->setFlags(MatchCaseInsensitive);
-            urlValidator->setMandatory(true);
+            urlValidator->setMandatory(false);
             m_pimpl->UrlLineEdit->setValidator(urlValidator);
 
             m_pimpl->SubjectLineEdit = new WLineEdit();
@@ -251,7 +265,17 @@ WWidget *ContactForm::Layout()
             tmpl->bindWidget("send-button", sendPushButton);
             tmpl->bindWidget("clear-button", clearPushButton);
 
-            container->addWidget(tmpl);
+            m_pimpl->RecipientComboBox->enterPressed().connect(m_pimpl.get(), &ContactForm::Impl::OnContactFormSubmitted);
+            m_pimpl->FromLineEdit->enterPressed().connect(m_pimpl.get(), &ContactForm::Impl::OnContactFormSubmitted);
+            m_pimpl->EmailLineEdit->enterPressed().connect(m_pimpl.get(), &ContactForm::Impl::OnContactFormSubmitted);
+            m_pimpl->UrlLineEdit->enterPressed().connect(m_pimpl.get(), &ContactForm::Impl::OnContactFormSubmitted);
+            m_pimpl->SubjectLineEdit->enterPressed().connect(m_pimpl.get(), &ContactForm::Impl::OnContactFormSubmitted);
+            // No event for m_pimpl->BodyTextArea
+            m_pimpl->CaptchaLineEdit->enterPressed().connect(m_pimpl.get(), &ContactForm::Impl::OnContactFormSubmitted);
+            sendPushButton->clicked().connect(m_pimpl.get(), &ContactForm::Impl::OnContactFormSubmitted);
+            clearPushButton->clicked().connect(m_pimpl.get(), &ContactForm::Impl::OnClearButtonPressed);
+
+            m_pimpl->RecipientComboBox->setFocus();
         }
     }
 
@@ -270,10 +294,190 @@ WWidget *ContactForm::Layout()
     return container;
 }
 
-ContactForm::Impl::Impl()
+ContactForm::Impl::Impl(ContactForm *parent)
+    : UseRootEmailAsRecipient(false),
+      DefaultRecipientId(0),
+      m_parent(parent)
 {
 
 }
 
 ContactForm::Impl::~Impl() = default;
+
+void ContactForm::Impl::OnContactFormSubmitted()
+{
+    if (!m_parent->Validate(FromLineEdit)
+            || !m_parent->Validate(EmailLineEdit)
+            || !m_parent->Validate(UrlLineEdit)
+            || !m_parent->Validate(SubjectLineEdit)
+            || !m_parent->Validate(BodyTextArea)
+            || !m_parent->Validate(CaptchaLineEdit)) {
+        GenerateCaptcha();
+        return;
+    }
+
+    try {
+        CDate::Now n;
+        CgiRoot *cgiRoot = static_cast<CgiRoot *>(WApplication::instance());
+        CgiEnv *cgiEnv = cgiRoot->GetCgiEnvInstance();
+
+        string email;
+        if (!UseRootEmailAsRecipient) {
+            string recipientColumn;
+            if (cgiEnv->GetCurrentLanguage() == CgiEnv::Language::Fa) {
+                recipientColumn = "recipient_fa";
+            } else {
+                recipientColumn = "recipient";
+            }
+
+            string recipient = RecipientComboBox->currentText().trim().toUTF8();
+
+            result r = Pool::Database()->Sql()
+                    << (format("SELECT address FROM \"%1%\""
+                               " WHERE %2%=?;")
+                        % Pool::Database()->GetTableName("CONTACTS") % recipientColumn).str()
+                    << recipient << row;
+
+            if (!r.empty()) {
+                r >> email;
+            }
+        } else {
+            result r = Pool::Database()->Sql()
+                    << (format("SELECT email"
+                               " FROM \"%1%\" WHERE username=?;")
+                        % Pool::Database()->GetTableName("ROOT")).str()
+                    << Service::Pool::Storage()->RootUsername() << row;
+
+            if (!r.empty()) {
+                r >> email;
+            }
+        }
+
+        if (email != "") {
+            this->SendUserMessageEmail(email, n);
+
+            MessageBox = std::make_unique<WMessageBox>(tr("home-contact-form-send-success-dialog-title"),
+                                                       tr("home-contact-form-send-success-dialog-message"),
+                                                       Information, NoButton);
+            MessageBox->addButton(tr("home-contact-form-dialog-button-ok"), Ok);
+            MessageBox->buttonClicked().connect(this, &ContactForm::Impl::OnDialogClosed);
+            MessageBox->show();
+
+            this->GenerateCaptcha();
+            this->ClearForm();
+        } else {
+            MessageBox = std::make_unique<WMessageBox>(tr("home-contact-form-no-recipient-error-dialog-title"),
+                                                       tr("home-contact-form-no-recipient-error-dialog-message"),
+                                                       Critical, NoButton);
+            MessageBox->addButton(tr("home-contact-form-dialog-button-ok"), Ok);
+            MessageBox->buttonClicked().connect(this, &ContactForm::Impl::OnDialogClosed);
+            MessageBox->show();
+
+            this->GenerateCaptcha();
+        }
+
+        return;
+    }
+
+    catch (boost::exception &ex) {
+        LOG_ERROR(boost::diagnostic_information(ex));
+    }
+
+    catch (std::exception &ex) {
+        LOG_ERROR(ex.what());
+    }
+
+    catch (...) {
+        LOG_ERROR(UNKNOWN_ERROR);
+    }
+
+    MessageBox = std::make_unique<WMessageBox>(tr("home-contact-form-send-error-dialog-title"),
+                                               tr("home-contact-form-send-error-dialog-message"),
+                                               Critical, NoButton);
+    MessageBox->addButton(tr("home-contact-form-dialog-button-ok"), Ok);
+    MessageBox->buttonClicked().connect(this, &ContactForm::Impl::OnDialogClosed);
+    MessageBox->show();
+
+    this->GenerateCaptcha();
+}
+
+void ContactForm::Impl::OnClearButtonPressed()
+{
+    this->GenerateCaptcha();
+    this->ClearForm();
+}
+
+void ContactForm::Impl::OnDialogClosed(Wt::StandardButton button)
+{
+    (void)button;
+    MessageBox.reset();
+}
+
+void ContactForm::Impl::GenerateCaptcha()
+{
+    CaptchaImage->setImageRef(Captcha->Generate()->imageRef());
+    int captchaResult = (int)Captcha->GetResult();
+    CaptchaValidator->setRange(captchaResult, captchaResult);
+}
+
+void ContactForm::Impl::SendUserMessageEmail(const std::string &to, CDate::Now &n)
+{
+    CgiRoot *cgiRoot = static_cast<CgiRoot *>(WApplication::instance());
+    CgiEnv *cgiEnv = cgiRoot->GetCgiEnvInstance();
+
+    string htmlData;
+    string file;
+    if (cgiEnv->GetCurrentLanguage() == CgiEnv::Language::Fa) {
+        file = "../templates/email-user-message-fa.wtml";
+    } else {
+        file = "../templates/email-user-message.wtml";
+    }
+
+    string name(FromLineEdit->text().trim().toUTF8());
+    string from(EmailLineEdit->text().trim().toUTF8());
+    string url(UrlLineEdit->text().trim().toUTF8());
+    string subject(SubjectLineEdit->text().trim().toUTF8());
+    string body(BodyTextArea->text().trim().toUTF8());
+
+    if (CoreLib::FileSystem::Read(file, htmlData)) {
+        replace_all(htmlData, "${from}", name);
+        replace_all(htmlData, "${email}", from);
+        replace_all(htmlData, "${url}", url);
+        replace_all(htmlData, "${subject}", subject);
+        replace_all(htmlData, "${body}", body);
+        replace_all(htmlData, "${client-ip}",
+                           cgiEnv->GetClientInfo(CgiEnv::ClientInfo::IP));
+        replace_all(htmlData, "${client-location}",
+                           cgiEnv->GetClientInfo(CgiEnv::ClientInfo::Location));
+        replace_all(htmlData, "${client-user-agent}",
+                           cgiEnv->GetClientInfo(CgiEnv::ClientInfo::Browser));
+        replace_all(htmlData, "${client-referer}",
+                           cgiEnv->GetClientInfo(CgiEnv::ClientInfo::Referer));
+        replace_all(htmlData, "${time}",
+                           DateConv::ToJalali(n)
+                           + " ~ "
+                           + algorithm::trim_copy(DateConv::RawLocalDateTime(n)));
+
+        CoreLib::Mail *mail = new CoreLib::Mail(from, to,
+                    (format(tr("home-contact-form-email-subject").toUTF8())
+                     % cgiEnv->GetServerInfo(CgiEnv::ServerInfo::Host) % name).str(),
+                    htmlData);
+        mail->SetDeleteLater(true);
+        mail->SendAsync();
+    }
+}
+
+void ContactForm::Impl::ClearForm()
+{
+    if (DefaultRecipientId < RecipientComboBox->count()) {
+        RecipientComboBox->setCurrentIndex(DefaultRecipientId);
+    }
+
+    FromLineEdit->setText("");
+    EmailLineEdit->setText("");
+    UrlLineEdit->setText("");
+    SubjectLineEdit->setText("");
+    BodyTextArea->setText("");
+    CaptchaLineEdit->setText("");
+}
 

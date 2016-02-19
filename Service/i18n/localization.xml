@@ -26,6 +26,14 @@
     <message id="home-contact-form-body-placeholder">Message Body</message>
     <message id="home-contact-form-send">Send</message>
     <message id="home-contact-form-clear">Clear</message>
+    <message id="home-contact-form-email-subject">[%1%] Message from %2%</message>
+    <message id="home-contact-form-send-success-dialog-title">Sent Successfully</message>
+    <message id="home-contact-form-send-success-dialog-message">Thank you! Your message has been sent successfully. We will contact you very soon.</message>
+    <message id="home-contact-form-no-recipient-error-dialog-title">No Recipient</message>
+    <message id="home-contact-form-no-recipient-error-dialog-message">Cannot find recipient address in the database!</message>
+    <message id="home-contact-form-send-error-dialog-title">Send Error</message>
+    <message id="home-contact-form-send-error-dialog-message">Cannot send your message. Try again, please!</message>
+    <message id="home-contact-form-dialog-button-ok">OK</message>
     <message id="root-login-page-title">Admin Login</message>
     <message id="root-login-username">Username</message>
     <message id="root-login-username-placeholder">Your user name</message>
