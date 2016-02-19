@@ -5,12 +5,15 @@
     <message id="no-script">
         <noscript>
             <div class="no-script">
-                کاربر گرامی به نظر می رسد که جاوا اسکریپت در مرورگر شما غیر فعال می باشد و یا مرورگر شما از جاوا اسکریپت پشتیبانی نمی نماید. متاسفانه در صورت عدم برطرف شدن این مشکل برخی از قابلیت های وب سایت به درستی کار نمی کند.
+                کاربر گرامی به نظر می رسد که جاوا اسکریپت در مرورگر شما غیر فعال می باشد
+                و یا مرورگر شما از جاوا اسکریپت پشتیبانی نمی نماید.
+                متاسفانه در صورت عدم برطرف شدن این مشکل برخی از قابلیت های وب سایت به درستی کار نمی کند.
             </div>
         </noscript>
     </message>
     <message id="home-captcha">کد امنیتی</message>
     <message id="home-captcha-hint">مثال: ۲۵ = ۵ × ۵</message>
+    <message id="home-dialog-button-ok">تائید</message>
     <message id="home-subscription-invalid-recipient-id-title">شناسه نامعتبر!</message>
     <message id="home-subscription-invalid-recipient-id-message">شناسه مشترک در پایگاه داده یافت نشد.</message>
     <message id="home-subscription-subscribe-page-title">اشتراک</message>
@@ -20,6 +23,22 @@
     <message id="home-subscription-subscribe-contents-en">خبرنامه انگلیسی</message>
     <message id="home-subscription-subscribe-contents-fa">خبرنامه فارسی</message>
     <message id="home-subscription-subscribe-button">اشتراک</message>
+    <message id="home-subscription-subscribe-success-dialog-title">مشترک شدید</message>
+    <message id="home-subscription-subscribe-success-dialog-message">
+        <h3>با تشکر از صبر و شکیبائی شما، لطفا صندوق پست الکترونیک خود را جهت تائید اشتراک بررسی نمائید</h3>
+        <br />
+        بزودی یک ایمیل حاوی <strong>پیوند تائید اشتراک</strong> از سوی ما دریافت خواهید نمود.
+        جهت <strong>فعال سازی اشتراک خود</strong> لازم است بر روی <strong>پیوند ارسال شده</strong> کلیک نمائید.
+        لطفا توجه داشته باشید تا زمانی که اشتراک خود را تائید ننمائید قادر به دریافت خبرنامه نخواهید بود.
+        <br /><br />
+        چنانچه پیامی مبنی بر فعال سازی اشتراک خود از سوی ما دریافت ننمودید،
+        لطفا <strong>پوشه Junk و یا Spam</strong> صندوق پست الکترونیک خود را چک نمائید.
+        در صورتی که پیام در پوشه Spam و یا Junk بود فراموش نکنید که آن را به <strong>پوشه Inbox</strong> منتقل نمائید.
+        <br /><br />
+        چنانچه قادر به عضویت در خبرنامه و یا فعال سازی آن نیستید می توانید از طریق <a href="?contact-form">فرم تماس با ما</a> مشکل خود را مطرح نمائید.
+        <br /><br />
+        با تشکر از صبر و شکیبائی شما
+    </message>
     <message id="home-subscription-confirmation-page-title">تائید اشتراک</message>
     <message id="home-subscription-unsubscribe-page-title">لغو اشتراک</message>
     <message id="home-subscription-cancellation-page-title">تائیدیه لغو اشتراک</message>
@@ -45,7 +64,6 @@
     <message id="home-contact-form-no-recipient-error-dialog-message">آدرس مخاطب در پایگاه داده پیدا نشد!</message>
     <message id="home-contact-form-send-error-dialog-title">خطا در ارسال</message>
     <message id="home-contact-form-send-error-dialog-message">امکان ارسال پیام وجود ندارد. لطفا دوباره سعی کنید!</message>
-    <message id="home-contact-form-dialog-button-ok">تائید</message>
     <message id="root-login-page-title">ورود مدیر</message>
     <message id="root-login-username">نام کاربری</message>
     <message id="root-login-username-placeholder">نام کاربری</message>

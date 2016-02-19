@@ -5,21 +5,40 @@
     <message id="no-script">
         <noscript>
             <div class="no-script">
-                Sorry, it looks like that either you have turned off your browser's JavaScript or your browser originally did not support JavaScript at all. Unfortunately, this website won't function properly without JavaScript unless you fix this issue first.
+                Sorry, it looks like that either you have turned off your browser's JavaScript or your browser
+                originally did not support JavaScript at all. Unfortunately, this website won't function properly
+                without JavaScript unless you fix this issue first.
             </div>
         </noscript>
     </message>
     <message id="home-captcha">Captcha</message>
     <message id="home-captcha-hint">e.g. 5 x 5 = 25</message>
+    <message id="home-dialog-button-ok">OK</message>
     <message id="home-subscription-invalid-recipient-id-title">Invalid Recipient ID!</message>
     <message id="home-subscription-invalid-recipient-id-message">The recipient ID was not found in our database.</message>
     <message id="home-subscription-subscribe-page-title">Subscribe</message>
     <message id="home-subscription-subscribe-email">Email</message>
     <message id="home-subscription-subscribe-email-placeholder">Your Email Address</message>
     <message id="home-subscription-subscribe-contents">I would like to subscribe to:</message>
-    <message id="home-subscription-subscribe-contents-en">English Newsletter</message>
-    <message id="home-subscription-subscribe-contents-fa">Farsi Newsletter</message>
+    <message id="home-subscription-subscribe-contents-en">English newsletter</message>
+    <message id="home-subscription-subscribe-contents-fa">Farsi newsletter</message>
     <message id="home-subscription-subscribe-button">Subscribe</message>
+    <message id="home-subscription-subscribe-success-dialog-title">Subscribed</message>
+    <message id="home-subscription-subscribe-success-dialog-message">
+        <h3>Thank you! Please check your inbox to confirm your subscription.</h3>
+        <br />
+        You will <strong>receive an email</strong> from us shortly, asking you to <strong>CONFIRM</strong> your subscription.
+        In order to activate your subscription, check your email and <strong>click on the link in that email</strong>.
+        Note that <strong>you will NOT receive our newsletter unless you complete this step</strong>.
+        <br /><br />
+        If you don’t receive the confirmation email shortly, make sure you check your <strong>spam/junk folder</strong>
+        as sometimes it is sent there. In that case, remember to <strong>mark the email as not spam/junk</strong>.
+        <br /><br />
+        If you still experience difficulties when subscribing to the newsletter, please <a href="?contact-form">contact us here</a>,
+        or fill out the form again to have another copy of it sent to you.
+        <br /><br />
+        This confirmation process is used for security reasons. Thank you for your understanding.
+    </message>
     <message id="home-subscription-confirmation-page-title">Subscription Confirmed</message>
     <message id="home-subscription-unsubscribe-page-title">Unsubscribe</message>
     <message id="home-subscription-cancellation-page-title">Subscription Cancelled</message>
@@ -45,7 +64,6 @@
     <message id="home-contact-form-no-recipient-error-dialog-message">Cannot find recipient address in the database!</message>
     <message id="home-contact-form-send-error-dialog-title">Send Error</message>
     <message id="home-contact-form-send-error-dialog-message">Cannot send your message. Try again, please!</message>
-    <message id="home-contact-form-dialog-button-ok">OK</message>
     <message id="root-login-page-title">Admin Login</message>
     <message id="root-login-username">Username</message>
     <message id="root-login-username-placeholder">Your user name</message>

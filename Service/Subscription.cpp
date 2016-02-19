@@ -57,6 +57,7 @@
 #include <CoreLib/Log.hpp>
 #include <CoreLib/Mail.hpp>
 #include <CoreLib/make_unique.hpp>
+#include <CoreLib/Random.hpp>
 #include "Captcha.hpp"
 #include "CgiEnv.hpp"
 #include "CgiRoot.hpp"
@@ -68,6 +69,7 @@ using namespace std;
 using namespace boost;
 using namespace cppdb;
 using namespace Wt;
+using namespace CoreLib;
 using namespace Service;
 
 struct Subscription::Impl : public Wt::WObject
@@ -83,16 +85,22 @@ public:
 
     std::unique_ptr<Wt::WMessageBox> MessageBox;
 
+private:
+    Subscription *m_parent;
+
 public:
-    Impl();
+    explicit Impl(Subscription *parent);
     ~Impl();
 
 public:
+    void OnDialogClosed(Wt::StandardButton button);
     void OnContentsCheckBoxStateChanged(Wt::WCheckBox *checkbox);
     void OnSubscribeFormSubmitted();
     void OnUnsubscribeFormSubmitted();
 
 public:
+    void GenerateCaptcha();
+
     Wt::WWidget *GetSubscribeForm();
     Wt::WWidget *GetConfirmationPage();
     Wt::WWidget *GetUnsubscribeForm();
@@ -103,7 +111,7 @@ public:
 
 Subscription::Subscription() :
     Page(),
-    m_pimpl(make_unique<Subscription::Impl>())
+    m_pimpl(make_unique<Subscription::Impl>(this))
 {
     CgiRoot *cgiRoot = static_cast<CgiRoot *>(WApplication::instance());
     CgiEnv *cgiEnv = cgiRoot->GetCgiEnvInstance();
@@ -162,12 +170,19 @@ WWidget *Subscription::Layout()
     return container;
 }
 
-Subscription::Impl::Impl()
+Subscription::Impl::Impl(Subscription *parent)
+    : m_parent(parent)
 {
 
 }
 
 Subscription::Impl::~Impl() = default;
+
+void Subscription::Impl::OnDialogClosed(Wt::StandardButton button)
+{
+    (void)button;
+    MessageBox.reset();
+}
 
 void Subscription::Impl::OnContentsCheckBoxStateChanged(Wt::WCheckBox *checkbox)
 {
@@ -178,12 +193,155 @@ void Subscription::Impl::OnContentsCheckBoxStateChanged(Wt::WCheckBox *checkbox)
 
 void Subscription::Impl::OnSubscribeFormSubmitted()
 {
+    if (!m_parent->Validate(EmailLineEdit)
+            || !m_parent->Validate(CaptchaLineEdit)) {
+        this->GenerateCaptcha();
+        return;
+    }
 
+    CgiRoot *cgiRoot = static_cast<CgiRoot *>(WApplication::instance());
+    CgiEnv *cgiEnv = cgiRoot->GetCgiEnvInstance();
+
+    if (!EnContentsCheckBox->isChecked() && !FaContentsCheckBox->isChecked()) {
+        if (cgiEnv->GetCurrentLanguage() == CgiEnv::Language::Fa) {
+            FaContentsCheckBox->setFocus();
+            return;
+        } else {
+            EnContentsCheckBox->setFocus();
+            return;
+        }
+    }
+
+    try {
+        string inbox(EmailLineEdit->text().trim().toUTF8());
+
+        string pending_subscription;
+        if (EnContentsCheckBox->isChecked() && FaContentsCheckBox->isChecked()) {
+            pending_subscription = "en_fa";
+        } else if (EnContentsCheckBox->isChecked()) {
+            pending_subscription = "en";
+        } else if (FaContentsCheckBox->isChecked()) {
+            pending_subscription = "fa";
+        } else {
+            pending_subscription = "none";
+        }
+
+        result r = Pool::Database()->Sql()
+                << (format("SELECT inbox FROM \"%1%\""
+                           " WHERE inbox=?;")
+                    % Pool::Database()->GetTableName("SUBSCRIBERS")).str()
+                << inbox << row;
+
+        if (r.empty()) {
+            string uuid;
+
+            while (true) {
+                CoreLib::Random::Uuid(uuid);
+
+                r = Pool::Database()->Sql()
+                        << (format("SELECT inbox FROM \"%1%\""
+                                   " WHERE uuid=?;")
+                            % Pool::Database()->GetTableName("SUBSCRIBERS")).str()
+                        << uuid << row;
+
+                if (r.empty()) {
+                    break;
+                }
+            }
+
+            Pool::Database()->Insert("SUBSCRIBERS",
+                                     "inbox, uuid, subscription, pending_subscription",
+                                     { inbox, uuid, "none", pending_subscription });
+        } else {
+            Pool::Database()->Update("SUBSCRIBERS",
+                                     "inbox",
+                                     inbox,
+                                     "pending_subscription=?",
+                                     { pending_subscription });
+        }
+
+        MessageBox = std::make_unique<WMessageBox>(tr("home-subscription-subscribe-success-dialog-title"),
+                                                   tr("home-subscription-subscribe-success-dialog-message"),
+                                                   Information, NoButton);
+        MessageBox->addButton(tr("home-dialog-button-ok"), Ok);
+        MessageBox->buttonClicked().connect(this, &Subscription::Impl::OnDialogClosed);
+        MessageBox->show();
+
+        this->GenerateCaptcha();
+
+        return;
+    }
+
+    catch (boost::exception &ex) {
+        LOG_ERROR(boost::diagnostic_information(ex));
+    }
+
+    catch (std::exception &ex) {
+        LOG_ERROR(ex.what());
+    }
+
+    catch (...) {
+        LOG_ERROR(UNKNOWN_ERROR);
+    }
 }
 
 void Subscription::Impl::OnUnsubscribeFormSubmitted()
 {
+    if (!m_parent->Validate(EmailLineEdit)
+            || !m_parent->Validate(CaptchaLineEdit)) {
+        this->GenerateCaptcha();
+        return;
+    }
 
+    CgiRoot *cgiRoot = static_cast<CgiRoot *>(WApplication::instance());
+    CgiEnv *cgiEnv = cgiRoot->GetCgiEnvInstance();
+
+    if (!EnContentsCheckBox->isChecked() && !FaContentsCheckBox->isChecked()) {
+        if (cgiEnv->GetCurrentLanguage() == CgiEnv::Language::Fa) {
+            FaContentsCheckBox->setFocus();
+            return;
+        } else {
+            EnContentsCheckBox->setFocus();
+            return;
+        }
+    }
+
+    try {
+        string inbox(EmailLineEdit->text().trim().toUTF8());
+
+        string subscription;
+        // in reverse-order, compared to subscribe
+        if (EnContentsCheckBox->isChecked() && FaContentsCheckBox->isChecked()) {
+            subscription = "none";
+        } else if (EnContentsCheckBox->isChecked()) {
+            subscription = "fa";
+        } else if (FaContentsCheckBox->isChecked()) {
+            subscription = "en";
+        } else {
+            subscription = "en_fa";
+        }
+
+        return;
+    }
+
+    catch (boost::exception &ex) {
+        LOG_ERROR(boost::diagnostic_information(ex));
+    }
+
+    catch (std::exception &ex) {
+        LOG_ERROR(ex.what());
+    }
+
+    catch (...) {
+        LOG_ERROR(UNKNOWN_ERROR);
+    }
+}
+
+void Subscription::Impl::GenerateCaptcha()
+{
+    CaptchaImage->setImageRef(Captcha->Generate()->imageRef());
+    int captchaResult = (int)Captcha->GetResult();
+    CaptchaValidator->setRange(captchaResult, captchaResult);
 }
 
 Wt::WWidget *Subscription::Impl::GetSubscribeForm()
@@ -372,6 +530,7 @@ Wt::WWidget *Subscription::Impl::GetUnsubscribeForm()
         emailValidator->setFlags(MatchCaseInsensitive);
         emailValidator->setMandatory(true);
         EmailLineEdit->setValidator(emailValidator);
+        EmailLineEdit->setReadOnly(true);
 
         WSignalMapper<WCheckBox *> *contentsSignalMapper = new WSignalMapper<WCheckBox *>(this);
         contentsSignalMapper->mapped().connect(this, &Subscription::Impl::OnContentsCheckBoxStateChanged);

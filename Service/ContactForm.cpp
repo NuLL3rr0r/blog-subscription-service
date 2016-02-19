@@ -357,7 +357,7 @@ void ContactForm::Impl::OnContactFormSubmitted()
             MessageBox = std::make_unique<WMessageBox>(tr("home-contact-form-send-success-dialog-title"),
                                                        tr("home-contact-form-send-success-dialog-message"),
                                                        Information, NoButton);
-            MessageBox->addButton(tr("home-contact-form-dialog-button-ok"), Ok);
+            MessageBox->addButton(tr("home-dialog-button-ok"), Ok);
             MessageBox->buttonClicked().connect(this, &ContactForm::Impl::OnDialogClosed);
             MessageBox->show();
 
@@ -367,7 +367,7 @@ void ContactForm::Impl::OnContactFormSubmitted()
             MessageBox = std::make_unique<WMessageBox>(tr("home-contact-form-no-recipient-error-dialog-title"),
                                                        tr("home-contact-form-no-recipient-error-dialog-message"),
                                                        Critical, NoButton);
-            MessageBox->addButton(tr("home-contact-form-dialog-button-ok"), Ok);
+            MessageBox->addButton(tr("home-dialog-button-ok"), Ok);
             MessageBox->buttonClicked().connect(this, &ContactForm::Impl::OnDialogClosed);
             MessageBox->show();
 
@@ -392,7 +392,7 @@ void ContactForm::Impl::OnContactFormSubmitted()
     MessageBox = std::make_unique<WMessageBox>(tr("home-contact-form-send-error-dialog-title"),
                                                tr("home-contact-form-send-error-dialog-message"),
                                                Critical, NoButton);
-    MessageBox->addButton(tr("home-contact-form-dialog-button-ok"), Ok);
+    MessageBox->addButton(tr("home-dialog-button-ok"), Ok);
     MessageBox->buttonClicked().connect(this, &ContactForm::Impl::OnDialogClosed);
     MessageBox->show();
 
