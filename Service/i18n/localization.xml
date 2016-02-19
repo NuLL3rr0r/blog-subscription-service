@@ -11,6 +11,8 @@
     </message>
     <message id="home-captcha">Captcha</message>
     <message id="home-captcha-hint">e.g. 5 x 5 = 25</message>
+    <message id="home-subscription-invalid-recipient-id-title">Invalid Recipient ID!</message>
+    <message id="home-subscription-invalid-recipient-id-message">The recipient ID was not found in our database.</message>
     <message id="home-subscription-subscribe-page-title">Subscribe</message>
     <message id="home-subscription-subscribe-email">Email</message>
     <message id="home-subscription-subscribe-email-placeholder">Your Email Address</message>

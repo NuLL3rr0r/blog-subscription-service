@@ -11,6 +11,8 @@
     </message>
     <message id="home-captcha">کد امنیتی</message>
     <message id="home-captcha-hint">مثال: ۲۵ = ۵ × ۵</message>
+    <message id="home-subscription-invalid-recipient-id-title">شناسه نامعتبر!</message>
+    <message id="home-subscription-invalid-recipient-id-message">شناسه مشترک در پایگاه داده یافت نشد.</message>
     <message id="home-subscription-subscribe-page-title">اشتراک</message>
     <message id="home-subscription-subscribe-email">پست الکترونیک</message>
     <message id="home-subscription-subscribe-email-placeholder">پست الکترونیک</message>

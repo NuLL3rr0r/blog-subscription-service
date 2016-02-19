@@ -1,33 +1,47 @@
-<div class="subscription-cancellation-form row v-center">
+<div class="subscription-form row v-center">
     <div class="panel panel-default col-xs-10 col-sm-8 col-md-6 col-lg-4 h-center form-horizontal">
         <div class="text-center">
             <h3>${title}</h3>
         </div>
 
         <div class="form-group">
-            <div class="col-sm-9 col-sm-offset-1 col-lg-8 col-lg-offset-1">
+            <label for="${email-input-id}" class="control-label">${email-label-text}</label>
+            <div>
                 ${email-input}
             </div>
-            <label for="${email-input-id}" class="col-sm-2 col-lg-3 control-label">${email-label-text}</label>
         </div>
 
         <div class="clearfix"></div>
 
         <div class="form-group">
-            <div class="col-sm-9 col-sm-offset-1 col-lg-8 col-lg-offset-1">
-                ${en-contents-checkbox}
-                ${fa-contents-checkbox}
+            <label class="control-label">${contents-label-text}</label>
+            <div>
+                <div class="checkbox">
+                    <label>
+                        ${en-contents-checkbox}
+                        <span style="margin-right: 20px !important;">
+                            ${en-contents-checkbox-text}
+                        </span>
+                    </label>
+                </div>
+                <div class="checkbox">
+                    <label>
+                        ${fa-contents-checkbox}
+                        <span style="margin-right: 20px !important;">
+                            ${fa-contents-checkbox-text}
+                        </span>
+                    </label>
+                </div>
             </div>
-            <label class="col-sm-2 col-lg-3 control-label">${contents-label-text}</label>
         </div>
 
         <div class="clearfix"></div>
 
         <div class="form-group">
-            <div class="col-sm-9 col-sm-offset-1 col-lg-8 col-lg-offset-1">
+            <label for="${captcha-input-id}" class="control-label">${captcha-label-text}</label>
+            <div>
                 ${captcha-input}
             </div>
-            <label for="${captcha-input-id}" class="col-sm-2 col-lg-3 control-label">${captcha-label-text}</label>
         </div>
 
         <div class="clearfix"></div>
@@ -36,15 +50,17 @@
             ${captcha-image}
         </div>
 
-        <div class="text-center message-area">
-            ${message-area}
-        </div>
-
         <div class="text-center">
-            ${unsubscribe-button}
-        </div>
-    </div>
-</div>
+            <div class="btn-group">
+                ${unsubscribe-button}
+            </div>
 
-<div class="clearfix"></div>
+            <div class="clearfix"></div>
+        </div>
+
+        <div class="clearfix"></div>
+    </div>
+
+    <div class="clearfix"></div>
+</div>
 
