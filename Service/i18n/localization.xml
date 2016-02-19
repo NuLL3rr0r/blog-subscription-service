@@ -11,15 +11,25 @@
     </message>
     <message id="home-captcha">Captcha</message>
     <message id="home-captcha-hint">e.g. 5 x 5 = 25</message>
+    <message id="home-subscription-subscribe-page-title">Subscribe</message>
+    <message id="home-subscription-subscribe-email">Email</message>
+    <message id="home-subscription-subscribe-email-placeholder">Your Email Address</message>
+    <message id="home-subscription-subscribe-contents">I would like to subscribe to:</message>
+    <message id="home-subscription-subscribe-contents-en">English Newsletter</message>
+    <message id="home-subscription-subscribe-contents-fa">Farsi Newsletter</message>
+    <message id="home-subscription-subscribe-button">Subscribe</message>
+    <message id="home-subscription-confirmation-page-title">Subscription Confirmed</message>
+    <message id="home-subscription-unsubscribe-page-title">Unsubscribe</message>
+    <message id="home-subscription-cancellation-page-title">Subscription Cancelled</message>
     <message id="home-contact-form-page-title">Contact Form</message>
     <message id="home-contact-form-admin">Admin</message>
     <message id="home-contact-form-recipient">Recipient</message>
     <message id="home-contact-form-from">From</message>
     <message id="home-contact-form-from-placeholder">Your Name</message>
     <message id="home-contact-form-email">Email</message>
-    <message id="home-contact-form-email-placeholder">Your Email</message>
+    <message id="home-contact-form-email-placeholder">Your Email Address</message>
     <message id="home-contact-form-url">URL</message>
-    <message id="home-contact-form-url-placeholder">Your Home Page</message>
+    <message id="home-contact-form-url-placeholder">Your Home Page URL</message>
     <message id="home-contact-form-subject">Subject</message>
     <message id="home-contact-form-subject-placeholder">Message Subject</message>
     <message id="home-contact-form-body">Body</message>

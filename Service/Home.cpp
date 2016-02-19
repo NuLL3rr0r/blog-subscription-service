@@ -81,11 +81,12 @@ WWidget *Home::Layout()
     CgiRoot *cgiRoot = static_cast<CgiRoot *>(WApplication::instance());
     CgiEnv *cgiEnv = cgiRoot->GetCgiEnvInstance();
 
-    if (cgiEnv->SubscriptionData.Subscribe != CgiEnv::Subscription::Action::None) {
-        container->addWidget(new Subscription());
-    } else if (cgiEnv->IsContactFormRequested()) {
+    if (cgiEnv->IsContactFormRequested()) {
         container->addWidget(new ContactForm());
+        return container;
     }
+
+    container->addWidget(new Subscription());
 
     return container;
 }

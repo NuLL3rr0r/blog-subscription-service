@@ -11,6 +11,16 @@
     </message>
     <message id="home-captcha">کد امنیتی</message>
     <message id="home-captcha-hint">مثال: ۲۵ = ۵ × ۵</message>
+    <message id="home-subscription-subscribe-page-title">اشتراک</message>
+    <message id="home-subscription-subscribe-email">پست الکترونیک</message>
+    <message id="home-subscription-subscribe-email-placeholder">پست الکترونیک</message>
+    <message id="home-subscription-subscribe-contents">تمایل به اشتراک در موارد ذیل را دارم:</message>
+    <message id="home-subscription-subscribe-contents-en">خبرنامه انگلیسی</message>
+    <message id="home-subscription-subscribe-contents-fa">خبرنامه فارسی</message>
+    <message id="home-subscription-subscribe-button">اشتراک</message>
+    <message id="home-subscription-confirmation-page-title">تائید اشتراک</message>
+    <message id="home-subscription-unsubscribe-page-title">لغو اشتراک</message>
+    <message id="home-subscription-cancellation-page-title">تائیدیه لغو اشتراک</message>
     <message id="home-contact-form-page-title">فرم تماس</message>
     <message id="home-contact-form-admin">مدیر</message>
     <message id="home-contact-form-recipient">مخاطب</message>

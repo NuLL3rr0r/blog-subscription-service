@@ -33,15 +33,35 @@
  */
 
 
+#include <boost/algorithm/string.hpp>
+#include <boost/exception/diagnostic_information.hpp>
+#include <boost/format.hpp>
+#include <boost/regex.hpp>
 #include <Wt/WApplication>
+#include <Wt/WCheckBox>
 #include <Wt/WContainerWidget>
+#include <Wt/WImage>
+#include <Wt/WIntValidator>
+#include <Wt/WLengthValidator>
+#include <Wt/WLineEdit>
+#include <Wt/WMessageBox>
+#include <Wt/WPushButton>
+#include <Wt/WRegExpValidator>
 #include <Wt/WString>
 #include <Wt/WTemplate>
 #include <Wt/WText>
+#include <Wt/WTextArea>
+#include <CoreLib/CDate.hpp>
+#include <CoreLib/Database.hpp>
+#include <CoreLib/FileSystem.hpp>
+#include <CoreLib/Log.hpp>
+#include <CoreLib/Mail.hpp>
 #include <CoreLib/make_unique.hpp>
+#include "Captcha.hpp"
 #include "CgiEnv.hpp"
 #include "CgiRoot.hpp"
 #include "Div.hpp"
+#include "Pool.hpp"
 #include "Subscription.hpp"
 
 using namespace std;
@@ -52,8 +72,23 @@ using namespace Service;
 struct Subscription::Impl : public Wt::WObject
 {
 public:
+    Wt::WLineEdit *EmailLineEdit;
+    Wt::WCheckBox *EnContentsCheckBox;
+    Wt::WCheckBox *FaContentsCheckBox;
+    Wt::WLineEdit *CaptchaLineEdit;
+    Service::Captcha *Captcha;
+    Wt::WIntValidator *CaptchaValidator;
+    Wt::WImage *CaptchaImage;
+
+    std::unique_ptr<Wt::WMessageBox> MessageBox;
+
+public:
     Impl();
     ~Impl();
+
+public:
+    void OnContentsCheckBoxStateChanged(Wt::WCheckBox *checkbox);
+    void OnSubscribeFormSubmitted();
 
 public:
     Wt::WWidget *GetSubscribeForm();
@@ -89,6 +124,7 @@ Subscription::Subscription() :
 
     this->clear();
     this->setId("SubscriptionPage");
+    this->setStyleClass("subscription-page full-width full-height");
     this->addWidget(this->Layout());
 }
 
@@ -96,7 +132,7 @@ Subscription::~Subscription() = default;
 
 WWidget *Subscription::Layout()
 {
-    Div *container = new Div("Subscription", "container");
+    Div *container = new Div("Subscription", "subscription-layout full-width full-height");
 
     CgiRoot *cgiRoot = static_cast<CgiRoot *>(WApplication::instance());
     CgiEnv *cgiEnv = cgiRoot->GetCgiEnvInstance();
@@ -129,11 +165,23 @@ Subscription::Impl::Impl()
 
 Subscription::Impl::~Impl() = default;
 
+void Subscription::Impl::OnContentsCheckBoxStateChanged(Wt::WCheckBox *checkbox)
+{
+    if (!EnContentsCheckBox->isChecked() && !FaContentsCheckBox->isChecked()) {
+        checkbox->setChecked(true);
+    }
+}
+
+void Subscription::Impl::OnSubscribeFormSubmitted()
+{
+
+}
+
 Wt::WWidget *Subscription::Impl::GetSubscribeForm()
 {
     WTemplate *tmpl = new WTemplate();
     tmpl->setId("Subscribe");
-    tmpl->setStyleClass("full-width full-height");
+    tmpl->setStyleClass("container-table");
 
     CgiRoot *cgiRoot = static_cast<CgiRoot *>(WApplication::instance());
     CgiEnv *cgiEnv = cgiRoot->GetCgiEnvInstance();
@@ -146,7 +194,97 @@ Wt::WWidget *Subscription::Impl::GetSubscribeForm()
         file = "../templates/home-subscription-subscribe.wtml";
     }
 
-    tmpl->setTemplateText(WString(htmlData), TextFormat::XHTMLUnsafeText);
+    if (CoreLib::FileSystem::Read(file, htmlData)) {
+        /// Fill the template
+        tmpl->setTemplateText(WString(htmlData), TextFormat::XHTMLUnsafeText);
+
+        EmailLineEdit = new WLineEdit();
+        EmailLineEdit->setPlaceholderText(tr("home-subscription-subscribe-email-placeholder"));
+        WRegExpValidator *emailValidator = new WRegExpValidator(Pool::Storage()->RegexEmail());
+        emailValidator->setFlags(MatchCaseInsensitive);
+        emailValidator->setMandatory(true);
+        EmailLineEdit->setValidator(emailValidator);
+
+        static const regex REGEX(Pool::Storage()->RegexEmail());
+        smatch result;
+        if (regex_search(cgiEnv->SubscriptionData.Inbox, result, REGEX)) {
+            EmailLineEdit->setText(WString::fromUTF8(cgiEnv->SubscriptionData.Inbox));
+        }
+
+        WSignalMapper<WCheckBox *> *contentsSignalMapper = new WSignalMapper<WCheckBox *>(this);
+        contentsSignalMapper->mapped().connect(this, &Subscription::Impl::OnContentsCheckBoxStateChanged);
+
+        EnContentsCheckBox = new WCheckBox();
+        FaContentsCheckBox = new WCheckBox();
+
+        if (cgiEnv->SubscriptionData.Languages.size() > 0) {
+            if (std::find(cgiEnv->SubscriptionData.Languages.begin(), cgiEnv->SubscriptionData.Languages.end(),
+                          CgiEnv::Subscription::Language::En) != cgiEnv->SubscriptionData.Languages.end()) {
+                EnContentsCheckBox->setChecked(true);
+            }
+
+            if (std::find(cgiEnv->SubscriptionData.Languages.begin(), cgiEnv->SubscriptionData.Languages.end(),
+                          CgiEnv::Subscription::Language::Fa) != cgiEnv->SubscriptionData.Languages.end()) {
+                FaContentsCheckBox->setChecked(true);
+            }
+        } else {
+            if (cgiEnv->GetCurrentLanguage() == CgiEnv::Language::Fa) {
+                EnContentsCheckBox->setChecked(true);
+                FaContentsCheckBox->setChecked(true);
+            } else {
+                EnContentsCheckBox->setChecked(true);
+                FaContentsCheckBox->setChecked(false);
+            }
+        }
+
+        // ignore the checked event, register only unchecked event
+        contentsSignalMapper->mapConnect(EnContentsCheckBox->unChecked(), EnContentsCheckBox);
+        contentsSignalMapper->mapConnect(FaContentsCheckBox->unChecked(), FaContentsCheckBox);
+
+        EnContentsCheckBox->setStyleClass("checkbox");
+        FaContentsCheckBox->setStyleClass("checkbox");
+
+        Captcha = new Service::Captcha();
+        CaptchaImage = Captcha->Generate();
+        CaptchaImage->setAlternateText(tr("home-captcha-hint"));
+        CaptchaImage->setAttributeValue("title", tr("home-captcha-hint"));
+
+        int captchaResult = (int)Captcha->GetResult();
+
+        CaptchaLineEdit = new WLineEdit();
+        CaptchaLineEdit->setPlaceholderText(tr("home-captcha-hint"));
+        CaptchaValidator = new WIntValidator(captchaResult, captchaResult);
+        CaptchaValidator->setMandatory(true);
+        CaptchaLineEdit->setValidator(CaptchaValidator);
+
+        WPushButton *subscribePushButton = new WPushButton(tr("home-subscription-subscribe-button"));
+        subscribePushButton->setStyleClass("btn btn-primary");
+
+        tmpl->bindString("email-input-id", EmailLineEdit->id());
+        tmpl->bindString("captcha-input-id", CaptchaLineEdit->id());
+
+        tmpl->bindWidget("title", new WText(tr("home-subscription-subscribe-page-title")));
+        tmpl->bindWidget("email-label-text", new WText(tr("home-subscription-subscribe-email")));
+        tmpl->bindWidget("contents-label-text", new WText(tr("home-subscription-subscribe-contents")));
+        tmpl->bindWidget("en-contents-checkbox-text", new WText(tr("home-subscription-subscribe-contents-en")));
+        tmpl->bindWidget("fa-contents-checkbox-text", new WText(tr("home-subscription-subscribe-contents-fa")));
+        tmpl->bindWidget("captcha-label-text", new WText(tr("home-captcha")));
+
+        tmpl->bindWidget("email-input", EmailLineEdit);
+        tmpl->bindWidget("en-contents-checkbox", EnContentsCheckBox);
+        tmpl->bindWidget("fa-contents-checkbox", FaContentsCheckBox);
+        tmpl->bindWidget("captcha-input", CaptchaLineEdit);
+        tmpl->bindWidget("captcha-image", CaptchaImage);
+        tmpl->bindWidget("subscribe-button", subscribePushButton);
+
+        EmailLineEdit->enterPressed().connect(this, &Subscription::Impl::OnSubscribeFormSubmitted);
+        EnContentsCheckBox->enterPressed().connect(this, &Subscription::Impl::OnSubscribeFormSubmitted);
+        FaContentsCheckBox->enterPressed().connect(this, &Subscription::Impl::OnSubscribeFormSubmitted);
+        CaptchaLineEdit->enterPressed().connect(this, &Subscription::Impl::OnSubscribeFormSubmitted);
+        subscribePushButton->clicked().connect(this, &Subscription::Impl::OnSubscribeFormSubmitted);
+
+        EmailLineEdit->setFocus();
+    }
 
     return tmpl;
 }
@@ -168,7 +306,10 @@ Wt::WWidget *Subscription::Impl::GetConfirmationPage()
         file = "../templates/home-subscription-confirmation.wtml";
     }
 
-    tmpl->setTemplateText(WString(htmlData), TextFormat::XHTMLUnsafeText);
+    if (CoreLib::FileSystem::Read(file, htmlData)) {
+        /// Fill the template
+        tmpl->setTemplateText(WString(htmlData), TextFormat::XHTMLUnsafeText);
+    }
 
     return tmpl;
 }
@@ -190,7 +331,10 @@ Wt::WWidget *Subscription::Impl::GetUnsubscribeForm()
         file = "../templates/home-subscription-unsubscribe.wtml";
     }
 
-    tmpl->setTemplateText(WString(htmlData), TextFormat::XHTMLUnsafeText);
+    if (CoreLib::FileSystem::Read(file, htmlData)) {
+        /// Fill the template
+        tmpl->setTemplateText(WString(htmlData), TextFormat::XHTMLUnsafeText);
+    }
 
     return tmpl;
 }
@@ -212,7 +356,10 @@ Wt::WWidget *Subscription::Impl::GetCancellationPage()
         file = "../templates/home-subscription-cancellation.wtml";
     }
 
-    tmpl->setTemplateText(WString(htmlData), TextFormat::XHTMLUnsafeText);
+    if (CoreLib::FileSystem::Read(file, htmlData)) {
+        /// Fill the template
+        tmpl->setTemplateText(WString(htmlData), TextFormat::XHTMLUnsafeText);
+    }
 
     return tmpl;
 }
