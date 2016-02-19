@@ -147,7 +147,7 @@ SysMon::SysMon()
 {
     this->clear();
     this->setId("SysMonPage");
-    this->addWidget(Layout());
+    this->addWidget(this->Layout());
 
     m_pimpl->Initialize();
 }

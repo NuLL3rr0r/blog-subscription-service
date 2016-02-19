@@ -67,7 +67,7 @@ Home::Home()
     this->clear();
     this->setId("HomePage");
     this->setStyleClass("full-width full-height");
-    this->addWidget(Layout());
+    this->addWidget(this->Layout());
 }
 
 Home::~Home() = default;

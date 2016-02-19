@@ -87,7 +87,7 @@ CmsChangeEmail::CmsChangeEmail()
 {
     this->clear();
     this->setId("CmsChangeEmailPage");
-    this->addWidget(Layout());
+    this->addWidget(this->Layout());
 }
 
 CmsChangeEmail::~CmsChangeEmail() = default;

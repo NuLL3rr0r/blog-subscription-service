@@ -91,7 +91,7 @@ CmsNewsletter::CmsNewsletter()
 {
     this->clear();
     this->setId("CmsNewsletterPage");
-    this->addWidget(Layout());
+    this->addWidget(this->Layout());
 }
 
 CmsNewsletter::~CmsNewsletter() = default;

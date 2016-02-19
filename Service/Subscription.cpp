@@ -89,7 +89,7 @@ Subscription::Subscription() :
 
     this->clear();
     this->setId("SubscriptionPage");
-    this->addWidget(Layout());
+    this->addWidget(this->Layout());
 }
 
 Subscription::~Subscription() = default;
@@ -115,7 +115,7 @@ WWidget *Subscription::Layout()
         container->addWidget(m_pimpl->GetCancellationPage());
         break;
     case CgiEnv::Subscription::Action::None:
-        container->addWidget(m_pimpl->GetCancellationPage());
+        container->addWidget(m_pimpl->GetSubscribeForm());
         break;
     }
 
@@ -147,7 +147,6 @@ Wt::WWidget *Subscription::Impl::GetSubscribeForm()
     }
 
     tmpl->setTemplateText(WString(htmlData), TextFormat::XHTMLUnsafeText);
-
 
     return tmpl;
 }

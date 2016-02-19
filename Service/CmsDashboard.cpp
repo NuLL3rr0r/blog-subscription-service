@@ -68,7 +68,7 @@ CmsDashboard::CmsDashboard()
 {
     this->clear();
     this->setId("CmsDashboardPage");
-    this->addWidget(Layout());
+    this->addWidget(this->Layout());
 }
 
 CmsDashboard::~CmsDashboard() = default;

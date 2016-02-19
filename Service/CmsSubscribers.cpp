@@ -80,7 +80,7 @@ CmsSubscribers::CmsSubscribers()
 {
     this->clear();
     this->setId("CmsSubscribersPage");
-    this->addWidget(Layout());
+    this->addWidget(this->Layout());
 }
 
 CmsSubscribers::~CmsSubscribers() = default;

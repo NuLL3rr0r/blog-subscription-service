@@ -111,7 +111,7 @@ CmsContacts::CmsContacts()
 {
     this->clear();
     this->setId("CmsContactsPage");
-    this->addWidget(Layout());
+    this->addWidget(this->Layout());
 }
 
 CmsContacts::~CmsContacts() = default;

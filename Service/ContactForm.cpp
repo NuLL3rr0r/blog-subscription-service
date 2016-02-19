@@ -120,7 +120,7 @@ ContactForm::ContactForm()
     this->clear();
     this->setId("ContactFormPage");
     this->setStyleClass("contact-form-page full-width full-height");
-    this->addWidget(Layout());
+    this->addWidget(this->Layout());
 }
 
 ContactForm::~ContactForm() = default;

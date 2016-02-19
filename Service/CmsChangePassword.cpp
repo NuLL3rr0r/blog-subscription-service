@@ -87,7 +87,7 @@ CmsChangePassword::CmsChangePassword()
 {
     this->clear();
     this->setId("CmsChangePasswordPage");
-    this->addWidget(Layout());
+    this->addWidget(this->Layout());
 }
 
 CmsChangePassword::~CmsChangePassword() = default;

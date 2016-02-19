@@ -240,7 +240,7 @@ RootLogin::RootLogin()
             this->clear();
             this->setId("RootLoginPage");
             this->setStyleClass("root-login-page full-width full-height");
-            this->addWidget(Layout());
+            this->addWidget(this->Layout());
         }
     } else {
         this->clear();

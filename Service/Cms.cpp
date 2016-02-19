@@ -88,7 +88,7 @@ Cms::Cms()
     this->clear();
     this->setId("CmsPage");
     this->setStyleClass("cms-page container-fluid");
-    this->addWidget(Layout());
+    this->addWidget(this->Layout());
 
     app->root()->clear();
     app->root()->addWidget(this);
