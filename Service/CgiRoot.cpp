@@ -53,7 +53,6 @@
 #include "Pool.hpp"
 #include "RootLogin.hpp"
 
-#define         UNKNOWN_ERROR       "Unknown error!"
 #define         ALICE               L"<pre>Alice is not in Wonderland!!</pre>"
 
 using namespace std;

@@ -68,8 +68,6 @@
 #include "Cms.hpp"
 #include "RootLogin.hpp"
 
-#define         UNKNOWN_ERROR       "Unknown error!"
-
 using namespace std;
 using namespace boost;
 using namespace Wt;

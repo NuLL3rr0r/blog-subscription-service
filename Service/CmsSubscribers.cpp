@@ -56,8 +56,6 @@ using namespace std;
 using namespace Wt;
 using namespace Service;
 
-#define         UNKNOWN_ERROR       "Unknown error!"
-
 struct CmsSubscribers::Impl : public Wt::WObject
 {
 public:

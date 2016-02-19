@@ -63,8 +63,6 @@
 #include "Div.hpp"
 #include "Pool.hpp"
 
-#define         UNKNOWN_ERROR       "Unknown error!"
-
 using namespace std;
 using namespace boost;
 using namespace cppdb;
@@ -312,7 +310,7 @@ void ContactForm::Impl::OnContactFormSubmitted()
             || !m_parent->Validate(SubjectLineEdit)
             || !m_parent->Validate(BodyTextArea)
             || !m_parent->Validate(CaptchaLineEdit)) {
-        GenerateCaptcha();
+        this->GenerateCaptcha();
         return;
     }
 

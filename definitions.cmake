@@ -59,6 +59,9 @@ SET ( LIBB64_BUFFERSIZE "16777216" CACHE STRING "" )
 SET ( GEO_LITE_COUNTRY_DB_URL "http://geolite.maxmind.com/download/geoip/database/GeoLiteCountry/GeoIP.dat.gz" CACHE STRING "" )
 SET ( GEO_LITE_CITY_DB_URL "http://geolite.maxmind.com/download/geoip/database/GeoLiteCity.dat.gz" CACHE STRING "" )
 
+
+SET ( UNKNOWN_ERROR "Unknown error!" CACHE STRING "" )
+
 IF ( WIN32 )
     SET ( CORELIB_DEFINES "_UNICODE; UNICODE; WIN32_LEAN_AND_MEAN" CACHE STRING "" )
 ELSE (  )

@@ -238,7 +238,8 @@ void InitializeDatabase()
         Service::Pool::Database()->RegisterTable("SUBSCRIBERS", "subscribers",
                                                  " inbox TEXT NOT NULL PRIMARY KEY, "
                                                  " uuid UUID NOT NULL UNIQUE, "
-                                                 " subscription SUBSCRIPTION NOT NULL DEFAULT 'none' ");
+                                                 " subscription SUBSCRIPTION NOT NULL DEFAULT 'none', "
+                                                 " pending_subscription SUBSCRIPTION NOT NULL DEFAULT 'none' ");
 
         Service::Pool::Database()->Initialize();
 

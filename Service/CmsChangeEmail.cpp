@@ -55,8 +55,6 @@
 #include "Div.hpp"
 #include "Pool.hpp"
 
-#define         UNKNOWN_ERROR       "Unknown error!"
-
 using namespace std;
 using namespace boost;
 using namespace cppdb;
