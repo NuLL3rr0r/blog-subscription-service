@@ -1,11 +1,13 @@
 <div class="subscription-cancelled row v-center">
-    <div class="panel panel-default col-xs-10 col-sm-8 col-md-6 col-lg-4 h-center">
+    <div class="panel panel-default col-xs-10 col-sm-8 col-md-6 col-lg-4 h-center form-horizontal">
         <div class="text-center">
             <h3>${title}</h3>
         </div>
 
-        <div class="text-center message-area">
-            ${confirmed-message}
+        <br />
+
+        <div style="text-align: justify;">
+            ${message}
         </div>
     </div>
 

@@ -39,8 +39,24 @@
         <br /><br />
         با تشکر از صبر و شکیبائی شما
     </message>
+    <message id="home-subscription-unsubscribe-already-unsubscribed-title">قبلا لغو شده است</message>
+    <message id="home-subscription-unsubscribe-already-unsubscribed-message">اشتراک شما قبلا لغو شده است!</message>
     <message id="home-subscription-confirmation-page-title">تائید اشتراک</message>
+    <message id="home-subscription-confirmation-congratulation-title">اشتراک تائید شد!</message>
+    <message id="home-subscription-confirmation-congratulation-message">
+        <strong>
+            تبریک! اشتراک شما در خبرنامه تائید شد.
+        </strong>
+    </message>
+    <message id="home-subscription-confirmation-already-confirmed-title">قبلا تائید شده است</message>
+    <message id="home-subscription-confirmation-already-confirmed-message">اشتراک شما در خبرنامه قبلا تائید شده است.</message>
     <message id="home-subscription-unsubscribe-page-title">لغو اشتراک</message>
+    <message id="home-subscription-unsubscribe-email">پست الکترونیک</message>
+    <message id="home-subscription-unsubscribe-email-placeholder">پست الکترونیک</message>
+    <message id="home-subscription-unsubscribe-contents">تمایل به لغو اشتراک از موارد ذیل را دارم:</message>
+    <message id="home-subscription-unsubscribe-contents-en">خبرنامه انگلیسی</message>
+    <message id="home-subscription-unsubscribe-contents-fa">خبرنامه فارسی</message>
+    <message id="home-subscription-unsubscribe-button">لغو اشتراک</message>
     <message id="home-subscription-cancellation-page-title">تائیدیه لغو اشتراک</message>
     <message id="home-contact-form-page-title">فرم تماس</message>
     <message id="home-contact-form-admin">مدیر</message>

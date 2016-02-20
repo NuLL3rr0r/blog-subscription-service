@@ -213,18 +213,22 @@ void Subscription::Impl::OnSubscribeFormSubmitted()
     }
 
     try {
+        CDate::Now n;
+        string date(lexical_cast<std::string>(n.RawTime));
         string inbox(EmailLineEdit->text().trim().toUTF8());
 
-        string pending_subscription;
+        string pending_confirm;
         if (EnContentsCheckBox->isChecked() && FaContentsCheckBox->isChecked()) {
-            pending_subscription = "en_fa";
+            pending_confirm = "en_fa";
         } else if (EnContentsCheckBox->isChecked()) {
-            pending_subscription = "en";
+            pending_confirm = "en";
         } else if (FaContentsCheckBox->isChecked()) {
-            pending_subscription = "fa";
+            pending_confirm = "fa";
         } else {
-            pending_subscription = "none";
+            pending_confirm = "none";
         }
+
+        transaction guard(Service::Pool::Database()->Sql());
 
         result r = Pool::Database()->Sql()
                 << (format("SELECT inbox FROM \"%1%\""
@@ -250,15 +254,17 @@ void Subscription::Impl::OnSubscribeFormSubmitted()
             }
 
             Pool::Database()->Insert("SUBSCRIBERS",
-                                     "inbox, uuid, subscription, pending_subscription",
-                                     { inbox, uuid, "none", pending_subscription });
+                                     "inbox, uuid, subscription, pending_confirm, pending_cancel, join_date, update_date",
+                                     { inbox, uuid, "none", pending_confirm, "none", date, date });
         } else {
             Pool::Database()->Update("SUBSCRIBERS",
                                      "inbox",
                                      inbox,
-                                     "pending_subscription=?",
-                                     { pending_subscription });
+                                     "pending_confirm=?, pending_cancel=?, update_date=?",
+                                     { pending_confirm, "none", date });
         }
+
+        guard.commit();
 
         MessageBox = std::make_unique<WMessageBox>(tr("home-subscription-subscribe-success-dialog-title"),
                                                    tr("home-subscription-subscribe-success-dialog-message"),
@@ -346,12 +352,17 @@ void Subscription::Impl::GenerateCaptcha()
 
 Wt::WWidget *Subscription::Impl::GetSubscribeForm()
 {
+    CgiRoot *cgiRoot = static_cast<CgiRoot *>(WApplication::instance());
+    CgiEnv *cgiEnv = cgiRoot->GetCgiEnvInstance();
+
+    if (cgiEnv->SubscriptionData.Subscribe != CgiEnv::Subscription::Action::Subscribe
+            && cgiEnv->SubscriptionData.Subscribe != CgiEnv::Subscription::Action::None) {
+        return new WText(L"Oops!");
+    }
+
     WTemplate *tmpl = new WTemplate();
     tmpl->setId("Subscribe");
     tmpl->setStyleClass("container-table");
-
-    CgiRoot *cgiRoot = static_cast<CgiRoot *>(WApplication::instance());
-    CgiEnv *cgiEnv = cgiRoot->GetCgiEnvInstance();
 
     string htmlData;
     string file;
@@ -361,96 +372,113 @@ Wt::WWidget *Subscription::Impl::GetSubscribeForm()
         file = "../templates/home-subscription-subscribe.wtml";
     }
 
-    if (CoreLib::FileSystem::Read(file, htmlData)) {
-        /// Fill the template
-        tmpl->setTemplateText(WString(htmlData), TextFormat::XHTMLUnsafeText);
+    try {
+        if (CoreLib::FileSystem::Read(file, htmlData)) {
+            /// Fill the template
+            tmpl->setTemplateText(WString(htmlData), TextFormat::XHTMLUnsafeText);
 
-        EmailLineEdit = new WLineEdit();
-        EmailLineEdit->setPlaceholderText(tr("home-subscription-subscribe-email-placeholder"));
-        WRegExpValidator *emailValidator = new WRegExpValidator(Pool::Storage()->RegexEmail());
-        emailValidator->setFlags(MatchCaseInsensitive);
-        emailValidator->setMandatory(true);
-        EmailLineEdit->setValidator(emailValidator);
+            EmailLineEdit = new WLineEdit();
+            EmailLineEdit->setPlaceholderText(tr("home-subscription-subscribe-email-placeholder"));
+            WRegExpValidator *emailValidator = new WRegExpValidator(Pool::Storage()->RegexEmail());
+            emailValidator->setFlags(MatchCaseInsensitive);
+            emailValidator->setMandatory(true);
+            EmailLineEdit->setValidator(emailValidator);
 
-        static const regex REGEX(Pool::Storage()->RegexEmail());
-        smatch result;
-        if (regex_search(cgiEnv->SubscriptionData.Inbox, result, REGEX)) {
-            EmailLineEdit->setText(WString::fromUTF8(cgiEnv->SubscriptionData.Inbox));
-        }
-
-        WSignalMapper<WCheckBox *> *contentsSignalMapper = new WSignalMapper<WCheckBox *>(this);
-        contentsSignalMapper->mapped().connect(this, &Subscription::Impl::OnContentsCheckBoxStateChanged);
-
-        EnContentsCheckBox = new WCheckBox();
-        FaContentsCheckBox = new WCheckBox();
-
-        if (cgiEnv->SubscriptionData.Languages.size() > 0) {
-            if (std::find(cgiEnv->SubscriptionData.Languages.begin(), cgiEnv->SubscriptionData.Languages.end(),
-                          CgiEnv::Subscription::Language::En) != cgiEnv->SubscriptionData.Languages.end()) {
-                EnContentsCheckBox->setChecked(true);
+            if (cgiEnv->SubscriptionData.Subscribe == CgiEnv::Subscription::Action::Subscribe) {
+                static const regex REGEX_EMAIL(Pool::Storage()->RegexEmail());
+                smatch result;
+                if (regex_search(cgiEnv->SubscriptionData.Inbox, result, REGEX_EMAIL)) {
+                    EmailLineEdit->setText(WString::fromUTF8(cgiEnv->SubscriptionData.Inbox));
+                }
             }
 
-            if (std::find(cgiEnv->SubscriptionData.Languages.begin(), cgiEnv->SubscriptionData.Languages.end(),
-                          CgiEnv::Subscription::Language::Fa) != cgiEnv->SubscriptionData.Languages.end()) {
-                FaContentsCheckBox->setChecked(true);
-            }
-        } else {
-            if (cgiEnv->GetCurrentLanguage() == CgiEnv::Language::Fa) {
-                EnContentsCheckBox->setChecked(true);
-                FaContentsCheckBox->setChecked(true);
+            WSignalMapper<WCheckBox *> *contentsSignalMapper = new WSignalMapper<WCheckBox *>(this);
+            contentsSignalMapper->mapped().connect(this, &Subscription::Impl::OnContentsCheckBoxStateChanged);
+
+            EnContentsCheckBox = new WCheckBox();
+            FaContentsCheckBox = new WCheckBox();
+
+            if (cgiEnv->SubscriptionData.Subscribe == CgiEnv::Subscription::Action::Subscribe
+                    && cgiEnv->SubscriptionData.Languages.size() > 0) {
+                if (std::find(cgiEnv->SubscriptionData.Languages.begin(), cgiEnv->SubscriptionData.Languages.end(),
+                              CgiEnv::Subscription::Language::En) != cgiEnv->SubscriptionData.Languages.end()) {
+                    EnContentsCheckBox->setChecked(true);
+                }
+
+                if (std::find(cgiEnv->SubscriptionData.Languages.begin(), cgiEnv->SubscriptionData.Languages.end(),
+                              CgiEnv::Subscription::Language::Fa) != cgiEnv->SubscriptionData.Languages.end()) {
+                    FaContentsCheckBox->setChecked(true);
+                }
             } else {
-                EnContentsCheckBox->setChecked(true);
-                FaContentsCheckBox->setChecked(false);
+                if (cgiEnv->GetCurrentLanguage() == CgiEnv::Language::Fa) {
+                    EnContentsCheckBox->setChecked(true);
+                    FaContentsCheckBox->setChecked(true);
+                } else {
+                    EnContentsCheckBox->setChecked(true);
+                    FaContentsCheckBox->setChecked(false);
+                }
             }
+
+            // ignore the checked event, register only unchecked event
+            contentsSignalMapper->mapConnect(EnContentsCheckBox->unChecked(), EnContentsCheckBox);
+            contentsSignalMapper->mapConnect(FaContentsCheckBox->unChecked(), FaContentsCheckBox);
+
+            EnContentsCheckBox->setStyleClass("checkbox");
+            FaContentsCheckBox->setStyleClass("checkbox");
+
+            Captcha = new Service::Captcha();
+            CaptchaImage = Captcha->Generate();
+            CaptchaImage->setAlternateText(tr("home-captcha-hint"));
+            CaptchaImage->setAttributeValue("title", tr("home-captcha-hint"));
+
+            int captchaResult = (int)Captcha->GetResult();
+
+            CaptchaLineEdit = new WLineEdit();
+            CaptchaLineEdit->setPlaceholderText(tr("home-captcha-hint"));
+            CaptchaValidator = new WIntValidator(captchaResult, captchaResult);
+            CaptchaValidator->setMandatory(true);
+            CaptchaLineEdit->setValidator(CaptchaValidator);
+
+            WPushButton *subscribePushButton = new WPushButton(tr("home-subscription-subscribe-button"));
+            subscribePushButton->setStyleClass("btn btn-primary");
+
+            tmpl->bindString("email-input-id", EmailLineEdit->id());
+            tmpl->bindString("captcha-input-id", CaptchaLineEdit->id());
+
+            tmpl->bindWidget("title", new WText(tr("home-subscription-subscribe-page-title")));
+            tmpl->bindWidget("email-label-text", new WText(tr("home-subscription-subscribe-email")));
+            tmpl->bindWidget("contents-label-text", new WText(tr("home-subscription-subscribe-contents")));
+            tmpl->bindWidget("en-contents-checkbox-text", new WText(tr("home-subscription-subscribe-contents-en")));
+            tmpl->bindWidget("fa-contents-checkbox-text", new WText(tr("home-subscription-subscribe-contents-fa")));
+            tmpl->bindWidget("captcha-label-text", new WText(tr("home-captcha")));
+
+            tmpl->bindWidget("email-input", EmailLineEdit);
+            tmpl->bindWidget("en-contents-checkbox", EnContentsCheckBox);
+            tmpl->bindWidget("fa-contents-checkbox", FaContentsCheckBox);
+            tmpl->bindWidget("captcha-input", CaptchaLineEdit);
+            tmpl->bindWidget("captcha-image", CaptchaImage);
+            tmpl->bindWidget("subscribe-button", subscribePushButton);
+
+            EmailLineEdit->enterPressed().connect(this, &Subscription::Impl::OnSubscribeFormSubmitted);
+            EnContentsCheckBox->enterPressed().connect(this, &Subscription::Impl::OnSubscribeFormSubmitted);
+            FaContentsCheckBox->enterPressed().connect(this, &Subscription::Impl::OnSubscribeFormSubmitted);
+            CaptchaLineEdit->enterPressed().connect(this, &Subscription::Impl::OnSubscribeFormSubmitted);
+            subscribePushButton->clicked().connect(this, &Subscription::Impl::OnSubscribeFormSubmitted);
+
+            EmailLineEdit->setFocus();
         }
+    }
 
-        // ignore the checked event, register only unchecked event
-        contentsSignalMapper->mapConnect(EnContentsCheckBox->unChecked(), EnContentsCheckBox);
-        contentsSignalMapper->mapConnect(FaContentsCheckBox->unChecked(), FaContentsCheckBox);
+    catch (boost::exception &ex) {
+        LOG_ERROR(boost::diagnostic_information(ex));
+    }
 
-        EnContentsCheckBox->setStyleClass("checkbox");
-        FaContentsCheckBox->setStyleClass("checkbox");
+    catch (std::exception &ex) {
+        LOG_ERROR(ex.what());
+    }
 
-        Captcha = new Service::Captcha();
-        CaptchaImage = Captcha->Generate();
-        CaptchaImage->setAlternateText(tr("home-captcha-hint"));
-        CaptchaImage->setAttributeValue("title", tr("home-captcha-hint"));
-
-        int captchaResult = (int)Captcha->GetResult();
-
-        CaptchaLineEdit = new WLineEdit();
-        CaptchaLineEdit->setPlaceholderText(tr("home-captcha-hint"));
-        CaptchaValidator = new WIntValidator(captchaResult, captchaResult);
-        CaptchaValidator->setMandatory(true);
-        CaptchaLineEdit->setValidator(CaptchaValidator);
-
-        WPushButton *subscribePushButton = new WPushButton(tr("home-subscription-subscribe-button"));
-        subscribePushButton->setStyleClass("btn btn-primary");
-
-        tmpl->bindString("email-input-id", EmailLineEdit->id());
-        tmpl->bindString("captcha-input-id", CaptchaLineEdit->id());
-
-        tmpl->bindWidget("title", new WText(tr("home-subscription-subscribe-page-title")));
-        tmpl->bindWidget("email-label-text", new WText(tr("home-subscription-subscribe-email")));
-        tmpl->bindWidget("contents-label-text", new WText(tr("home-subscription-subscribe-contents")));
-        tmpl->bindWidget("en-contents-checkbox-text", new WText(tr("home-subscription-subscribe-contents-en")));
-        tmpl->bindWidget("fa-contents-checkbox-text", new WText(tr("home-subscription-subscribe-contents-fa")));
-        tmpl->bindWidget("captcha-label-text", new WText(tr("home-captcha")));
-
-        tmpl->bindWidget("email-input", EmailLineEdit);
-        tmpl->bindWidget("en-contents-checkbox", EnContentsCheckBox);
-        tmpl->bindWidget("fa-contents-checkbox", FaContentsCheckBox);
-        tmpl->bindWidget("captcha-input", CaptchaLineEdit);
-        tmpl->bindWidget("captcha-image", CaptchaImage);
-        tmpl->bindWidget("subscribe-button", subscribePushButton);
-
-        EmailLineEdit->enterPressed().connect(this, &Subscription::Impl::OnSubscribeFormSubmitted);
-        EnContentsCheckBox->enterPressed().connect(this, &Subscription::Impl::OnSubscribeFormSubmitted);
-        FaContentsCheckBox->enterPressed().connect(this, &Subscription::Impl::OnSubscribeFormSubmitted);
-        CaptchaLineEdit->enterPressed().connect(this, &Subscription::Impl::OnSubscribeFormSubmitted);
-        subscribePushButton->clicked().connect(this, &Subscription::Impl::OnSubscribeFormSubmitted);
-
-        EmailLineEdit->setFocus();
+    catch (...) {
+        LOG_ERROR(UNKNOWN_ERROR);
     }
 
     return tmpl;
@@ -458,24 +486,139 @@ Wt::WWidget *Subscription::Impl::GetSubscribeForm()
 
 Wt::WWidget *Subscription::Impl::GetConfirmationPage()
 {
+    CgiRoot *cgiRoot = static_cast<CgiRoot *>(WApplication::instance());
+    CgiEnv *cgiEnv = cgiRoot->GetCgiEnvInstance();
+
+    if (cgiEnv->SubscriptionData.Subscribe != CgiEnv::Subscription::Action::Confirm) {
+        return new WText(L"Oops!");
+    }
+
     WTemplate *tmpl = new WTemplate();
     tmpl->setId("Confirmation");
     tmpl->setStyleClass("container-table");
 
-    CgiRoot *cgiRoot = static_cast<CgiRoot *>(WApplication::instance());
-    CgiEnv *cgiEnv = cgiRoot->GetCgiEnvInstance();
+    try {
+        static const regex REGEX_UUID(Pool::Storage()->RegexUuid());
+        smatch result;
+        if (cgiEnv->SubscriptionData.Uuid == "" || !regex_search(cgiEnv->SubscriptionData.Uuid, result, REGEX_UUID)) {
+            cgiRoot->setTitle(tr("home-subscription-invalid-recipient-id-title"));
+            this->GetMessageTemplate(tmpl,
+                                     tr("home-subscription-invalid-recipient-id-title"),
+                                     tr("home-subscription-invalid-recipient-id-message"));
+            return tmpl;
+        }
 
-    string htmlData;
-    string file;
-    if (cgiEnv->GetCurrentLanguage() == CgiEnv::Language::Fa) {
-        file = "../templates/home-subscription-confirmation-fa.wtml";
-    } else {
-        file = "../templates/home-subscription-confirmation.wtml";
+        cppdb::result r = Pool::Database()->Sql()
+                << (format("SELECT inbox, subscription, pending_confirm FROM \"%1%\""
+                           " WHERE uuid=?;")
+                    % Pool::Database()->GetTableName("SUBSCRIBERS")).str()
+                << cgiEnv->SubscriptionData.Uuid << row;
+
+        if (r.empty()) {
+            cgiRoot->setTitle(tr("home-subscription-invalid-recipient-id-title"));
+            this->GetMessageTemplate(tmpl,
+                                     tr("home-subscription-invalid-recipient-id-title"),
+                                     tr("home-subscription-invalid-recipient-id-message"));
+            return tmpl;
+        }
+
+        CDate::Now n;
+        string date(lexical_cast<std::string>(n.RawTime));
+
+        string inbox;
+        string subscription;
+        string pending_confirm;
+        r >> inbox >> subscription >> pending_confirm;
+
+        if (pending_confirm == "none" && subscription == "none") {
+            cgiEnv->SubscriptionData.Subscribe = CgiEnv::Subscription::Action::Subscribe;
+            cgiEnv->SubscriptionData.Inbox = inbox;
+
+            if (subscription == "en_fa") {
+                cgiEnv->SubscriptionData.Languages.push_back(CgiEnv::Subscription::Language::En);
+                cgiEnv->SubscriptionData.Languages.push_back(CgiEnv::Subscription::Language::Fa);
+            } else if (subscription == "en") {
+                cgiEnv->SubscriptionData.Languages.push_back(CgiEnv::Subscription::Language::En);
+            } else if (subscription == "fa") {
+                cgiEnv->SubscriptionData.Languages.push_back(CgiEnv::Subscription::Language::Fa);
+            } else {
+                cgiEnv->SubscriptionData.Languages.push_back(CgiEnv::Subscription::Language::En);
+
+                if (cgiEnv->GetCurrentLanguage() == CgiEnv::Language::Fa) {
+                    cgiEnv->SubscriptionData.Languages.push_back(CgiEnv::Subscription::Language::Fa);
+                }
+            }
+
+            cgiRoot->setTitle(tr("home-subscription-subscribe-page-title"));
+
+            return GetSubscribeForm();
+        } else if (pending_confirm == "none") {
+            cgiRoot->setTitle(tr("home-subscription-invalid-recipient-id-title"));
+            this->GetMessageTemplate(tmpl,
+                                     tr("home-subscription-invalid-recipient-id-title"),
+                                     tr("home-subscription-invalid-recipient-id-message"));
+            return tmpl;
+        }
+
+        string htmlData;
+        string file;
+        if (cgiEnv->GetCurrentLanguage() == CgiEnv::Language::Fa) {
+            file = "../templates/home-subscription-confirmation-fa.wtml";
+        } else {
+            file = "../templates/home-subscription-confirmation.wtml";
+        }
+
+        if (CoreLib::FileSystem::Read(file, htmlData)) {
+            /// Fill the template
+            tmpl->setTemplateText(WString(htmlData), TextFormat::XHTMLUnsafeText);
+
+            string final_subscription;
+
+            if (subscription == "none") {
+                final_subscription = pending_confirm;
+            } else if (subscription == "en_fa") {
+                final_subscription = subscription;
+            } else if (subscription == "en") {
+                if (pending_confirm == "fa") {
+                    final_subscription = "en_fa";
+                } else {
+                    final_subscription = subscription;
+                }
+            } else if (subscription == "fa") {
+                if (pending_confirm == "en") {
+                    final_subscription = "en_fa";
+                } else {
+                    final_subscription = subscription;
+                }
+            } else {
+                final_subscription = "en_fa";
+            }
+
+            transaction guard(Service::Pool::Database()->Sql());
+
+            Pool::Database()->Update("SUBSCRIBERS",
+                                     "inbox",
+                                     inbox,
+                                     "subscription=?, pending_confirm=?, pending_cancel=?, update_date=?",
+                                     { final_subscription, "none", "none", date });
+
+            guard.commit();
+
+            tmpl->bindString("title", tr("home-subscription-confirmation-congratulation-title"));
+            tmpl->bindString("message", tr("home-subscription-confirmation-congratulation-message"));
+        }
     }
 
-    if (CoreLib::FileSystem::Read(file, htmlData)) {
-        /// Fill the template
-        tmpl->setTemplateText(WString(htmlData), TextFormat::XHTMLUnsafeText);
+    catch (boost::exception &ex) {
+        LOG_ERROR(boost::diagnostic_information(ex));
+    }
+
+    catch (std::exception &ex) {
+        LOG_ERROR(ex.what());
+    }
+
+    catch (...) {
+        LOG_ERROR(UNKNOWN_ERROR);
     }
 
     return tmpl;
@@ -483,128 +626,165 @@ Wt::WWidget *Subscription::Impl::GetConfirmationPage()
 
 Wt::WWidget *Subscription::Impl::GetUnsubscribeForm()
 {
+    CgiRoot *cgiRoot = static_cast<CgiRoot *>(WApplication::instance());
+    CgiEnv *cgiEnv = cgiRoot->GetCgiEnvInstance();
+
+    if (cgiEnv->SubscriptionData.Subscribe != CgiEnv::Subscription::Action::Unsubscribe) {
+        return new WText(L"Oops!");
+    }
+
     WTemplate *tmpl = new WTemplate();
     tmpl->setId("Unsubscribe");
     tmpl->setStyleClass("container-table");
 
-    CgiRoot *cgiRoot = static_cast<CgiRoot *>(WApplication::instance());
-    CgiEnv *cgiEnv = cgiRoot->GetCgiEnvInstance();
+    try {
+        static const regex REGEX_UUID(Pool::Storage()->RegexUuid());
+        smatch result;
+        if (cgiEnv->SubscriptionData.Uuid == "" || !regex_search(cgiEnv->SubscriptionData.Uuid, result, REGEX_UUID)) {
+            cgiRoot->setTitle(tr("home-subscription-invalid-recipient-id-title"));
+            this->GetMessageTemplate(tmpl,
+                                     tr("home-subscription-invalid-recipient-id-title"),
+                                     tr("home-subscription-invalid-recipient-id-message"));
+            return tmpl;
+        }
 
-    string email;
-    if (cgiEnv->SubscriptionData.Uuid != "") {
-        result r = Pool::Database()->Sql()
-                << (format("SELECT inbox FROM \"%1%\""
+        cppdb::result r = Pool::Database()->Sql()
+                << (format("SELECT inbox, subscription FROM \"%1%\""
                            " WHERE uuid=?;")
                     % Pool::Database()->GetTableName("SUBSCRIBERS")).str()
                 << cgiEnv->SubscriptionData.Uuid << row;
 
-        if (!r.empty()) {
-            r >> email;
+        if (r.empty()) {
+            cgiRoot->setTitle(tr("home-subscription-invalid-recipient-id-title"));
+            this->GetMessageTemplate(tmpl,
+                                     tr("home-subscription-invalid-recipient-id-title"),
+                                     tr("home-subscription-invalid-recipient-id-message"));
+            return tmpl;
         }
-    }
 
-    static const regex REGEX(Pool::Storage()->RegexEmail());
-    smatch result;
-    if (email == "" || !regex_search(cgiEnv->SubscriptionData.Inbox, result, REGEX)) {
-        this->GetMessageTemplate(tmpl,
-                                 tr("home-subscription-invalid-recipient-id-title"),
-                                 tr("home-subscription-invalid-recipient-id-message"));
-        return tmpl;
-    }
+        string inbox;
+        string subscription;
+        r >> inbox >> subscription;
 
-    string htmlData;
-    string file;
-    if (cgiEnv->GetCurrentLanguage() == CgiEnv::Language::Fa) {
-        file = "../templates/home-subscription-unsubscribe-fa.wtml";
-    } else {
-        file = "../templates/home-subscription-unsubscribe.wtml";
-    }
+        if (subscription == "none") {
+            cgiRoot->setTitle(tr("home-subscription-unsubscribe-already-unsubscribed-title"));
+            this->GetMessageTemplate(tmpl,
+                                     tr("home-subscription-unsubscribe-already-unsubscribed-title"),
+                                     tr("home-subscription-unsubscribe-already-unsubscribed-message"));
+            return tmpl;
+        }
 
-    if (CoreLib::FileSystem::Read(file, htmlData)) {
-        /// Fill the template
-        tmpl->setTemplateText(WString(htmlData), TextFormat::XHTMLUnsafeText);
-
-        EmailLineEdit = new WLineEdit();
-        EmailLineEdit->setPlaceholderText(tr("home-subscription-unsubscribe-email-placeholder"));
-        WRegExpValidator *emailValidator = new WRegExpValidator(Pool::Storage()->RegexEmail());
-        emailValidator->setFlags(MatchCaseInsensitive);
-        emailValidator->setMandatory(true);
-        EmailLineEdit->setValidator(emailValidator);
-        EmailLineEdit->setReadOnly(true);
-
-        WSignalMapper<WCheckBox *> *contentsSignalMapper = new WSignalMapper<WCheckBox *>(this);
-        contentsSignalMapper->mapped().connect(this, &Subscription::Impl::OnContentsCheckBoxStateChanged);
-
-        EnContentsCheckBox = new WCheckBox();
-        FaContentsCheckBox = new WCheckBox();
-
-        if (cgiEnv->SubscriptionData.Languages.size() > 0) {
-            if (std::find(cgiEnv->SubscriptionData.Languages.begin(), cgiEnv->SubscriptionData.Languages.end(),
-                          CgiEnv::Subscription::Language::En) != cgiEnv->SubscriptionData.Languages.end()) {
-                EnContentsCheckBox->setChecked(true);
-            }
-
-            if (std::find(cgiEnv->SubscriptionData.Languages.begin(), cgiEnv->SubscriptionData.Languages.end(),
-                          CgiEnv::Subscription::Language::Fa) != cgiEnv->SubscriptionData.Languages.end()) {
-                FaContentsCheckBox->setChecked(true);
-            }
+        string htmlData;
+        string file;
+        if (cgiEnv->GetCurrentLanguage() == CgiEnv::Language::Fa) {
+            file = "../templates/home-subscription-unsubscribe-fa.wtml";
         } else {
-            if (cgiEnv->GetCurrentLanguage() == CgiEnv::Language::Fa) {
-                EnContentsCheckBox->setChecked(false);
-                FaContentsCheckBox->setChecked(true);
-            } else {
-                EnContentsCheckBox->setChecked(true);
-                FaContentsCheckBox->setChecked(false);
-            }
+            file = "../templates/home-subscription-unsubscribe.wtml";
         }
 
-        // ignore the checked event, register only unchecked event
-        contentsSignalMapper->mapConnect(EnContentsCheckBox->unChecked(), EnContentsCheckBox);
-        contentsSignalMapper->mapConnect(FaContentsCheckBox->unChecked(), FaContentsCheckBox);
+        if (CoreLib::FileSystem::Read(file, htmlData)) {
+            /// Fill the template
+            tmpl->setTemplateText(WString(htmlData), TextFormat::XHTMLUnsafeText);
 
-        EnContentsCheckBox->setStyleClass("checkbox");
-        FaContentsCheckBox->setStyleClass("checkbox");
+            EmailLineEdit = new WLineEdit();
+            EmailLineEdit->setPlaceholderText(tr("home-subscription-unsubscribe-email-placeholder"));
+            WRegExpValidator *emailValidator = new WRegExpValidator(Pool::Storage()->RegexEmail());
+            emailValidator->setFlags(MatchCaseInsensitive);
+            emailValidator->setMandatory(true);
+            EmailLineEdit->setValidator(emailValidator);
+            EmailLineEdit->setReadOnly(true);
 
-        Captcha = new Service::Captcha();
-        CaptchaImage = Captcha->Generate();
-        CaptchaImage->setAlternateText(tr("home-captcha-hint"));
-        CaptchaImage->setAttributeValue("title", tr("home-captcha-hint"));
+            static const regex REGEX_EMAIL(Pool::Storage()->RegexEmail());
+            if (regex_search(inbox, result, REGEX_EMAIL)) {
+                EmailLineEdit->setText(WString::fromUTF8(inbox));
+            }
 
-        int captchaResult = (int)Captcha->GetResult();
+            WSignalMapper<WCheckBox *> *contentsSignalMapper = new WSignalMapper<WCheckBox *>(this);
+            contentsSignalMapper->mapped().connect(this, &Subscription::Impl::OnContentsCheckBoxStateChanged);
 
-        CaptchaLineEdit = new WLineEdit();
-        CaptchaLineEdit->setPlaceholderText(tr("home-captcha-hint"));
-        CaptchaValidator = new WIntValidator(captchaResult, captchaResult);
-        CaptchaValidator->setMandatory(true);
-        CaptchaLineEdit->setValidator(CaptchaValidator);
+            EnContentsCheckBox = new WCheckBox();
+            FaContentsCheckBox = new WCheckBox();
 
-        WPushButton *unsubscribePushButton = new WPushButton(tr("home-subscription-unsubscribe-button"));
-        unsubscribePushButton->setStyleClass("btn btn-primary");
+            if (cgiEnv->SubscriptionData.Languages.size() > 0) {
+                if (std::find(cgiEnv->SubscriptionData.Languages.begin(), cgiEnv->SubscriptionData.Languages.end(),
+                              CgiEnv::Subscription::Language::En) != cgiEnv->SubscriptionData.Languages.end()) {
+                    EnContentsCheckBox->setChecked(true);
+                }
 
-        tmpl->bindString("email-input-id", EmailLineEdit->id());
-        tmpl->bindString("captcha-input-id", CaptchaLineEdit->id());
+                if (std::find(cgiEnv->SubscriptionData.Languages.begin(), cgiEnv->SubscriptionData.Languages.end(),
+                              CgiEnv::Subscription::Language::Fa) != cgiEnv->SubscriptionData.Languages.end()) {
+                    FaContentsCheckBox->setChecked(true);
+                }
+            } else {
+                if (cgiEnv->GetCurrentLanguage() == CgiEnv::Language::Fa) {
+                    EnContentsCheckBox->setChecked(false);
+                    FaContentsCheckBox->setChecked(true);
+                } else {
+                    EnContentsCheckBox->setChecked(true);
+                    FaContentsCheckBox->setChecked(false);
+                }
+            }
 
-        tmpl->bindWidget("title", new WText(tr("home-subscription-unsubscribe-page-title")));
-        tmpl->bindWidget("email-label-text", new WText(tr("home-subscription-unsubscribe-email")));
-        tmpl->bindWidget("contents-label-text", new WText(tr("home-subscription-unsubscribe-contents")));
-        tmpl->bindWidget("en-contents-checkbox-text", new WText(tr("home-subscription-unsubscribe-contents-en")));
-        tmpl->bindWidget("fa-contents-checkbox-text", new WText(tr("home-subscription-unsubscribe-contents-fa")));
-        tmpl->bindWidget("captcha-label-text", new WText(tr("home-captcha")));
+            // ignore the checked event, register only unchecked event
+            contentsSignalMapper->mapConnect(EnContentsCheckBox->unChecked(), EnContentsCheckBox);
+            contentsSignalMapper->mapConnect(FaContentsCheckBox->unChecked(), FaContentsCheckBox);
 
-        tmpl->bindWidget("email-input", EmailLineEdit);
-        tmpl->bindWidget("en-contents-checkbox", EnContentsCheckBox);
-        tmpl->bindWidget("fa-contents-checkbox", FaContentsCheckBox);
-        tmpl->bindWidget("captcha-input", CaptchaLineEdit);
-        tmpl->bindWidget("captcha-image", CaptchaImage);
-        tmpl->bindWidget("unsubscribe-button", unsubscribePushButton);
+            EnContentsCheckBox->setStyleClass("checkbox");
+            FaContentsCheckBox->setStyleClass("checkbox");
 
-        EmailLineEdit->enterPressed().connect(this, &Subscription::Impl::OnUnsubscribeFormSubmitted);
-        EnContentsCheckBox->enterPressed().connect(this, &Subscription::Impl::OnUnsubscribeFormSubmitted);
-        FaContentsCheckBox->enterPressed().connect(this, &Subscription::Impl::OnUnsubscribeFormSubmitted);
-        CaptchaLineEdit->enterPressed().connect(this, &Subscription::Impl::OnUnsubscribeFormSubmitted);
-        unsubscribePushButton->clicked().connect(this, &Subscription::Impl::OnUnsubscribeFormSubmitted);
+            Captcha = new Service::Captcha();
+            CaptchaImage = Captcha->Generate();
+            CaptchaImage->setAlternateText(tr("home-captcha-hint"));
+            CaptchaImage->setAttributeValue("title", tr("home-captcha-hint"));
 
-        EmailLineEdit->setFocus();
+            int captchaResult = (int)Captcha->GetResult();
+
+            CaptchaLineEdit = new WLineEdit();
+            CaptchaLineEdit->setPlaceholderText(tr("home-captcha-hint"));
+            CaptchaValidator = new WIntValidator(captchaResult, captchaResult);
+            CaptchaValidator->setMandatory(true);
+            CaptchaLineEdit->setValidator(CaptchaValidator);
+
+            WPushButton *unsubscribePushButton = new WPushButton(tr("home-subscription-unsubscribe-button"));
+            unsubscribePushButton->setStyleClass("btn btn-primary");
+
+            tmpl->bindString("email-input-id", EmailLineEdit->id());
+            tmpl->bindString("captcha-input-id", CaptchaLineEdit->id());
+
+            tmpl->bindWidget("title", new WText(tr("home-subscription-unsubscribe-page-title")));
+            tmpl->bindWidget("email-label-text", new WText(tr("home-subscription-unsubscribe-email")));
+            tmpl->bindWidget("contents-label-text", new WText(tr("home-subscription-unsubscribe-contents")));
+            tmpl->bindWidget("en-contents-checkbox-text", new WText(tr("home-subscription-unsubscribe-contents-en")));
+            tmpl->bindWidget("fa-contents-checkbox-text", new WText(tr("home-subscription-unsubscribe-contents-fa")));
+            tmpl->bindWidget("captcha-label-text", new WText(tr("home-captcha")));
+
+            tmpl->bindWidget("email-input", EmailLineEdit);
+            tmpl->bindWidget("en-contents-checkbox", EnContentsCheckBox);
+            tmpl->bindWidget("fa-contents-checkbox", FaContentsCheckBox);
+            tmpl->bindWidget("captcha-input", CaptchaLineEdit);
+            tmpl->bindWidget("captcha-image", CaptchaImage);
+            tmpl->bindWidget("unsubscribe-button", unsubscribePushButton);
+
+            EmailLineEdit->enterPressed().connect(this, &Subscription::Impl::OnUnsubscribeFormSubmitted);
+            EnContentsCheckBox->enterPressed().connect(this, &Subscription::Impl::OnUnsubscribeFormSubmitted);
+            FaContentsCheckBox->enterPressed().connect(this, &Subscription::Impl::OnUnsubscribeFormSubmitted);
+            CaptchaLineEdit->enterPressed().connect(this, &Subscription::Impl::OnUnsubscribeFormSubmitted);
+            unsubscribePushButton->clicked().connect(this, &Subscription::Impl::OnUnsubscribeFormSubmitted);
+
+            EmailLineEdit->setFocus();
+        }
+    }
+
+    catch (boost::exception &ex) {
+        LOG_ERROR(boost::diagnostic_information(ex));
+    }
+
+    catch (std::exception &ex) {
+        LOG_ERROR(ex.what());
+    }
+
+    catch (...) {
+        LOG_ERROR(UNKNOWN_ERROR);
     }
 
     return tmpl;
@@ -612,24 +792,42 @@ Wt::WWidget *Subscription::Impl::GetUnsubscribeForm()
 
 Wt::WWidget *Subscription::Impl::GetCancellationPage()
 {
+    CgiRoot *cgiRoot = static_cast<CgiRoot *>(WApplication::instance());
+    CgiEnv *cgiEnv = cgiRoot->GetCgiEnvInstance();
+
+    if (cgiEnv->SubscriptionData.Subscribe != CgiEnv::Subscription::Action::Cancel) {
+        return new WText(L"Oops!");
+    }
+
     WTemplate *tmpl = new WTemplate();
     tmpl->setId("Cancellation");
     tmpl->setStyleClass("container-table");
 
-    CgiRoot *cgiRoot = static_cast<CgiRoot *>(WApplication::instance());
-    CgiEnv *cgiEnv = cgiRoot->GetCgiEnvInstance();
+    try {
+        string htmlData;
+        string file;
+        if (cgiEnv->GetCurrentLanguage() == CgiEnv::Language::Fa) {
+            file = "../templates/home-subscription-cancellation-fa.wtml";
+        } else {
+            file = "../templates/home-subscription-cancellation.wtml";
+        }
 
-    string htmlData;
-    string file;
-    if (cgiEnv->GetCurrentLanguage() == CgiEnv::Language::Fa) {
-        file = "../templates/home-subscription-cancellation-fa.wtml";
-    } else {
-        file = "../templates/home-subscription-cancellation.wtml";
+        if (CoreLib::FileSystem::Read(file, htmlData)) {
+            /// Fill the template
+            tmpl->setTemplateText(WString(htmlData), TextFormat::XHTMLUnsafeText);
+        }
     }
 
-    if (CoreLib::FileSystem::Read(file, htmlData)) {
-        /// Fill the template
-        tmpl->setTemplateText(WString(htmlData), TextFormat::XHTMLUnsafeText);
+    catch (boost::exception &ex) {
+        LOG_ERROR(boost::diagnostic_information(ex));
+    }
+
+    catch (std::exception &ex) {
+        LOG_ERROR(ex.what());
+    }
+
+    catch (...) {
+        LOG_ERROR(UNKNOWN_ERROR);
     }
 
     return tmpl;

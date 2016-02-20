@@ -239,7 +239,13 @@ void InitializeDatabase()
                                                  " inbox TEXT NOT NULL PRIMARY KEY, "
                                                  " uuid UUID NOT NULL UNIQUE, "
                                                  " subscription SUBSCRIPTION NOT NULL DEFAULT 'none', "
-                                                 " pending_subscription SUBSCRIPTION NOT NULL DEFAULT 'none' ");
+                                                 " pending_confirm SUBSCRIPTION NOT NULL DEFAULT 'none', "
+                                                 " pending_cancel SUBSCRIPTION NOT NULL DEFAULT 'none', "
+                                                 " join_date TEXT NOT NULL, "
+                                                 " update_date TEXT NOT NULL ");
+
+        Service::Pool::Database()->RegisterTable("VERSION", "version",
+                                                 " version SMALLINT NOT NULL PRIMARY KEY ");
 
         Service::Pool::Database()->Initialize();
 
@@ -259,10 +265,19 @@ void InitializeDatabase()
                                                   Service::Pool::Storage()->RootInitialPassword()
                                               });
 
-            guard.commit();
-        } else {
-            guard.rollback();
         }
+
+        r = Service::Pool::Database()->Sql()
+                << (boost::format("SELECT version"
+                                  " FROM %1% WHERE 1=1;")
+                    % Service::Pool::Database()->GetTableName("VERSION")).str()
+                << cppdb::row;
+
+        if (r.empty()) {
+            Service::Pool::Database()->Insert("VERSION", "version", { "1" });
+        }
+
+        guard.commit();
     }
 
     catch (std::exception &ex) {
