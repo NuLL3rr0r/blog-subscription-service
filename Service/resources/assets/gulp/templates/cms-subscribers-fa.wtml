@@ -1,5 +1,5 @@
 <div class="subscribers row">
-    <div class="col-xs-12 col-sm-12 col-md-8 col-lg-8 h-center">
+    <div class="col-xs-12 col-sm-12 col-md-12 col-lg-12 h-center form-horizontal">
         <div class="text-center">
             <h3>${subscribers-title}</h3>
         </div>

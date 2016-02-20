@@ -280,6 +280,7 @@ void Subscription::Impl::OnSubscribeFormSubmitted()
 
         std::string token;
         Pool::Crypto()->Encrypt(lexical_cast<string>(n.RawTime), token);
+        LOG_DEBUG(token.c_str());
 
         MessageBox = std::make_unique<WMessageBox>(tr("home-subscription-subscribe-success-dialog-title"),
                                                    tr("home-subscription-subscribe-success-dialog-message"),

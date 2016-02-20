@@ -97,6 +97,8 @@ public:
 
 public:
     void FillContactsDataTable();
+
+private:
     Wt::WInPlaceEdit *GetContactsCell(const std::string &cellValue,
                                       const std::string &dbKey,
                                       const std::string &dbField,
@@ -556,7 +558,11 @@ void CmsContacts::Impl::FillContactsDataTable()
         int i = 0;
         while(r.next()) {
             ++i;
-            string recipient, recipient_fa, address, is_default;
+            string recipient;
+            string recipient_fa;
+            string address;
+            string is_default;
+
             r >> recipient >> recipient_fa >> address >> is_default;
 
             WSignalMapper<WInPlaceEdit *> *cellSignalMapper = new WSignalMapper<WInPlaceEdit *>(this);
