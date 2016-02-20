@@ -16,6 +16,8 @@
     <message id="home-dialog-button-ok">OK</message>
     <message id="home-subscription-invalid-recipient-id-title">Invalid Recipient ID!</message>
     <message id="home-subscription-invalid-recipient-id-message">The recipient ID was not found in our database.</message>
+    <message id="home-subscription-token-has-expired-title">Token Has Expired!</message>
+    <message id="home-subscription-token-has-expired-message">The token for this request has been expired. Try again, please.</message>
     <message id="home-subscription-subscribe-page-title">Subscribe</message>
     <message id="home-subscription-subscribe-email">Email</message>
     <message id="home-subscription-subscribe-email-placeholder">Your Email Address</message>
@@ -59,7 +61,28 @@
     <message id="home-subscription-unsubscribe-button">Unsubscribe</message>
     <message id="home-subscription-unsubscribe-already-unsubscribed-title">Already Unsubscribed</message>
     <message id="home-subscription-unsubscribe-already-unsubscribed-message">You have already been unsubscribed!</message>
+    <message id="home-subscription-unsubscribe-success-dialog-title">Confirm unsubscribe</message>
+    <message id="home-subscription-unsubscribe-success-dialog-message">
+        <h3>Please check your inbox to confirm your cancellation of the newsletter.</h3>
+        <br />
+        Please note that you will continue receiving our emails, unless you confirm your cancellation.
+        <br /><br />
+        The link we sent you will be valid until at most <strong>1 hour</strong>.
+        After that, you have to unsubscribe again in order to create another temporary valid link.
+        <br /><br />
+        This confirmation process is used for security reasons. Thank you for your understanding.
+    </message>
     <message id="home-subscription-cancellation-page-title">Subscription Cancelled</message>
+    <message id="home-subscription-cancellation-cancelled-title">Subscription Cancelled!</message>
+    <message id="home-subscription-cancellation-cancelled-message">
+        <strong>
+            Your subscription has been cancelled. You will no longer receive email updates.
+        </strong>
+    </message>
+    <message id="home-subscription-cancellation-already-cancelled-title">Already Cancelled</message>
+    <message id="home-subscription-cancellation-already-cancelled-message">Your subscription has already been cancelled!</message>
+    <message id="home-subscription-cancellation-invalid-request-title">Invalid Request</message>
+    <message id="home-subscription-cancellation-invalid-request-message">Invalid subscription cancellation request!</message>
     <message id="home-contact-form-page-title">Contact Form</message>
     <message id="home-contact-form-admin">Admin</message>
     <message id="home-contact-form-recipient">Recipient</message>

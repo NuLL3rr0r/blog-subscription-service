@@ -269,7 +269,7 @@ WWidget *RootLogin::Layout()
         /// Fill the template
         WTemplate *tmpl = new WTemplate(container);
         tmpl->setStyleClass("container-table");
-        tmpl->setTemplateText(WString(htmlData), TextFormat::XHTMLUnsafeText);
+        tmpl->setTemplateText(WString::fromUTF8(htmlData), TextFormat::XHTMLUnsafeText);
 
         m_pimpl->UsernameLineEdit = new WLineEdit();
         m_pimpl->UsernameLineEdit->setPlaceholderText(tr("root-login-username-placeholder"));
@@ -801,7 +801,7 @@ Wt::WWidget *RootLogin::Impl::LogoutPage()
     if (CoreLib::FileSystem::Read(file, htmlData)) {
         WTemplate *tmpl = new WTemplate(container);
         tmpl->setStyleClass("container-table");
-        tmpl->setTemplateText(WString(htmlData), TextFormat::XHTMLUnsafeText);
+        tmpl->setTemplateText(WString::fromUTF8(htmlData), TextFormat::XHTMLUnsafeText);
 
         WPushButton *homePagePushButton = new WPushButton(tr("root-logout-go-to-home-page"));
         homePagePushButton->setStyleClass("btn btn-default");

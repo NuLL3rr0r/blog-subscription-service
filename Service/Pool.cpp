@@ -223,6 +223,13 @@ const std::string &Pool::StorageStruct::RegexLanguageArray() const
     return regex;
 }
 
+const int &Pool::StorageStruct::TokenLifespan() const
+{
+    // 60 Minutes * 60 Seconds = 1 Hour
+    static constexpr int DURATION = 60 * 60;
+    return DURATION;
+}
+
 Pool::StorageStruct *Pool::Storage()
 {
     boost::call_once(Impl::StorageOnceFlag, [] {

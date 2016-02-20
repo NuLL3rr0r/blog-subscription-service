@@ -83,6 +83,10 @@
 
         <div class="clearfix"></div>
 
+        <div class="fa-captcha-keyboard-notice">
+            * لطفا توجه داشته باشید جهت ورود کد امنیتی صفحه کلید در حالت زبان انگلیسی باشد.
+        </div>
+
         <div class="text-center">
             ${captcha-image}
         </div>

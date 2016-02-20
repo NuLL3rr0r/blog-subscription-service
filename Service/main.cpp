@@ -264,7 +264,6 @@ void InitializeDatabase()
                                                   Service::Pool::Storage()->RootInitialEmail(),
                                                   Service::Pool::Storage()->RootInitialPassword()
                                               });
-
         }
 
         r = Service::Pool::Database()->Sql()

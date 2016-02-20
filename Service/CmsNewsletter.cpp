@@ -113,7 +113,7 @@ WWidget *CmsNewsletter::Layout()
         if (CoreLib::FileSystem::Read(file, htmlData)) {
             /// Fill the template
             WTemplate *tmpl = new WTemplate(container);
-            tmpl->setTemplateText(WString(htmlData), TextFormat::XHTMLUnsafeText);
+            tmpl->setTemplateText(WString::fromUTF8(htmlData), TextFormat::XHTMLUnsafeText);
 
             m_pimpl->RecipientsComboBox = new WComboBox();
             m_pimpl->RecipientsComboBox->setPlaceholderText(tr("cms-newsletter-recipients-placeholder"));

@@ -16,6 +16,8 @@
     <message id="home-dialog-button-ok">تائید</message>
     <message id="home-subscription-invalid-recipient-id-title">شناسه نامعتبر!</message>
     <message id="home-subscription-invalid-recipient-id-message">شناسه مشترک در پایگاه داده یافت نشد.</message>
+    <message id="home-subscription-token-has-expired-title">ابطال کد رمز!</message>
+    <message id="home-subscription-token-has-expired-message">کد رمز این درخواست باطل شده است. لطفا دوباره سعی کنید.</message>
     <message id="home-subscription-subscribe-page-title">اشتراک</message>
     <message id="home-subscription-subscribe-email">پست الکترونیک</message>
     <message id="home-subscription-subscribe-email-placeholder">پست الکترونیک</message>
@@ -32,7 +34,7 @@
         لطفا توجه داشته باشید تا زمانی که اشتراک خود را تائید ننمائید قادر به دریافت خبرنامه نخواهید بود.
         <br /><br />
         چنانچه پیامی مبنی بر فعال سازی اشتراک خود از سوی ما دریافت ننمودید،
-        لطفا <strong>پوشه Junk و یا Spam</strong> صندوق پست الکترونیک خود را چک نمائید.
+        لطفا <strong>پوشه Junk و یا Spam</strong> صندوق پست الکترونیک خود را بررسی نمائید.
         در صورتی که پیام در پوشه Spam و یا Junk بود فراموش نکنید که آن را به <strong>پوشه Inbox</strong> منتقل نمائید.
         <br /><br />
         چنانچه قادر به عضویت در خبرنامه و یا فعال سازی آن نیستید می توانید از طریق <a href="?contact-form">فرم تماس با ما</a> مشکل خود را مطرح نمائید.
@@ -57,7 +59,26 @@
     <message id="home-subscription-unsubscribe-contents-en">خبرنامه انگلیسی</message>
     <message id="home-subscription-unsubscribe-contents-fa">خبرنامه فارسی</message>
     <message id="home-subscription-unsubscribe-button">لغو اشتراک</message>
+    <message id="home-subscription-unsubscribe-success-dialog-title">تائید لغو اشتراک</message>
+    <message id="home-subscription-unsubscribe-success-dialog-message">
+        <h3>لطفا صندوق پست الکترونیکی خود را جهت تائید لغو اشتراک بررسی نمائید.</h3>
+        <br />
+        لطفا توجه داشته باشید تا زمانی که لغو اشتراک خود را تائید ننمائید از لیست دریافت خبرنامه حذف نخواهید شد.
+        <br /><br />
+        پیوند موقت لغو اشتراک حداکثر تا <strong>یک ساعت</strong> معتبر خواهد بود.
+        پس از آن جهت ساخت پیوند لغو اشتراک جدید، بایستی دوباره اقدام به لغو اشتراک نمائید.
+    </message>
     <message id="home-subscription-cancellation-page-title">تائیدیه لغو اشتراک</message>
+    <message id="home-subscription-cancellation-cancelled-title">تائیدیه لغو اشتراک!</message>
+    <message id="home-subscription-cancellation-cancelled-message">
+        <strong>
+            اشتراک شما در خبرنامه لغو شد. از این پس هیچ گونه ایمیلی دریافت نخواهید کرد.
+        </strong>
+    </message>
+    <message id="home-subscription-cancellation-invalid-request-title">درخواست نامعتبر</message>
+    <message id="home-subscription-cancellation-invalid-request-message">درخواست شما برای لغو خبرنامه نامعتبر می باشد!</message>
+    <message id="home-subscription-cancellation-already-cancelled-title">قبلا لغو شده است</message>
+    <message id="home-subscription-cancellation-already-cancelled-message">اشتراک شما قبلا لغو شده است!</message>
     <message id="home-contact-form-page-title">فرم تماس</message>
     <message id="home-contact-form-admin">مدیر</message>
     <message id="home-contact-form-recipient">مخاطب</message>
@@ -95,7 +116,7 @@
     <message id="root-login-password-recovery-recover">بازیابی</message>
     <message id="root-login-fail">نام کاربری یا کلمه عبور نامعتبر می باشد.</message>
     <message id="root-login-password-recovery-fail">پست الکترونیکی نامعتبر می باشد.</message>
-    <message id="root-login-password-recovery-success">کلمه عبور با موفقیت بازیابی شد، لطفا صندوق پست الکترونیکی خود را چک نمائید.</message>
+    <message id="root-login-password-recovery-success">کلمه عبور با موفقیت بازیابی شد، لطفا صندوق پست الکترونیکی خود را بررسی نمائید.</message>
     <message id="root-login-alert-email-subject">[%1%] هشدار: ورود کاربر %2%</message>
     <message id="root-login-password-recovery-email-subject">[%1%] درخواست بازیابی کلمه ی عبور برای %2%</message>
     <message id="root-logout-page-title">خروج موفق</message>

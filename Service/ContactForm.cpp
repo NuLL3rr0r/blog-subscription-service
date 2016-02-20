@@ -143,7 +143,7 @@ WWidget *ContactForm::Layout()
             /// Fill the template
             WTemplate *tmpl = new WTemplate(container);
             tmpl->setStyleClass("container-table");
-            tmpl->setTemplateText(WString(htmlData), TextFormat::XHTMLUnsafeText);
+            tmpl->setTemplateText(WString::fromUTF8(htmlData), TextFormat::XHTMLUnsafeText);
 
             m_pimpl->RecipientComboBox = new WComboBox();
 

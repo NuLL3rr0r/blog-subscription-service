@@ -350,7 +350,7 @@ WWidget *SysMon::Layout()
 
     /// Fill the template
     WTemplate *tmpl = new WTemplate(container);
-    tmpl->setTemplateText(WString(htmlData), TextFormat::XHTMLUnsafeText);
+    tmpl->setTemplateText(WString::fromUTF8(htmlData), TextFormat::XHTMLUnsafeText);
 
     tmpl->bindWidget("host-info-horizontal", m_pimpl->HostInfoHorizontalDiv);
     tmpl->bindWidget("host-info-vertical", m_pimpl->HostInfoVerticalDiv);

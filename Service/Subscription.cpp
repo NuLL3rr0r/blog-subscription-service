@@ -52,6 +52,7 @@
 #include <Wt/WText>
 #include <Wt/WTextArea>
 #include <CoreLib/CDate.hpp>
+#include <CoreLib/Crypto.hpp>
 #include <CoreLib/Database.hpp>
 #include <CoreLib/FileSystem.hpp>
 #include <CoreLib/Log.hpp>
@@ -188,6 +189,17 @@ void Subscription::Impl::OnContentsCheckBoxStateChanged(Wt::WCheckBox *checkbox)
 {
     if (!EnContentsCheckBox->isChecked() && !FaContentsCheckBox->isChecked()) {
         checkbox->setChecked(true);
+    } else {
+        try {
+            string action(checkbox->attributeValue("action").toUTF8());
+            string visibility(checkbox->attributeValue("visibility").toUTF8());
+
+            if (action == "unsubscribe") {
+                if (visibility != "en_fa") {
+                    checkbox->setChecked(true);
+                }
+            }
+        } catch (...) {  }
     }
 }
 
@@ -260,11 +272,14 @@ void Subscription::Impl::OnSubscribeFormSubmitted()
             Pool::Database()->Update("SUBSCRIBERS",
                                      "inbox",
                                      inbox,
-                                     "pending_confirm=?, pending_cancel=?, update_date=?",
-                                     { pending_confirm, "none", date });
+                                     "pending_confirm=?, pending_cancel=?",
+                                     { pending_confirm, "none" });
         }
 
         guard.commit();
+
+        std::string token;
+        Pool::Crypto()->Encrypt(lexical_cast<string>(n.RawTime), token);
 
         MessageBox = std::make_unique<WMessageBox>(tr("home-subscription-subscribe-success-dialog-title"),
                                                    tr("home-subscription-subscribe-success-dialog-message"),
@@ -315,17 +330,55 @@ void Subscription::Impl::OnUnsubscribeFormSubmitted()
     try {
         string inbox(EmailLineEdit->text().trim().toUTF8());
 
-        string subscription;
+        string pending_cancel;
         // in reverse-order, compared to subscribe
         if (EnContentsCheckBox->isChecked() && FaContentsCheckBox->isChecked()) {
-            subscription = "none";
+            pending_cancel = "en_fa";
         } else if (EnContentsCheckBox->isChecked()) {
-            subscription = "fa";
+            pending_cancel = "en";
         } else if (FaContentsCheckBox->isChecked()) {
-            subscription = "en";
+            pending_cancel = "fa";
         } else {
-            subscription = "en_fa";
+            pending_cancel = "none";
         }
+
+        transaction guard(Service::Pool::Database()->Sql());
+
+        result r = Pool::Database()->Sql()
+                << (format("SELECT inbox FROM \"%1%\""
+                           " WHERE inbox=?;")
+                    % Pool::Database()->GetTableName("SUBSCRIBERS")).str()
+                << inbox << row;
+
+        if (r.empty()) {
+            MessageBox = std::make_unique<WMessageBox>(tr("home-subscription-invalid-recipient-id-title"),
+                                                       tr("home-subscription-invalid-recipient-id-message"),
+                                                       Information, NoButton);
+            MessageBox->addButton(tr("home-dialog-button-ok"), Ok);
+            MessageBox->buttonClicked().connect(this, &Subscription::Impl::OnDialogClosed);
+            MessageBox->show();
+
+            guard.rollback();
+
+            return;
+        }
+
+        Pool::Database()->Update("SUBSCRIBERS",
+                                 "inbox",
+                                 inbox,
+                                 "pending_cancel=?",
+                                 { pending_cancel });
+
+        guard.commit();
+
+        MessageBox = std::make_unique<WMessageBox>(tr("home-subscription-unsubscribe-success-dialog-title"),
+                                                   tr("home-subscription-unsubscribe-success-dialog-message"),
+                                                   Information, NoButton);
+        MessageBox->addButton(tr("home-dialog-button-ok"), Ok);
+        MessageBox->buttonClicked().connect(this, &Subscription::Impl::OnDialogClosed);
+        MessageBox->show();
+
+        this->GenerateCaptcha();
 
         return;
     }
@@ -375,7 +428,7 @@ Wt::WWidget *Subscription::Impl::GetSubscribeForm()
     try {
         if (CoreLib::FileSystem::Read(file, htmlData)) {
             /// Fill the template
-            tmpl->setTemplateText(WString(htmlData), TextFormat::XHTMLUnsafeText);
+            tmpl->setTemplateText(WString::fromUTF8(htmlData), TextFormat::XHTMLUnsafeText);
 
             EmailLineEdit = new WLineEdit();
             EmailLineEdit->setPlaceholderText(tr("home-subscription-subscribe-email-placeholder"));
@@ -553,10 +606,10 @@ Wt::WWidget *Subscription::Impl::GetConfirmationPage()
 
             return GetSubscribeForm();
         } else if (pending_confirm == "none") {
-            cgiRoot->setTitle(tr("home-subscription-invalid-recipient-id-title"));
+            cgiRoot->setTitle(tr("home-subscription-confirmation-already-confirmed-title"));
             this->GetMessageTemplate(tmpl,
-                                     tr("home-subscription-invalid-recipient-id-title"),
-                                     tr("home-subscription-invalid-recipient-id-message"));
+                                     tr("home-subscription-confirmation-already-confirmed-title"),
+                                     tr("home-subscription-confirmation-already-confirmed-message"));
             return tmpl;
         }
 
@@ -570,7 +623,7 @@ Wt::WWidget *Subscription::Impl::GetConfirmationPage()
 
         if (CoreLib::FileSystem::Read(file, htmlData)) {
             /// Fill the template
-            tmpl->setTemplateText(WString(htmlData), TextFormat::XHTMLUnsafeText);
+            tmpl->setTemplateText(WString::fromUTF8(htmlData), TextFormat::XHTMLUnsafeText);
 
             string final_subscription;
 
@@ -684,7 +737,7 @@ Wt::WWidget *Subscription::Impl::GetUnsubscribeForm()
 
         if (CoreLib::FileSystem::Read(file, htmlData)) {
             /// Fill the template
-            tmpl->setTemplateText(WString(htmlData), TextFormat::XHTMLUnsafeText);
+            tmpl->setTemplateText(WString::fromUTF8(htmlData), TextFormat::XHTMLUnsafeText);
 
             EmailLineEdit = new WLineEdit();
             EmailLineEdit->setPlaceholderText(tr("home-subscription-unsubscribe-email-placeholder"));
@@ -765,6 +818,35 @@ Wt::WWidget *Subscription::Impl::GetUnsubscribeForm()
             tmpl->bindWidget("captcha-image", CaptchaImage);
             tmpl->bindWidget("unsubscribe-button", unsubscribePushButton);
 
+            if (subscription != "none") {
+                tmpl->bindString("contents-display", "block");
+
+                if (subscription == "en_fa") {
+                    tmpl->bindString("en-contents-display", "block");
+                    tmpl->bindString("fa-contents-display", "block");
+                    EnContentsCheckBox->setAttributeValue("action", WString::fromUTF8("unsubscribe"));
+                    EnContentsCheckBox->setAttributeValue("visibility", WString::fromUTF8("en_fa"));
+                    FaContentsCheckBox->setAttributeValue("action", WString::fromUTF8("unsubscribe"));
+                    FaContentsCheckBox->setAttributeValue("visibility", WString::fromUTF8("en_fa"));
+                } else if (subscription == "en") {
+                    tmpl->bindString("en-contents-display", "block");
+                    tmpl->bindString("fa-contents-display", "none");
+                    EnContentsCheckBox->setChecked(true);
+                    EnContentsCheckBox->setAttributeValue("action", WString::fromUTF8("unsubscribe"));
+                    EnContentsCheckBox->setAttributeValue("visibility", WString::fromUTF8("en"));
+                } else if (subscription == "fa") {
+                    tmpl->bindString("en-contents-display", "none");
+                    tmpl->bindString("fa-contents-display", "block");
+                    FaContentsCheckBox->setChecked(true);
+                    FaContentsCheckBox->setAttributeValue("action", WString::fromUTF8("unsubscribe"));
+                    FaContentsCheckBox->setAttributeValue("visibility", WString::fromUTF8("fa"));
+                }
+            } else {
+                tmpl->bindString("contents-display", "none");
+                tmpl->bindString("en-contents-display", "none");
+                tmpl->bindString("fa-contents-display", "none");
+            }
+
             EmailLineEdit->enterPressed().connect(this, &Subscription::Impl::OnUnsubscribeFormSubmitted);
             EnContentsCheckBox->enterPressed().connect(this, &Subscription::Impl::OnUnsubscribeFormSubmitted);
             FaContentsCheckBox->enterPressed().connect(this, &Subscription::Impl::OnUnsubscribeFormSubmitted);
@@ -803,6 +885,61 @@ Wt::WWidget *Subscription::Impl::GetCancellationPage()
     tmpl->setId("Cancellation");
     tmpl->setStyleClass("container-table");
 
+    static const regex REGEX_UUID(Pool::Storage()->RegexUuid());
+    smatch result;
+    if (cgiEnv->SubscriptionData.Uuid == "" || !regex_search(cgiEnv->SubscriptionData.Uuid, result, REGEX_UUID)) {
+        cgiRoot->setTitle(tr("home-subscription-invalid-recipient-id-title"));
+        this->GetMessageTemplate(tmpl,
+                                 tr("home-subscription-invalid-recipient-id-title"),
+                                 tr("home-subscription-invalid-recipient-id-message"));
+        return tmpl;
+    }
+
+    cppdb::result r = Pool::Database()->Sql()
+            << (format("SELECT inbox, subscription, pending_cancel FROM \"%1%\""
+                       " WHERE uuid=?;")
+                % Pool::Database()->GetTableName("SUBSCRIBERS")).str()
+            << cgiEnv->SubscriptionData.Uuid << row;
+
+    if (r.empty()) {
+        cgiRoot->setTitle(tr("home-subscription-invalid-recipient-id-title"));
+        this->GetMessageTemplate(tmpl,
+                                 tr("home-subscription-invalid-recipient-id-title"),
+                                 tr("home-subscription-invalid-recipient-id-message"));
+        return tmpl;
+    }
+
+    CDate::Now n;
+    string date(lexical_cast<std::string>(n.RawTime));
+
+    if (cgiEnv->SubscriptionData.Timestamp == 0
+            || (n.RawTime - cgiEnv->SubscriptionData.Timestamp) >= Pool::Storage()->TokenLifespan()) {
+        cgiRoot->setTitle(tr("home-subscription-token-has-expired-title"));
+        this->GetMessageTemplate(tmpl,
+                                 tr("home-subscription-token-has-expired-title"),
+                                 tr("home-subscription-token-has-expired-message"));
+        return tmpl;
+    }
+
+    string inbox;
+    string subscription;
+    string pending_cancel;
+    r >> inbox >> subscription >> pending_cancel;
+
+    if (pending_cancel == "none" && subscription == "none") {
+        cgiRoot->setTitle(tr("home-subscription-cancellation-cancelled-title"));
+        this->GetMessageTemplate(tmpl,
+                                 tr("home-subscription-cancellation-already-cancelled-title"),
+                                 tr("home-subscription-cancellation-already-cancelled-message"));
+        return tmpl;
+    } else if (pending_cancel == "none") {
+        cgiRoot->setTitle(tr("home-subscription-cancellation-invalid-request-title"));
+        this->GetMessageTemplate(tmpl,
+                                 tr("home-subscription-cancellation-invalid-request-title"),
+                                 tr("home-subscription-cancellation-invalid-request-message"));
+        return tmpl;
+    }
+
     try {
         string htmlData;
         string file;
@@ -814,7 +951,40 @@ Wt::WWidget *Subscription::Impl::GetCancellationPage()
 
         if (CoreLib::FileSystem::Read(file, htmlData)) {
             /// Fill the template
-            tmpl->setTemplateText(WString(htmlData), TextFormat::XHTMLUnsafeText);
+            tmpl->setTemplateText(WString::fromUTF8(htmlData), TextFormat::XHTMLUnsafeText);
+
+            string final_subscription;
+
+            if (pending_cancel == "en_fa") {
+                final_subscription = "none";
+            } else if (pending_cancel == "en") {
+                if (subscription == "en_fa" || subscription == "fa") {
+                    final_subscription = "fa";
+                } else {
+                    final_subscription = "none";
+                }
+            } else if (pending_cancel == "fa") {
+                if (subscription == "en_fa" || subscription == "en") {
+                    final_subscription = "en";
+                } else {
+                    final_subscription = "none";
+                }
+            } else {
+                final_subscription = "none";
+            }
+
+            transaction guard(Service::Pool::Database()->Sql());
+
+            Pool::Database()->Update("SUBSCRIBERS",
+                                     "inbox",
+                                     inbox,
+                                     "subscription=?, pending_cancel=?, update_date=?",
+                                     { final_subscription, "none", date });
+
+            guard.commit();
+
+            tmpl->bindString("title", tr("home-subscription-cancellation-cancelled-title"));
+            tmpl->bindString("message", tr("home-subscription-cancellation-cancelled-message"));
         }
     }
 
@@ -848,7 +1018,7 @@ void Subscription::Impl::GetMessageTemplate(WTemplate *tmpl, const Wt::WString &
 
     if (CoreLib::FileSystem::Read(file, htmlData)) {
         /// Fill the template
-        tmpl->setTemplateText(WString(htmlData), TextFormat::XHTMLUnsafeText);
+        tmpl->setTemplateText(WString::fromUTF8(htmlData), TextFormat::XHTMLUnsafeText);
 
         tmpl->bindString("title", title);
         tmpl->bindString("message", message);

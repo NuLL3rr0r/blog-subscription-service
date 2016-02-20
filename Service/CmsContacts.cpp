@@ -133,7 +133,7 @@ WWidget *CmsContacts::Layout()
         if (CoreLib::FileSystem::Read(file, htmlData)) {
             /// Fill the template
             WTemplate *tmpl = new WTemplate(container);
-            tmpl->setTemplateText(WString(htmlData), TextFormat::XHTMLUnsafeText);
+            tmpl->setTemplateText(WString::fromUTF8(htmlData), TextFormat::XHTMLUnsafeText);
 
             m_pimpl->RecipientEnLineEdit = new WLineEdit();
             m_pimpl->RecipientEnLineEdit->setPlaceholderText(tr("cms-contacts-recipient-name-en-placeholder"));

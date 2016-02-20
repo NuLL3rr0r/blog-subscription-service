@@ -115,7 +115,7 @@ WWidget *Cms::Layout()
 
     if (CoreLib::FileSystem::Read(file, htmlData)) {
         WTemplate *tmpl = new WTemplate(container);
-        tmpl->setTemplateText(WString(htmlData), TextFormat::XHTMLUnsafeText);
+        tmpl->setTemplateText(WString::fromUTF8(htmlData), TextFormat::XHTMLUnsafeText);
 
         tmpl->bindWidget("brand-title", new WText(tr("cms-page-title")));
 

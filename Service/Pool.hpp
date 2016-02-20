@@ -81,6 +81,8 @@ public:
         const std::string &RegexUuid() const;
         const std::string &RegexLanguageArray() const;
 
+        const int &TokenLifespan() const;
+
         std::string AppPath;
     };
 
