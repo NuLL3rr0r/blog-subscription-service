@@ -128,6 +128,7 @@
     <message id="cms-dashboard-newsletter">خبرنامه</message>
     <message id="cms-dashboard-subscribers">مشترکین</message>
     <message id="cms-dashboard-contacts">تماس ها</message>
+    <message id="cms-dashboard-settings">تنظیمات</message>
     <message id="cms-dashboard-admin">مدیر سیستم</message>
     <message id="cms-dashboard-admin-change-email">تغییر پست الکترونیکی</message>
     <message id="cms-dashboard-admin-change-password">تغییر کلمه عبور</message>
@@ -187,6 +188,7 @@
     <message id="cms-contacts-erase-confirm-cancel">لغو</message>
     <message id="cms-contacts-duplicate-error">تماس مورد نظر قبلا ایجاد شده است!</message>
     <message id="cms-contacts-not-found-error">تماس مورد نظر در پایگاه داده وجود ندارد!</message>
+    <message id="cms-settings-page-title">تنظیمات</message>
     <message id="cms-change-password-page-title">تغییر کلمه عبور مدیر سیستم</message>
     <message id="cms-change-password-current-pwd">کلمه عبور فعلی</message>
     <message id="cms-change-password-current-pwd-placeholder">کلمه عبور فعلی</message>

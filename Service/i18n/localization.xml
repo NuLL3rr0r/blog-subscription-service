@@ -132,6 +132,7 @@
     <message id="cms-dashboard-newsletter">Newsletter</message>
     <message id="cms-dashboard-subscribers">Subscribers</message>
     <message id="cms-dashboard-contacts">Contacts</message>
+    <message id="cms-dashboard-settings">Settings</message>
     <message id="cms-dashboard-admin">Admin</message>
     <message id="cms-dashboard-admin-change-email">Change Email</message>
     <message id="cms-dashboard-admin-change-password">Change Password</message>
@@ -192,6 +193,7 @@
     <message id="cms-contacts-erase-confirm-cancel">Cancel</message>
     <message id="cms-contacts-duplicate-error">Contact already exists!</message>
     <message id="cms-contacts-not-found-error">Could not find the contact inside database!</message>
+    <message id="cms-settings-page-title">Settings</message>
     <message id="cms-change-password-page-title">Change Password</message>
     <message id="cms-change-password-current-pwd">Current Password</message>
     <message id="cms-change-password-current-pwd-placeholder">Your current password</message>

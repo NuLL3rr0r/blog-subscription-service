@@ -29,10 +29,11 @@
  *
  * @section DESCRIPTION
  *
- * CMS welcome screen a.k.a. dashboard.
+ * General settings such as website title, url, etc.
  */
 
 
+#include <cppdb/frontend.h>
 #include <boost/exception/diagnostic_information.hpp>
 #include <Wt/WApplication>
 #include <Wt/WString>
@@ -43,37 +44,39 @@
 #include <CoreLib/Log.hpp>
 #include "CgiEnv.hpp"
 #include "CgiRoot.hpp"
-#include "CmsDashboard.hpp"
+#include "CmsSettings.hpp"
+#include <CoreLib/Database.hpp>
 #include "Div.hpp"
 #include "Pool.hpp"
 
 using namespace std;
 using namespace boost;
+using namespace cppdb;
 using namespace Wt;
 using namespace CoreLib;
 using namespace Service;
 
-struct CmsDashboard::Impl : public Wt::WObject
+struct CmsSettings::Impl : public Wt::WObject
 {
 public:
     Impl();
     ~Impl();
 };
 
-CmsDashboard::CmsDashboard()
+CmsSettings::CmsSettings()
     : Page(),
-    m_pimpl(make_unique<CmsDashboard::Impl>())
+    m_pimpl(make_unique<CmsSettings::Impl>())
 {
     this->clear();
-    this->setId("CmsDashboardPage");
+    this->setId("CmsSettingsPage");
     this->addWidget(this->Layout());
 }
 
-CmsDashboard::~CmsDashboard() = default;
+CmsSettings::~CmsSettings() = default;
 
-WWidget *CmsDashboard::Layout()
+WWidget *CmsSettings::Layout()
 {
-    Div *container = new Div("CmsDashboard", "container-fluid");
+    Div *container = new Div("CmsSettings", "container-fluid");
 
     try {
         CgiRoot *cgiRoot = static_cast<CgiRoot *>(WApplication::instance());
@@ -82,9 +85,9 @@ WWidget *CmsDashboard::Layout()
         string htmlData;
         string file;
         if (cgiEnv->GetCurrentLanguage() == CgiEnv::Language::Fa) {
-            file = "../templates/cms-dashboard-fa.wtml";
+            file = "../templates/cms-settings-fa.wtml";
         } else {
-            file = "../templates/cms-dashboard.wtml";
+            file = "../templates/cms-settings.wtml";
         }
 
         if (CoreLib::FileSystem::Read(file, htmlData)) {
@@ -92,22 +95,7 @@ WWidget *CmsDashboard::Layout()
             WTemplate *tmpl = new WTemplate(container);
             tmpl->setTemplateText(WString::fromUTF8(htmlData), TextFormat::XHTMLUnsafeText);
 
-            tmpl->bindWidget("welcome-message", new WText(tr("cms-dashboard-welcome-message")));
-
-            tmpl->bindWidget("last-login-title", new WText(tr("cms-dashboard-last-login-info-title")));
-            tmpl->bindWidget("last-login-ip-label", new WText(tr("cms-dashboard-last-login-info-ip")));
-            tmpl->bindWidget("last-login-location-label", new WText(tr("cms-dashboard-last-login-info-location")));
-            tmpl->bindWidget("last-login-user-agent-label", new WText(tr("cms-dashboard-last-login-info-user-agent")));
-            tmpl->bindWidget("last-login-referer-label", new WText(tr("cms-dashboard-last-login-info-referer")));
-            tmpl->bindWidget("last-login-time-label", new WText(tr("cms-dashboard-last-login-info-time")));
-
-            tmpl->bindWidget("last-login-ip", new WText(WString::fromUTF8(cgiEnv->SignedInUser.LastLogin.IP)));
-            tmpl->bindWidget("last-login-location", new WText(WString::fromUTF8(cgiEnv->SignedInUser.LastLogin.Location)));
-            tmpl->bindWidget("last-login-user-agent", new WText(WString::fromUTF8(cgiEnv->SignedInUser.LastLogin.UserAgent)));
-            tmpl->bindWidget("last-login-referer", new WText(WString::fromUTF8(cgiEnv->SignedInUser.LastLogin.Referer)));
-            tmpl->bindWidget("last-login-time-gdate", new WText(WString::fromUTF8(cgiEnv->SignedInUser.LastLogin.LoginGDate)));
-            tmpl->bindWidget("last-login-time-jdate", new WText(WString::fromUTF8(cgiEnv->SignedInUser.LastLogin.LoginJDate)));
-            tmpl->bindWidget("last-login-time", new WText(WString::fromUTF8(cgiEnv->SignedInUser.LastLogin.LoginTime)));
+            tmpl->bindWidget("settings-title", new WText(tr("cms-settings-page-title")));
         }
     }
 
@@ -126,10 +114,10 @@ WWidget *CmsDashboard::Layout()
     return container;
 }
 
-CmsDashboard::Impl::Impl()
+CmsSettings::Impl::Impl()
 {
 
 }
 
-CmsDashboard::Impl::~Impl() = default;
+CmsSettings::Impl::~Impl() = default;
 

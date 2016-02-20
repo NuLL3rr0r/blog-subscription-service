@@ -1,0 +1,12 @@
+<div class="contacts row">
+    <div class="col-xs-10 col-sm-8 col-md-6 col-lg-4 h-center form-horizontal">
+        <div class="text-center">
+            <h3>${settings-title}</h3>
+        </div>
+
+        <br />
+    </div>
+
+    <div class="clearfix"></div>
+</div>
+

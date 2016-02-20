@@ -52,6 +52,7 @@
 #include "CmsContacts.hpp"
 #include "CmsDashboard.hpp"
 #include "CmsNewsletter.hpp"
+#include "CmsSettings.hpp"
 #include "CmsSubscribers.hpp"
 #include "Div.hpp"
 #include "Pool.hpp"
@@ -131,6 +132,9 @@ WWidget *Cms::Layout()
         WText *contacts = new WText(
                     WString("<div><a href=\"javascript:;\"><i class=\"fa fa-envelope-o fa-lg\"></i> {1}</a></div>")
                     .arg(tr("cms-dashboard-contacts")), TextFormat::XHTMLUnsafeText);
+        WText *settings = new WText(
+                    WString("<div><a href=\"javascript:;\"><i class=\"fa fa-gears fa-lg\"></i> {1}</a></div>")
+                    .arg(tr("cms-dashboard-settings")), TextFormat::XHTMLUnsafeText);
         WText *changeEmail = new WText(
                     WString("<div><a href=\"javascript:;\"><i class=\"fa fa-envelope-o fa-lg\"></i> {1}</a></div>")
                     .arg(tr("cms-dashboard-admin-change-email")), TextFormat::XHTMLUnsafeText);
@@ -151,6 +155,7 @@ WWidget *Cms::Layout()
         newsletter->setId("menu-item-newsletter");
         subscribers->setId("menu-item-subscribers");
         contacts->setId("menu-item-contacts");
+        settings->setId("menu-item-settings");
         changeEmail->setId("menu-item-change-email");
         changePassword->setId("menu-item-change-password");
         sysmon->setId("menu-item-system-monitor");
@@ -161,6 +166,7 @@ WWidget *Cms::Layout()
         tmpl->bindWidget("newsletter", newsletter);
         tmpl->bindWidget("subscribers", subscribers);
         tmpl->bindWidget("contacts", contacts);
+        tmpl->bindWidget("settings", settings);
         tmpl->bindWidget("admin", new WText(tr("cms-dashboard-admin")));
         tmpl->bindWidget("change-email", changeEmail);
         tmpl->bindWidget("change-password", changePassword);
@@ -173,6 +179,7 @@ WWidget *Cms::Layout()
         m_pimpl->Contents->addWidget(new CmsNewsletter());
         m_pimpl->Contents->addWidget(new CmsSubscribers());
         m_pimpl->Contents->addWidget(new CmsContacts());
+        m_pimpl->Contents->addWidget(new CmsSettings());
         m_pimpl->Contents->addWidget(new CmsChangeEmail());
         m_pimpl->Contents->addWidget(new CmsChangePassword());
         m_pimpl->SystemMonitor = new SysMon();
@@ -185,6 +192,7 @@ WWidget *Cms::Layout()
         menuItemSignalMapper->mapConnect(newsletter->clicked(), newsletter);
         menuItemSignalMapper->mapConnect(subscribers->clicked(), subscribers);
         menuItemSignalMapper->mapConnect(contacts->clicked(), contacts);
+        menuItemSignalMapper->mapConnect(settings->clicked(), settings);
         menuItemSignalMapper->mapConnect(changeEmail->clicked(), changeEmail);
         menuItemSignalMapper->mapConnect(changePassword->clicked(), changePassword);
         menuItemSignalMapper->mapConnect(sysmon->clicked(), sysmon);
@@ -213,7 +221,7 @@ void Cms::Impl::OnMenuItemPressed(WText *sender)
 
     if (sender->id() == "menu-item-system-monitor") {
         SystemMonitor->Resume();
-        Contents->setCurrentIndex(6);
+        Contents->setCurrentIndex(7);
         return;
     } else {
         SystemMonitor->Pause();
@@ -230,10 +238,12 @@ void Cms::Impl::OnMenuItemPressed(WText *sender)
         Contents->setCurrentIndex(2);
     } else if (sender->id() == "menu-item-contacts") {
         Contents->setCurrentIndex(3);
-    } else if (sender->id() == "menu-item-change-email") {
+    } else if (sender->id() == "menu-item-settings") {
         Contents->setCurrentIndex(4);
-    } else if (sender->id() == "menu-item-change-password") {
+    } else if (sender->id() == "menu-item-change-email") {
         Contents->setCurrentIndex(5);
+    } else if (sender->id() == "menu-item-change-password") {
+        Contents->setCurrentIndex(6);
     } else if (sender->id() == "menu-item-switch-language") {
         switch (cgiEnv->GetCurrentLanguage()) {
         case CgiEnv::Language::None:

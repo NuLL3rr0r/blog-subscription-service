@@ -20,6 +20,10 @@
                 ${contacts}
             </li>
 
+            <li>
+                ${settings}
+            </li>
+
             <li data-toggle="collapse" data-target="#admin" class="collapsed">
                 <a href="javascript:;">
                     <i class="fa fa-lock fa-lg"></i> ${admin} <span class="arrow"></span>
