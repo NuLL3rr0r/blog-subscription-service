@@ -1,0 +1,73 @@
+<div style="font-family: 'Bitstream Vera Sans', arial, helvetica, sans-serif; font-size: 11px; font-weight: bold; color: #203070; letter-spacing: 1px; line-height: 17px;">
+    <blockquote>
+        <br />
+        <h3>Please Confirm Your Subscription</h3>
+        <br />
+        Verify your email address by clicking on the following link:
+        <br />
+        <br />
+        <a href="${confirm-link}">Yes, subscribe me to this list.</a>
+        <br />
+        <br />
+        If you received this email by mistake, simply ignore it.
+        You won't be subscribed if you don't click the confirmation link above.
+        <br />
+
+        <h3>Requested By</h3>
+        <blockquote>
+            <table>
+                <tr valign="top">
+                    <td>IP</td>
+                    <td width="32" style="text-align:center;">-</td>
+                    <td>
+                        <span style="color: #900; font-weight: normal;">
+                            ${client-ip}
+                        </span>
+                    </td>
+                </tr>
+
+                <tr valign="top">
+                    <td>Location</td>
+                    <td width="32" style="text-align:center;">-</td>
+                    <td>
+                        <span style="color: #900; font-weight: normal;">
+                            ${client-location}
+                        </span>
+                    </td>
+                </tr>
+
+                <tr valign="top">
+                    <td>User Agent</td>
+                    <td width="32" style="text-align:center;">-</td>
+                    <td>
+                        <span style="color: #900; font-weight: normal;">
+                            ${client-user-agent}
+                        </span>
+                    </td>
+                </tr>
+
+                <tr valign="top">
+                    <td>Referer</td>
+                    <td width="32" style="text-align:center;">-</td>
+                    <td>
+                        <span style="color: #900; font-weight: normal;">
+                            ${client-referer}
+                        </span>
+                    </td>
+                </tr>
+
+                <tr valign="top">
+                    <td>Time</td>
+                    <td width="32" style="text-align:center;">-</td>
+                    <td>
+                        <span style="color: #900; font-weight: normal;">
+                            ${time}
+                        </span>
+                    </td>
+                </tr>
+            </table>
+        </blockquote>
+        <br />
+    </blockquote>
+</div>
+
