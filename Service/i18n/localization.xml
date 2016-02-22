@@ -194,6 +194,16 @@
     <message id="cms-contacts-duplicate-error">Contact already exists!</message>
     <message id="cms-contacts-not-found-error">Could not find the contact inside database!</message>
     <message id="cms-settings-page-title">Settings</message>
+    <message id="cms-settings-home-page-url-en">Home Page URL (EN)</message>
+    <message id="cms-settings-home-page-url-en-placeholder">Home Page URL (EN)</message>
+    <message id="cms-settings-home-page-url-fa">Home Page URL (FA)</message>
+    <message id="cms-settings-home-page-url-fa-placeholder">Home Page URL (FA)</message>
+    <message id="cms-settings-home-page-title-en">Home Page Title (EN)</message>
+    <message id="cms-settings-home-page-title-en-placeholder">Home Page Title (EN)</message>
+    <message id="cms-settings-home-page-title-fa">Home Page Title (FA)</message>
+    <message id="cms-settings-home-page-title-fa-placeholder">Home Page Title (FA)</message>
+    <message id="cms-settings-save-settings">Save</message>
+    <message id="cms-settings-save-settings-success-message">Settings updated successfully.</message>
     <message id="cms-change-password-page-title">Change Password</message>
     <message id="cms-change-password-current-pwd">Current Password</message>
     <message id="cms-change-password-current-pwd-placeholder">Your current password</message>

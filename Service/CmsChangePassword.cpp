@@ -115,7 +115,7 @@ WWidget *CmsChangePassword::Layout()
             m_pimpl->CurrentPasswordLineEdit->setEchoMode(WLineEdit::Password);
             m_pimpl->CurrentPasswordLineEdit->setPlaceholderText(tr("cms-change-password-current-pwd-placeholder"));
             WLengthValidator *currentPasswordValidator = new WLengthValidator(Pool::Storage()->MinPasswordLength(),
-                                                                       Pool::Storage()->MaxPasswordLength());
+                                                                              Pool::Storage()->MaxPasswordLength());
             currentPasswordValidator->setMandatory(true);
             m_pimpl->CurrentPasswordLineEdit->setValidator(currentPasswordValidator);
 
@@ -123,7 +123,7 @@ WWidget *CmsChangePassword::Layout()
             m_pimpl->NewPasswordLineEdit->setEchoMode(WLineEdit::Password);
             m_pimpl->NewPasswordLineEdit->setPlaceholderText(tr("cms-change-password-new--pwdplaceholder"));
             WLengthValidator *newPasswordValidator = new WLengthValidator(Pool::Storage()->MinPasswordLength(),
-                                                                       Pool::Storage()->MaxPasswordLength());
+                                                                          Pool::Storage()->MaxPasswordLength());
             newPasswordValidator->setMandatory(true);
             m_pimpl->NewPasswordLineEdit->setValidator(newPasswordValidator);
 
@@ -131,7 +131,7 @@ WWidget *CmsChangePassword::Layout()
             m_pimpl->ConfirmPasswordLineEdit->setEchoMode(WLineEdit::Password);
             m_pimpl->ConfirmPasswordLineEdit->setPlaceholderText(tr("cms-change-password-confirm-pwd-placeholder"));
             WLengthValidator *confirmPasswordValidator = new WLengthValidator(Pool::Storage()->MinPasswordLength(),
-                                                                       Pool::Storage()->MaxPasswordLength());
+                                                                              Pool::Storage()->MaxPasswordLength());
             confirmPasswordValidator->setMandatory(true);
             m_pimpl->ConfirmPasswordLineEdit->setValidator(confirmPasswordValidator);
 

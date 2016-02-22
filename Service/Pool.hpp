@@ -83,6 +83,9 @@ public:
 
         const int &TokenLifespan() const;
 
+        const int &MinHomePageTitleLength() const;
+        const int &MaxHomePageTitleLength() const;
+
         std::string AppPath;
     };
 

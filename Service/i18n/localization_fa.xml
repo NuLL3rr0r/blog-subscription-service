@@ -189,6 +189,16 @@
     <message id="cms-contacts-duplicate-error">تماس مورد نظر قبلا ایجاد شده است!</message>
     <message id="cms-contacts-not-found-error">تماس مورد نظر در پایگاه داده وجود ندارد!</message>
     <message id="cms-settings-page-title">تنظیمات</message>
+    <message id="cms-settings-home-page-url-en">آدرس صفحه آغازین (EN)</message>
+    <message id="cms-settings-home-page-url-en-placeholder">آدرس صفحه آغازین (EN)</message>
+    <message id="cms-settings-home-page-url-fa">آدرس صفحه آغازین (FA)</message>
+    <message id="cms-settings-home-page-url-fa-placeholder">آدرس صفحه آغازین (FA)</message>
+    <message id="cms-settings-home-page-title-en">عنوان صفحه آغازین (EN)</message>
+    <message id="cms-settings-home-page-title-en-placeholder">عنوان صفحه آغازین (EN)</message>
+    <message id="cms-settings-home-page-title-fa">عنوان صفحه آغازین (FA)</message>
+    <message id="cms-settings-home-page-title-fa-placeholder">عنوان صفحه آغازین (FA)</message>
+    <message id="cms-settings-save-settings">ذخیره</message>
+    <message id="cms-settings-save-settings-success-message">تغییرات با موفقیت اعمال شد.</message>
     <message id="cms-change-password-page-title">تغییر کلمه عبور مدیر سیستم</message>
     <message id="cms-change-password-current-pwd">کلمه عبور فعلی</message>
     <message id="cms-change-password-current-pwd-placeholder">کلمه عبور فعلی</message>

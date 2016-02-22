@@ -213,14 +213,14 @@ const std::string &Pool::StorageStruct::RegexHttpUrl() const
 
 const std::string &Pool::StorageStruct::RegexUuid() const
 {
-    static const string regex("^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$");
-    return regex;
+    static const string REGEX("^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$");
+    return REGEX;
 }
 
 const std::string &Pool::StorageStruct::RegexLanguageArray() const
 {
-    static const string regex("^((^|,)(en|fa))+$");
-    return regex;
+    static const string REGEX("^((^|,)(en|fa))+$");
+    return REGEX;
 }
 
 const int &Pool::StorageStruct::TokenLifespan() const
@@ -228,6 +228,18 @@ const int &Pool::StorageStruct::TokenLifespan() const
     // 60 Minutes * 60 Seconds = 1 Hour
     static constexpr int DURATION = 60 * 60;
     return DURATION;
+}
+
+const int &Pool::StorageStruct::MinHomePageTitleLength() const
+{
+    static constexpr int LENGTH = 1;
+    return LENGTH;
+}
+
+const int &Pool::StorageStruct::MaxHomePageTitleLength() const
+{
+    static constexpr int LENGTH = 64;
+    return LENGTH;
 }
 
 Pool::StorageStruct *Pool::Storage()

@@ -229,6 +229,13 @@ void InitializeDatabase()
                                                  " pwd TEXT NOT NULL, "
                                                  " recovery_pwd TEXT ");
 
+        Service::Pool::Database()->RegisterTable("SETTINGS", "settings",
+                                                 " pseudo_id TEXT NOT NULL PRIMARY KEY, "
+                                                 " homepage_url_en TEXT NOT NULL, "
+                                                 " homepage_url_fa TEXT NOT NULL, "
+                                                 " homepage_title_en TEXT NOT NULL, "
+                                                 " homepage_title_fa TEXT NOT NULL ");
+
         Service::Pool::Database()->RegisterTable("CONTACTS", "contacts",
                                                  " recipient TEXT NOT NULL PRIMARY KEY, "
                                                  " recipient_fa TEXT NOT NULL UNIQUE, "
@@ -267,8 +274,27 @@ void InitializeDatabase()
         }
 
         r = Service::Pool::Database()->Sql()
+                << (boost::format("SELECT pseudo_id"
+                                  " FROM %1% WHERE pseudo_id = '0';")
+                    % Service::Pool::Database()->GetTableName("SETTINGS")).str()
+                << cppdb::row;
+
+        if (r.empty()) {
+            Service::Pool::Database()->Insert("SETTINGS",
+                                              "pseudo_id, homepage_url_en, homepage_url_fa,"
+                                              " homepage_title_en, homepage_title_fa",
+                                              {
+                                                  "0",
+                                                  std::string(INITAL_EN_HOME_PAGE_URL),
+                                                  std::string(INITAL_FA_HOME_PAGE_URL),
+                                                  std::string(INITAL_EN_HOME_PAGE_TITLE),
+                                                  std::string(INITAL_FA_HOME_PAGE_TITLE)
+                                              });
+        }
+
+        r = Service::Pool::Database()->Sql()
                 << (boost::format("SELECT version"
-                                  " FROM %1% WHERE 1=1;")
+                                  " FROM %1% WHERE 1 = 1;")
                     % Service::Pool::Database()->GetTableName("VERSION")).str()
                 << cppdb::row;
 

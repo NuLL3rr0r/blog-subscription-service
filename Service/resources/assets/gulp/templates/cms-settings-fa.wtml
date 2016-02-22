@@ -5,6 +5,66 @@
         </div>
 
         <br />
+
+        <div class="form-group">
+            <label for="${home-page-url-en-input-id}" class="control-label">
+                ${home-page-url-en-label-text}
+            </label>
+            <div>
+                ${home-page-url-en-input}
+            </div>
+        </div>
+
+        <div class="clearfix"></div>
+
+        <div class="form-group">
+            <label for="${home-page-url-fa-input-id}" class="control-label">
+                ${home-page-url-fa-label-text}
+            </label>
+            <div>
+                ${home-page-url-fa-input}
+            </div>
+        </div>
+
+        <div class="clearfix"></div>
+
+        <div class="form-group">
+            <label for="${home-page-title-en-input-id}" class="control-label">
+                ${home-page-title-en-label-text}
+            </label>
+            <div>
+                ${home-page-title-en-input}
+            </div>
+        </div>
+
+        <div class="clearfix"></div>
+
+        <div class="form-group">
+            <label for="${home-page-title-fa-input-id}" class="control-label">
+                ${home-page-title-fa-label-text}
+            </label>
+            <div>
+                ${home-page-title-fa-input}
+            </div>
+        </div>
+
+        <div class="clearfix"></div>
+
+        <div class="text-center">
+            <div class="btn-group">
+                ${save-settings-button}
+            </div>
+
+            <div class="clearfix"></div>
+        </div>
+
+        <div class="clearfix"></div>
+
+        <br />
+
+        <div class="text-center message-area">
+            ${settings-message-area}
+        </div>
     </div>
 
     <div class="clearfix"></div>
