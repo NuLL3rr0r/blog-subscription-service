@@ -393,10 +393,19 @@ void CmsNewsletter::Impl::OnSendConfirmDialogClosed(Wt::StandardButton button)
 
                     CoreLib::Mail *mail = new CoreLib::Mail(
                                 cgiEnv->GetServerInfo(CgiEnv::ServerInfo::NoReplyAddr), inbox,
-                                subject, bodyHtmlText);
+                                subject, message);
                     mail->SetDeleteLater(true);
                     mail->SendAsync();
                 }
+
+                message.assign(replace_all_copy(htmlData, "unsubscribe-link",
+                                                (format(unsubscribeLink) % "{root}").str()));
+
+                CoreLib::Mail *mail = new CoreLib::Mail(
+                            cgiEnv->GetServerInfo(CgiEnv::ServerInfo::NoReplyAddr), inbox,
+                            subject, message);
+                mail->SetDeleteLater(true);
+                mail->SendAsync();
 
                 SuccessMessageBox =
                         std::make_unique<WMessageBox>(tr("cms-newsletter-sent-successfully-title"),
