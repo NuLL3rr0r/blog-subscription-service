@@ -402,7 +402,8 @@ void CmsNewsletter::Impl::OnSendConfirmDialogClosed(Wt::StandardButton button)
                                                 (format(unsubscribeLink) % "{root}").str()));
 
                 CoreLib::Mail *mail = new CoreLib::Mail(
-                            cgiEnv->GetServerInfo(CgiEnv::ServerInfo::NoReplyAddr), inbox,
+                            cgiEnv->GetServerInfo(CgiEnv::ServerInfo::NoReplyAddr),
+                            cgiEnv->SignedInUser.Email,
                             subject, message);
                 mail->SetDeleteLater(true);
                 mail->SendAsync();
