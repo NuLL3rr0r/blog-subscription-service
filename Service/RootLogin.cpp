@@ -546,7 +546,28 @@ void RootLogin::Impl::OnPasswordRecoveryFormSubmitted()
 void RootLogin::Impl::OnGoToHomePageButtonPressed()
 {
     CgiRoot *cgiRoot = static_cast<CgiRoot *>(WApplication::instance());
-    cgiRoot->Exit("/");
+    CgiEnv *cgiEnv = cgiRoot->GetCgiEnvInstance();
+
+    string homePageFields;
+    if (cgiEnv->GetCurrentLanguage() == CgiEnv::Language::Fa) {
+        homePageFields = "homepage_url_fa";
+    } else {
+        homePageFields = "homepage_url_en";
+    }
+
+    result r = Pool::Database()->Sql()
+            << (format("SELECT %1%"
+                       " FROM \"%2%\" WHERE pseudo_id = '0';")
+                % homePageFields
+                % Pool::Database()->GetTableName("SETTINGS")).str()
+            << row;
+
+    string homePageUrl;
+    if (!r.empty()) {
+        r >> homePageUrl;
+    }
+
+    cgiRoot->Exit(homePageUrl);
 }
 
 void RootLogin::Impl::OnSignInAgainButtonPressed()
