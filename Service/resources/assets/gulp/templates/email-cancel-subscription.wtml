@@ -6,7 +6,7 @@
         Cancel your subscription by clicking on the following link:
         <br />
         <br />
-        <a href="${confirm-link}">Yes, cancel my subscription.</a>
+        <a href="${cancel-link}">Yes, cancel my subscription.</a>
         <br />
         <br />
         If you received this email by mistake, simply ignore it.
