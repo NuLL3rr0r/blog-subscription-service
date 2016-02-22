@@ -149,12 +149,31 @@
     <message id="cms-newsletter-page-title">Newsletter</message>
     <message id="cms-newsletter-recipients">Recipients</message>
     <message id="cms-newsletter-recipients-placeholder">Recipients</message>
+    <message id="cms-newsletter-choose-recipients">Choose...</message>
+    <message id="cms-newsletter-all-recipients">All</message>
+    <message id="cms-newsletter-english-recipients">English Only</message>
+    <message id="cms-newsletter-farsi-recipients">Farsi Only</message>
     <message id="cms-newsletter-subject">Subject</message>
     <message id="cms-newsletter-subject-placeholder">Subject</message>
     <message id="cms-newsletter-body">Body</message>
     <message id="cms-newsletter-body-placeholder">Body</message>
     <message id="cms-newsletter-send">Send</message>
-    <message id="cms-newsletter-clear">Clear</message>
+    <message id="cms-newsletter-send-confirm-title">Send</message>
+    <message id="cms-newsletter-send-confirm-message">Are you sure? Once the <strong>OK</strong> button is hit, it cannot be undone!</message>
+    <message id="cms-newsletter-send-confirm-ok">OK</message>
+    <message id="cms-newsletter-send-confirm-cancel">Cancel</message>
+    <message id="cms-newsletter-clear">Reset</message>
+    <message id="cms-newsletter-clear-confirm-title">Reset</message>
+    <message id="cms-newsletter-clear-confirm-message">Are you sure? All your work will be undone!</message>
+    <message id="cms-newsletter-clear-confirm-ok">OK</message>
+    <message id="cms-newsletter-clear-confirm-cancel">Cancel</message>
+    <message id="cms-newsletter-sent-successfully-title">Success</message>
+    <message id="cms-newsletter-sent-successfully-message">
+        Your emails will be sent in the background.
+        <br /><br />
+        You will receive a copy when all emails sent out.
+    </message>
+    <message id="cms-newsletter-sent-successfully-ok">OK</message>
     <message id="cms-subscribers-page-title">Subscribers</message>
     <message id="cms-subscribers-all">All Subscribers</message>
     <message id="cms-subscribers-english-farsi">English and Farsi Subscribers</message>

@@ -33,6 +33,8 @@
  */
 
 
+#include <sstream>
+#include <boost/algorithm/string.hpp>
 #include <boost/exception/diagnostic_information.hpp>
 #include <boost/format.hpp>
 #include <cppdb/frontend.h>
@@ -40,7 +42,9 @@
 #include <Wt/WComboBox>
 #include <Wt/WLengthValidator>
 #include <Wt/WLineEdit>
+#include <Wt/WMessageBox>
 #include <Wt/WPushButton>
+#include <Wt/WSignalMapper>
 #include <Wt/WString>
 #include <Wt/WTable>
 #include <Wt/WTemplate>
@@ -51,6 +55,7 @@
 #include <CoreLib/Database.hpp>
 #include <CoreLib/FileSystem.hpp>
 #include <CoreLib/Log.hpp>
+#include <CoreLib/Mail.hpp>
 #include "CgiEnv.hpp"
 #include "CgiRoot.hpp"
 #include "CmsNewsletter.hpp"
@@ -58,6 +63,8 @@
 #include "Pool.hpp"
 
 using namespace std;
+using namespace boost;
+using namespace cppdb;
 using namespace Wt;
 using namespace Service;
 
@@ -69,10 +76,16 @@ public:
     WTextEdit *BodyTextEdit;
     WPushButton *SendPushButton;
     WPushButton *ClearPushButton;
-    WText *NewsletterMessageArea;
+
+    std::unique_ptr<Wt::WMessageBox> SendMessageBox;
+    std::unique_ptr<Wt::WMessageBox> ClearMessageBox;
+    std::unique_ptr<Wt::WMessageBox> SuccessMessageBox;
+
+private:
+    CmsNewsletter *m_parent;
 
 public:
-    Impl();
+    explicit Impl(CmsNewsletter *parent);
     ~Impl();
 
 public:
@@ -81,11 +94,16 @@ public:
     void OnSendConfirmDialogClosed(Wt::StandardButton button);
     void OnClearButtonPressed();
     void OnClearConfirmDialogClosed(Wt::StandardButton button);
+    void OnSendSuccessDialogClosed(Wt::StandardButton button);
+
+public:
+    void SetFormEnable(bool status);
+    void ResetTheForm();
 };
 
 CmsNewsletter::CmsNewsletter()
     : Page(),
-    m_pimpl(make_unique<CmsNewsletter::Impl>())
+    m_pimpl(make_unique<CmsNewsletter::Impl>(this))
 {
     this->clear();
     this->setId("CmsNewsletterPage");
@@ -117,6 +135,10 @@ WWidget *CmsNewsletter::Layout()
 
             m_pimpl->RecipientsComboBox = new WComboBox();
             m_pimpl->RecipientsComboBox->setPlaceholderText(tr("cms-newsletter-recipients-placeholder"));
+            m_pimpl->RecipientsComboBox->addItem(tr("cms-newsletter-choose-recipients"));
+            m_pimpl->RecipientsComboBox->addItem(tr("cms-newsletter-all-recipients"));
+            m_pimpl->RecipientsComboBox->addItem(tr("cms-newsletter-english-recipients"));
+            m_pimpl->RecipientsComboBox->addItem(tr("cms-newsletter-farsi-recipients"));
 
             m_pimpl->SubjectLineEdit = new WLineEdit();
             m_pimpl->SubjectLineEdit->setPlaceholderText(tr("cms-newsletter-subject-placeholder"));
@@ -181,7 +203,8 @@ WWidget *CmsNewsletter::Layout()
             m_pimpl->ClearPushButton = new WPushButton(tr("cms-newsletter-clear"));
             m_pimpl->ClearPushButton->setStyleClass("btn btn-default");
 
-            m_pimpl->NewsletterMessageArea = new WText();
+            m_pimpl->SetFormEnable(false);
+            m_pimpl->ResetTheForm();
 
             tmpl->bindWidget("newsletter-title", new WText(tr("cms-newsletter-page-title")));
 
@@ -200,9 +223,12 @@ WWidget *CmsNewsletter::Layout()
             tmpl->bindWidget("send-button", m_pimpl->SendPushButton);
             tmpl->bindWidget("clear-button", m_pimpl->ClearPushButton);
 
-            tmpl->bindWidget("newsletter-message-area", m_pimpl->NewsletterMessageArea);
-
-
+            m_pimpl->RecipientsComboBox->sactivated().connect(
+                        m_pimpl.get(), &CmsNewsletter::Impl::OnRecipientsComboBoxSelectionChanged);
+            m_pimpl->SendPushButton->clicked().connect(
+                        m_pimpl.get(), &CmsNewsletter::Impl::OnSendButtonPressed);
+            m_pimpl->ClearPushButton->clicked().connect(
+                        m_pimpl.get(), &CmsNewsletter::Impl::OnClearButtonPressed);
 
             m_pimpl->RecipientsComboBox->setFocus();
         }
@@ -223,7 +249,8 @@ WWidget *CmsNewsletter::Layout()
     return container;
 }
 
-CmsNewsletter::Impl::Impl()
+CmsNewsletter::Impl::Impl(CmsNewsletter *parent)
+    : m_parent(parent)
 {
 
 }
@@ -232,25 +259,230 @@ CmsNewsletter::Impl::~Impl() = default;
 
 void CmsNewsletter::Impl::OnRecipientsComboBoxSelectionChanged(Wt::WString recipients)
 {
-    (void)recipients;
+    if (recipients == tr("cms-newsletter-all-recipients")
+            || recipients == tr("cms-newsletter-english-recipients")
+            || recipients == tr("cms-newsletter-farsi-recipients")) {
+        this->SetFormEnable(true);
+    } else {
+        this->SetFormEnable(false);
+    }
 }
 
 void CmsNewsletter::Impl::OnSendButtonPressed()
 {
+    SendMessageBox =
+            std::make_unique<WMessageBox>(tr("cms-newsletter-send-confirm-title"),
+                                          tr("cms-newsletter-send-confirm-message"),
+                                          Warning, NoButton);
+    SendMessageBox->addButton(tr("cms-newsletter-send-confirm-ok"), Ok);
+    SendMessageBox->addButton(tr("cms-newsletter-send-confirm-cancel"), Cancel);
+
+    SendMessageBox->buttonClicked().connect(
+                this, &CmsNewsletter::Impl::OnSendConfirmDialogClosed);
+
+    SendMessageBox->show();
 }
 
 void CmsNewsletter::Impl::OnSendConfirmDialogClosed(Wt::StandardButton button)
 {
-    (void)button;
+    if (button == Ok) {
+        string recipients(RecipientsComboBox->currentText().toUTF8());
+
+        if (recipients != tr("cms-newsletter-all-recipients")
+                && recipients != tr("cms-newsletter-english-recipients")
+                && recipients != tr("cms-newsletter-farsi-recipients")) {
+            RecipientsComboBox->setFocus();
+            return;
+        }
+
+        if (!m_parent->Validate(SubjectLineEdit)) {
+            return;
+        }
+
+        if ((BodyTextEdit->text().toUTF8() == "")) {
+            BodyTextEdit->setFocus();
+            return;
+        }
+
+        stringstream ss;
+        BodyTextEdit->htmlText(ss);
+        string bodyHtmlText(ss.str());
+
+        if (bodyHtmlText == "") {
+            BodyTextEdit->setFocus();
+            return;
+        }
+
+        try {
+            CgiRoot *cgiRoot = static_cast<CgiRoot *>(WApplication::instance());
+            CgiEnv *cgiEnv = cgiRoot->GetCgiEnvInstance();
+
+            string htmlData;
+            string file;
+            if (cgiEnv->GetCurrentLanguage() == CgiEnv::Language::Fa) {
+                file = "../templates/email-newsletter-template-fa.wtml";
+            } else {
+                file = "../templates/email-newsletter-template.wtml";
+            }
+
+            if (CoreLib::FileSystem::Read(file, htmlData)) {
+                string subject(SubjectLineEdit->text().toUTF8());
+
+                replace_all(htmlData, "${newsletter}", bodyHtmlText);
+
+                string homePageFields;
+                if (cgiEnv->GetCurrentLanguage() == CgiEnv::Language::Fa) {
+                    homePageFields = "homepage_url_fa, homepage_title_fa";
+                } else {
+                    homePageFields = "homepage_url_en, homepage_title_en";
+                }
+
+                result r = Pool::Database()->Sql()
+                        << (format("SELECT %1%"
+                                   " FROM \"%2%\" WHERE pseudo_id = '0';")
+                            % homePageFields
+                            % Pool::Database()->GetTableName("SETTINGS")).str()
+                        << row;
+
+                string homePageUrl;
+                string homePageTitle;
+                if (!r.empty()) {
+                    r >> homePageUrl >> homePageTitle;
+                }
+
+                replace_all(htmlData, "${home-page-url}", homePageUrl);
+                replace_all(htmlData, "${home-page-title}", homePageTitle);
+
+                if (recipients == tr("cms-newsletter-all-recipients")) {
+                    r = Pool::Database()->Sql()
+                            << (format("SELECT inbox, uuid FROM \"%1%\";")
+                                % Pool::Database()->GetTableName("SUBSCRIBERS")).str();
+                } else if (recipients == tr("cms-newsletter-english-recipients")) {
+                    r = Pool::Database()->Sql()
+                            << (format("SELECT inbox, uuid FROM \"%1%\""
+                                       " WHERE subscription = 'en_fa' OR subscription = 'en';")
+                                % Pool::Database()->GetTableName("SUBSCRIBERS")).str();
+                } else if (recipients == tr("cms-newsletter-farsi-recipients")) {
+                    r = Pool::Database()->Sql()
+                            << (format("SELECT inbox, uuid FROM \"%1%\""
+                                       " WHERE subscription = 'en_fa' OR subscription = 'fa';")
+                                % Pool::Database()->GetTableName("SUBSCRIBERS")).str();
+                } else {
+                    return;
+                }
+
+                string unsubscribeLink(cgiEnv->GetServerInfo(CgiEnv::ServerInfo::URL));
+                if (!ends_with(unsubscribeLink, "/"))
+                    unsubscribeLink += "/";
+
+                if (cgiEnv->GetCurrentLanguage() == CgiEnv::Language::Fa) {
+                    unsubscribeLink += "?subscribe=-1&recipient=%1%&subscription=fa";
+                } else {
+                    unsubscribeLink += "?subscribe=-1&recipient=%1%&subscription=en";
+                }
+
+                string message;
+                string inbox;
+                string uuid;
+
+                while(r.next()) {
+                    r >> inbox >> uuid;
+
+                    message.assign(replace_all_copy(htmlData, "unsubscribe-link",
+                                                    (format(unsubscribeLink) % uuid).str()));
+
+                    CoreLib::Mail *mail = new CoreLib::Mail(
+                                cgiEnv->GetServerInfo(CgiEnv::ServerInfo::NoReplyAddr), inbox,
+                                subject, bodyHtmlText);
+                    mail->SetDeleteLater(true);
+                    mail->SendAsync();
+                }
+
+                SuccessMessageBox =
+                        std::make_unique<WMessageBox>(tr("cms-newsletter-sent-successfully-title"),
+                                                      tr("cms-newsletter-sent-successfully-message"),
+                                                      Warning, NoButton);
+                SuccessMessageBox->addButton(tr("cms-newsletter-sent-successfully-ok"), Ok);
+
+                SuccessMessageBox->buttonClicked().connect(
+                            this, &CmsNewsletter::Impl::OnSendSuccessDialogClosed);
+
+                SuccessMessageBox->show();
+
+                this->ResetTheForm();
+            }
+        }
+
+        catch (boost::exception &ex) {
+            LOG_ERROR(boost::diagnostic_information(ex));
+        }
+
+        catch (std::exception &ex) {
+            LOG_ERROR(ex.what());
+        }
+
+        catch (...) {
+            LOG_ERROR(UNKNOWN_ERROR);
+        }
+    }
+
+    SendMessageBox.reset();
 }
 
 void CmsNewsletter::Impl::OnClearButtonPressed()
 {
+    ClearMessageBox =
+            std::make_unique<WMessageBox>(tr("cms-newsletter-clear-confirm-title"),
+                                          tr("cms-newsletter-clear-confirm-message"),
+                                          Warning, NoButton);
+    ClearMessageBox->addButton(tr("cms-newsletter-clear-confirm-ok"), Ok);
+    ClearMessageBox->addButton(tr("cms-newsletter-clear-confirm-cancel"), Cancel);
 
+    ClearMessageBox->buttonClicked().connect(
+                this, &CmsNewsletter::Impl::OnClearConfirmDialogClosed);
+
+    ClearMessageBox->show();
 }
 
 void CmsNewsletter::Impl::OnClearConfirmDialogClosed(Wt::StandardButton button)
 {
+    if (button == Ok) {
+        this->ResetTheForm();
+    }
+
+    ClearMessageBox.reset();
+}
+
+void CmsNewsletter::Impl::OnSendSuccessDialogClosed(Wt::StandardButton button)
+{
     (void)button;
+
+    SuccessMessageBox.reset();
+}
+
+void CmsNewsletter::Impl::ResetTheForm()
+{
+    CgiRoot *cgiRoot = static_cast<CgiRoot *>(WApplication::instance());
+    CgiEnv *cgiEnv = cgiRoot->GetCgiEnvInstance();
+
+    RecipientsComboBox->setCurrentIndex(0);
+    SubjectLineEdit->setText("");
+
+    if (cgiEnv->GetCurrentLanguage() == CgiEnv::Language::Fa) {
+        BodyTextEdit->setText("<div style=\"direction: rtl;\"></div>");
+    } else {
+        BodyTextEdit->setText("<div style=\"direction: ltr;\"></div>");
+    }
+
+    this->SetFormEnable(false);
+}
+
+void CmsNewsletter::Impl::SetFormEnable(bool status)
+{
+    if (status) {
+        SendPushButton->setEnabled(true);
+    } else {
+        SendPushButton->setDisabled(true);
+    }
 }
 

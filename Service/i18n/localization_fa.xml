@@ -144,13 +144,32 @@
     <message id="cms-dashboard-last-login-info-time">زمان</message>
     <message id="cms-newsletter-page-title">خبرنامه</message>
     <message id="cms-newsletter-recipients">دریافت کنندگان</message>
-    <message id="cms-newsletter-recipients-placeholder">مشترکین</message>
+    <message id="cms-newsletter-recipients-placeholders">دریافت کنندگان</message>
+    <message id="cms-newsletter-choose-recipients">انتخاب...</message>
+    <message id="cms-newsletter-all-recipients">تمامی مخاطبین</message>
+    <message id="cms-newsletter-english-recipients">فقط مخاطبین انگلیسی</message>
+    <message id="cms-newsletter-farsi-recipients">فقط مخاطبین فارسی</message>
     <message id="cms-newsletter-subject">موضوع</message>
     <message id="cms-newsletter-subject-placeholder">موضوع</message>
     <message id="cms-newsletter-body">متن</message>
     <message id="cms-newsletter-body-placeholder">متن</message>
     <message id="cms-newsletter-send">ارسال</message>
+    <message id="cms-newsletter-send-confirm-title">ارسال</message>
+    <message id="cms-newsletter-send-confirm-message">آیا مطمئن هستید؟? پس از فشردن دکمه <strong>تائید</strong> امکان بازگشت وجود نخواهد داشت!</message>
+    <message id="cms-newsletter-send-confirm-ok">تائید</message>
+    <message id="cms-newsletter-send-confirm-cancel">لغو</message>
     <message id="cms-newsletter-clear">پیام جدید</message>
+    <message id="cms-newsletter-clear-confirm-title">تنظیم مجدد</message>
+    <message id="cms-newsletter-clear-confirm-message">آیا مطمئن هستید؟ تمامی تغییرات شما بازنویسی خواهد شد!</message>
+    <message id="cms-newsletter-clear-confirm-ok">تائید</message>
+    <message id="cms-newsletter-clear-confirm-cancel">لغو</message>
+    <message id="cms-newsletter-sent-successfully-title">موفق</message>
+    <message id="cms-newsletter-sent-successfully-message">
+        ایمیل ها در پس زمینه ارسال خواهند شد.
+        <br /><br />
+        پس از ارسال تمامی ایمیل ها، شما یک نسخه از آن را دریافت خواهید نمود.
+    </message>
+    <message id="cms-newsletter-sent-successfully-ok">تائید</message>
     <message id="cms-subscribers-page-title">مشترکین</message>
     <message id="cms-subscribers-all">تمامی مشترکین</message>
     <message id="cms-subscribers-english-farsi">مشترکین انگلیسی و فارسی</message>

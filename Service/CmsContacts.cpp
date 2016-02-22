@@ -79,7 +79,7 @@ public:
     Wt::WText *EditContactsMessageArea;
     Wt::WContainerWidget *ContactsTableContainer;
 
-    std::unique_ptr<Wt::WMessageBox> eraseMessageBox;
+    std::unique_ptr<Wt::WMessageBox> EraseMessageBox;
 
 private:
     CmsContacts *m_parent;
@@ -463,16 +463,17 @@ void CmsContacts::Impl::OnEraseButtonPressed(Wt::WPushButton *button)
         } else {
             question = tr("cms-contacts-erase-confirm-question").arg(dbKey);
         }
-        eraseMessageBox =
+
+        EraseMessageBox =
                 std::make_unique<WMessageBox>(tr("cms-contacts-erase-confirm-title"),
                                               question, Warning, NoButton);
-        eraseMessageBox->setAttributeValue("db-key", dbKey);
-        eraseMessageBox->addButton(tr("cms-contacts-erase-confirm-ok"), Ok);
-        eraseMessageBox->addButton(tr("cms-contacts-erase-confirm-cancel"), Cancel);
+        EraseMessageBox->setAttributeValue("db-key", dbKey);
+        EraseMessageBox->addButton(tr("cms-contacts-erase-confirm-ok"), Ok);
+        EraseMessageBox->addButton(tr("cms-contacts-erase-confirm-cancel"), Cancel);
 
-        eraseMessageBox->buttonClicked().connect(this, &CmsContacts::Impl::OnEraseDialogClosed);
+        EraseMessageBox->buttonClicked().connect(this, &CmsContacts::Impl::OnEraseDialogClosed);
 
-        eraseMessageBox->show();
+        EraseMessageBox->show();
     }
 
     catch (boost::exception &ex) {
@@ -494,7 +495,7 @@ void CmsContacts::Impl::OnEraseDialogClosed(Wt::StandardButton button)
 
     try {
         if (button == Ok) {
-            string recipient(eraseMessageBox->attributeValue("db-key").toUTF8());
+            string recipient(EraseMessageBox->attributeValue("db-key").toUTF8());
 
             result r = Pool::Database()->Sql()
                     << (format("SELECT recipient FROM \"%1%\""
@@ -530,7 +531,7 @@ void CmsContacts::Impl::OnEraseDialogClosed(Wt::StandardButton button)
         LOG_ERROR(UNKNOWN_ERROR);
     }
 
-    eraseMessageBox.reset();
+    EraseMessageBox.reset();
 }
 
 void CmsContacts::Impl::FillContactsDataTable()

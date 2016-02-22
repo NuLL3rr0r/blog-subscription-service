@@ -46,10 +46,6 @@
 
         <div class="clearfix"></div>
 
-        <div class="text-center message-area">
-            ${newsletter-message-area}
-        </div>
-
         <br />
         <br />
         <br />
