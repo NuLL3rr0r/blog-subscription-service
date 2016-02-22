@@ -660,6 +660,30 @@ Wt::WWidget *Subscription::Impl::GetConfirmationPage()
 
             tmpl->bindString("title", tr("home-subscription-confirmation-congratulation-title"));
             tmpl->bindString("message", tr("home-subscription-confirmation-congratulation-message"));
+
+            string homePageFields;
+            if (cgiEnv->GetCurrentLanguage() == CgiEnv::Language::Fa) {
+                homePageFields = "homepage_url_fa, homepage_title_fa";
+            } else {
+                homePageFields = "homepage_url_en, homepage_title_en";
+            }
+
+            r = Pool::Database()->Sql()
+                    << (format("SELECT %1%"
+                               " FROM \"%2%\" WHERE pseudo_id = '0';")
+                        % homePageFields
+                        % Pool::Database()->GetTableName("SETTINGS")).str()
+                    << row;
+
+            if (!r.empty()) {
+                string homePageUrl;
+                string homePageTitle;
+
+                r >> homePageUrl >> homePageTitle;
+
+                tmpl->bindString("home-page-url", WString::fromUTF8(homePageUrl));
+                tmpl->bindString("home-page-title", WString::fromUTF8(homePageTitle));
+            }
         }
     }
 
@@ -986,6 +1010,30 @@ Wt::WWidget *Subscription::Impl::GetCancellationPage()
 
             tmpl->bindString("title", tr("home-subscription-cancellation-cancelled-title"));
             tmpl->bindString("message", tr("home-subscription-cancellation-cancelled-message"));
+
+            string homePageFields;
+            if (cgiEnv->GetCurrentLanguage() == CgiEnv::Language::Fa) {
+                homePageFields = "homepage_url_fa, homepage_title_fa";
+            } else {
+                homePageFields = "homepage_url_en, homepage_title_en";
+            }
+
+            r = Pool::Database()->Sql()
+                    << (format("SELECT %1%"
+                               " FROM \"%2%\" WHERE pseudo_id = '0';")
+                        % homePageFields
+                        % Pool::Database()->GetTableName("SETTINGS")).str()
+                    << row;
+
+            if (!r.empty()) {
+                string homePageUrl;
+                string homePageTitle;
+
+                r >> homePageUrl >> homePageTitle;
+
+                tmpl->bindString("home-page-url", WString::fromUTF8(homePageUrl));
+                tmpl->bindString("home-page-title", WString::fromUTF8(homePageTitle));
+            }
         }
     }
 
@@ -1023,6 +1071,30 @@ void Subscription::Impl::GetMessageTemplate(WTemplate *tmpl, const Wt::WString &
 
         tmpl->bindString("title", title);
         tmpl->bindString("message", message);
+
+        string homePageFields;
+        if (cgiEnv->GetCurrentLanguage() == CgiEnv::Language::Fa) {
+            homePageFields = "homepage_url_fa, homepage_title_fa";
+        } else {
+            homePageFields = "homepage_url_en, homepage_title_en";
+        }
+
+        result r = Pool::Database()->Sql()
+                << (format("SELECT %1%"
+                           " FROM \"%2%\" WHERE pseudo_id = '0';")
+                    % homePageFields
+                    % Pool::Database()->GetTableName("SETTINGS")).str()
+                << row;
+
+        if (!r.empty()) {
+            string homePageUrl;
+            string homePageTitle;
+
+            r >> homePageUrl >> homePageTitle;
+
+            tmpl->bindString("home-page-url", WString::fromUTF8(homePageUrl));
+            tmpl->bindString("home-page-title", WString::fromUTF8(homePageTitle));
+        }
     }
 }
 

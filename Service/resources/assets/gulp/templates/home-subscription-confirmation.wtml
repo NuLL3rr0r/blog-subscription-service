@@ -9,6 +9,12 @@
         <div style="text-align: justify;">
             ${message}
         </div>
+
+        <br /><br /><br />
+
+        <div>
+            <a href="${home-page-url}" title="${home-page-title}">${home-page-title}</a>
+        </div>
     </div>
 
     <div class="clearfix"></div>
