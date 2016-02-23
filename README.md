@@ -82,7 +82,7 @@ To build using Ninja:
     $ cd blog_subscription_service
     $ mkdir build
     $ cd build
-    $ sudo cmake -GNinja -DCMAKE_BUILD_TYPE=ClangNativeMaxSpeedRel -DAPP_ROOT_DIR=/srv/babaei.net/subscription ../
+    $ sudo cmake -GNinja -DCMAKE_BUILD_TYPE=ClangNativeMaxSpeedRel -DAPP_ROOT_DIR=/srv/babaei.net/subscribe ../
     $ ninja
     $ sudo ninja install
 
@@ -109,7 +109,7 @@ To build using either BSD Make or GNU Make:
     $ cd blog_subscription_service
     $ mkdir build
     $ cd build
-    $ sudo cmake -GNinja -DCMAKE_BUILD_TYPE=ClangNativeMaxSpeedRel -DAPP_ROOT_DIR=/srv/babaei.net/subscription ../
+    $ sudo cmake -GNinja -DCMAKE_BUILD_TYPE=ClangNativeMaxSpeedRel -DAPP_ROOT_DIR=/srv/babaei.net/subscribe ../
 
 make -j<NUMBER_OF_CPU_CORES+1>, e.g.
 
