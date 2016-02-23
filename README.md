@@ -59,7 +59,13 @@ Or:
 
     $ sudo -u pgsql pg_dump blog_subscription_service_db
 
-After creating the database, you have to modify _${PROJECT_ROOT}/definitions.cmake_ in the next step.
+After creating the database, you have to modify _${PROJECT_ROOT}/definitions.cmake_:
+
+    SET ( PGSQL_HOST "localhost" CACHE STRING "" )
+    SET ( PGSQL_PORT "5432" CACHE STRING "" )
+    SET ( PGSQL_DATABASE "blog_subscription_service_db" CACHE STRING "" )
+    SET ( PGSQL_USER "blog_subscription_service_user" CACHE STRING "" )
+    SET ( PGSQL_PASSWORD "BE_SURE_TO_USE_A_STRONG_SECRET_PASSPHRASE_HERE" CACHE STRING "" )
 
 
 ## Supported Platforms
