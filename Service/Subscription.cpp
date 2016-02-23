@@ -71,10 +71,19 @@ using namespace boost;
 using namespace cppdb;
 using namespace Wt;
 using namespace CoreLib;
+using namespace CoreLib::CDate;
 using namespace Service;
 
 struct Subscription::Impl : public Wt::WObject
 {
+public:
+    enum class Message : unsigned char {
+        Confirm,
+        Confirmed,
+        Cancel,
+        Cancelled
+    };
+
 public:
     Wt::WLineEdit *EmailLineEdit;
     Wt::WCheckBox *EnContentsCheckBox;
@@ -108,6 +117,8 @@ public:
     Wt::WWidget *GetCancellationPage();
 
     void GetMessageTemplate(WTemplate *tmpl, const Wt::WString &title, const Wt::WString &message);
+
+    void SendMessage(const Message &type);
 };
 
 Subscription::Subscription() :
@@ -278,9 +289,7 @@ void Subscription::Impl::OnSubscribeFormSubmitted()
 
         guard.commit();
 
-        std::string token;
-        Pool::Crypto()->Encrypt(lexical_cast<string>(n.RawTime), token);
-        LOG_DEBUG(token.c_str());
+        SendMessage(Message::Confirm);
 
         MessageBox = std::make_unique<WMessageBox>(tr("home-subscription-subscribe-success-dialog-title"),
                                                    tr("home-subscription-subscribe-success-dialog-message"),
@@ -371,6 +380,8 @@ void Subscription::Impl::OnUnsubscribeFormSubmitted()
                                  { pending_cancel });
 
         guard.commit();
+
+        SendMessage(Message::Cancel);
 
         MessageBox = std::make_unique<WMessageBox>(tr("home-subscription-unsubscribe-success-dialog-title"),
                                                    tr("home-subscription-unsubscribe-success-dialog-message"),
@@ -657,6 +668,8 @@ Wt::WWidget *Subscription::Impl::GetConfirmationPage()
                                      { final_subscription, "none", "none", date });
 
             guard.commit();
+
+            SendMessage(Message::Confirmed);
 
             tmpl->bindString("title", tr("home-subscription-confirmation-congratulation-title"));
             tmpl->bindString("message", tr("home-subscription-confirmation-congratulation-message"));
@@ -1008,6 +1021,8 @@ Wt::WWidget *Subscription::Impl::GetCancellationPage()
 
             guard.commit();
 
+            SendMessage(Message::Cancelled);
+
             tmpl->bindString("title", tr("home-subscription-cancellation-cancelled-title"));
             tmpl->bindString("message", tr("home-subscription-cancellation-cancelled-message"));
 
@@ -1095,6 +1110,162 @@ void Subscription::Impl::GetMessageTemplate(WTemplate *tmpl, const Wt::WString &
             tmpl->bindString("home-page-url", WString::fromUTF8(homePageUrl));
             tmpl->bindString("home-page-title", WString::fromUTF8(homePageTitle));
         }
+    }
+}
+
+void Subscription::Impl::SendMessage(const Message &type)
+{
+    try {
+        CDate::Now n;
+
+        CgiRoot *cgiRoot = static_cast<CgiRoot *>(WApplication::instance());
+        CgiEnv *cgiEnv = cgiRoot->GetCgiEnvInstance();
+
+        string htmlData;
+        string file;
+        if (cgiEnv->GetCurrentLanguage() == CgiEnv::Language::Fa) {
+            switch (type) {
+            case Message::Confirm:
+                file = "../templates/email-confirm-subscription-fa.wtml";
+                break;
+            case Message::Confirmed:
+                file = "../templates/email-subscription-confirmed-fa.wtml";
+                break;
+            case Message::Cancel:
+                file = "../templates/email-cancel-subscription-fa.wtml";
+                break;
+            case Message::Cancelled:
+                file = "../templates/email-subscription-cancelled-fa.wtml";
+                break;
+            }
+        } else {
+            switch (type) {
+            case Message::Confirm:
+                file = "../templates/email-confirm-subscription.wtml";
+                break;
+            case Message::Confirmed:
+                file = "../templates/email-subscription-confirmed.wtml";
+                break;
+            case Message::Cancel:
+                file = "../templates/email-cancel-subscription.wtml";
+                break;
+            case Message::Cancelled:
+                file = "../templates/email-subscription-cancelled.wtml";
+                break;
+            }
+        }
+
+        if (CoreLib::FileSystem::Read(file, htmlData)) {
+            string subject;
+
+            switch (type) {
+            case Message::Confirm:
+                subject = (format(tr("email-subject-confirm-subscription").toUTF8())
+                                  % cgiEnv->GetServerInfo(CgiEnv::ServerInfo::Host)).str();
+                break;
+            case Message::Confirmed:
+                subject = (format(tr("email-subject-subscription-confirmed").toUTF8())
+                                  % cgiEnv->GetServerInfo(CgiEnv::ServerInfo::Host)).str();
+                break;
+            case Message::Cancel:
+                subject = (format(tr("email-subject-cancel-subscription").toUTF8())
+                                  % cgiEnv->GetServerInfo(CgiEnv::ServerInfo::Host)).str();
+                break;
+            case Message::Cancelled:
+                subject = (format(tr("email-subject-subscription-cancelled").toUTF8())
+                                  % cgiEnv->GetServerInfo(CgiEnv::ServerInfo::Host)).str();
+                break;
+            }
+
+            replace_all(htmlData, "${client-ip}",
+                               cgiEnv->GetClientInfo(CgiEnv::ClientInfo::IP));
+            replace_all(htmlData, "${client-location}",
+                               cgiEnv->GetClientInfo(CgiEnv::ClientInfo::Location));
+            replace_all(htmlData, "${client-user-agent}",
+                               cgiEnv->GetClientInfo(CgiEnv::ClientInfo::Browser));
+            replace_all(htmlData, "${client-referer}",
+                               cgiEnv->GetClientInfo(CgiEnv::ClientInfo::Referer));
+            if (cgiEnv->GetCurrentLanguage() == CgiEnv::Language::Fa) {
+                replace_all(htmlData, "${time}",
+                            (format("%1% ~ %2%")
+                             % WString(DateConv::FormatToPersianNums(DateConv::ToJalali(n))).toUTF8()
+                             % algorithm::trim_copy(DateConv::RawLocalDateTime(n))).str());
+            } else {
+                replace_all(htmlData, "${time}",
+                            algorithm::trim_copy(DateConv::RawLocalDateTime(n)));
+            }
+
+            string homePageFields;
+            if (cgiEnv->GetCurrentLanguage() == CgiEnv::Language::Fa) {
+                homePageFields = "homepage_url_fa, homepage_title_fa";
+            } else {
+                homePageFields = "homepage_url_en, homepage_title_en";
+            }
+
+            result r = Pool::Database()->Sql()
+                    << (format("SELECT %1%"
+                               " FROM \"%2%\" WHERE pseudo_id = '0';")
+                        % homePageFields
+                        % Pool::Database()->GetTableName("SETTINGS")).str()
+                    << row;
+
+            string homePageUrl;
+            string homePageTitle;
+            if (!r.empty()) {
+                r >> homePageUrl >> homePageTitle;
+            }
+
+            replace_all(htmlData, "${home-page-url}", homePageUrl);
+            replace_all(htmlData, "${home-page-title}", homePageTitle);
+
+            string link(cgiEnv->GetServerInfo(CgiEnv::ServerInfo::URL));
+
+            if (!ends_with(link, "/"))
+                link += "/";
+
+            if (type == Message::Confirm) {
+                link += (format("?subscribe=2&recipient=%1%")
+                         % cgiEnv->SubscriptionData.Uuid).str();
+
+                replace_all(htmlData, "${confirm-link}", link);
+            } else if (type == Message::Cancel) {
+                std::string token;
+                Pool::Crypto()->Encrypt(lexical_cast<string>(n.RawTime), token);
+
+                link += (format("?subscribe=-2&recipient=%1%&token=%2%")
+                         % cgiEnv->SubscriptionData.Uuid
+                         % token).str();
+
+                replace_all(htmlData, "${cancel-link}", link);
+            }
+
+            r = Pool::Database()->Sql()
+                    << (format("SELECT inbox FROM \"%1%\""
+                               " WHERE uuid=?;")
+                        % Pool::Database()->GetTableName("SUBSCRIBERS")).str()
+                    << cgiEnv->SubscriptionData.Uuid << row;
+
+            string inbox;
+            r >> inbox;
+
+            CoreLib::Mail *mail = new CoreLib::Mail(
+                        cgiEnv->GetServerInfo(CgiEnv::ServerInfo::NoReplyAddr),
+                        inbox, subject, htmlData);
+            mail->SetDeleteLater(true);
+            mail->SendAsync();
+        }
+    }
+
+    catch (boost::exception &ex) {
+        LOG_ERROR(boost::diagnostic_information(ex));
+    }
+
+    catch (std::exception &ex) {
+        LOG_ERROR(ex.what());
+    }
+
+    catch (...) {
+        LOG_ERROR(UNKNOWN_ERROR);
     }
 }
 

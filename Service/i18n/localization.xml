@@ -297,4 +297,8 @@
     <message id="system-monitor-network-io-stats-collisions">Collisions</message>
     <message id="system-monitor-network-io-stats-systime">Systime</message>
     <message id="system-monitor-network-io-stats-total">Total</message>
+    <message id="email-subject-confirm-subscription">[%1%] Confirm Subscription</message>
+    <message id="email-subject-subscription-confirmed">[%1%] Subscription Confirmed</message>
+    <message id="email-subject-cancel-subscription">[%1%] Confirm Subscription Cancellation</message>
+    <message id="email-subject-subscription-cancelled">[%1%] Subscription Cancelled</message>
 </messages>

@@ -292,4 +292,8 @@
     <message id="system-monitor-network-io-stats-collisions">Collisions</message>
     <message id="system-monitor-network-io-stats-systime">Systime</message>
     <message id="system-monitor-network-io-stats-total">Total</message>
+    <message id="email-subject-confirm-subscription">[%1%] اشتراک خود را تائید نمائید</message>
+    <message id="email-subject-subscription-confirmed">[%1%] اشتراک شما تائید شد</message>
+    <message id="email-subject-cancel-subscription">[%1%] لغو اشتراک خود را تائید نمائید</message>
+    <message id="email-subject-subscription-cancelled">[%1%] اشتراک شما لغو شد</message>
 </messages>
