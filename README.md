@@ -128,13 +128,13 @@ Or, if you are using GNU Make on *BSD operating systems:
     $ gmake -j9
     $ sudo gmake install
 
-__Note__: In the ${PROJECT_ROOT} directory you can customize the build by modifying the following files:
+__Note__: In the _${PROJECT_ROOT}_ directory you can customize the build by modifying the following files:
 
 * build-config.cmake
 * definitions.cmake
 * product-info.cmake
 
-__Security Warning_: You must change the following default values inside _definitions.cmake_:
+__Security Warning__: You must change the following default values inside _definitions.cmake_:
 
     # WARNING: YOU MUST CHANGE THESE VALUES !!
     # ASCII to HEX converter  :  http://www.dolcevie.com/js/converter.html
