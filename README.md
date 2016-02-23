@@ -343,7 +343,7 @@ Or, if you are not confident about _spawn-fastcgi_ (you think it may crash):
     */1     *       *       *       *       /srv/babaei.net/subscribe/bin/spawn-fastcgi
 
 
-#### Update GeoIP Database Automatically
+## Update GeoIP Database Automatically
 
 Add the following [cron jobs](http://www.babaei.net/blog/2015/06/11/the-proper-way-of-adding-a-cron-job/):
 
