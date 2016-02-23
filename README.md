@@ -202,44 +202,46 @@ _spawn-wthttpd_ configuration file should be placed inside _${APP_ROOT_DIRECTORY
 
 #### Nginx Configuration
 
-    map $http_upgrade $connection_upgrade {
-        default upgrade;
-        '' close;
-    }
+    http {
+        map $http_upgrade $connection_upgrade {
+            default upgrade;
+            '' close;
+        }
 
-    upstream BlogSubscriptionService {
-        server 127.0.0.1:10101;
-    }
+        upstream BlogSubscriptionService {
+            server 127.0.0.1:10101;
+        }
 
-    server {
-        listen        80;
-        server_tokens off;
-        server_name   subscribe.babaei.net;
+        server {
+            listen        80;
+            server_tokens off;
+            server_name   subscribe.babaei.net;
 
-        #error_log     /srv/babaei.net/log/blog-subscription-service_error_log;
-        #access_log    /srv/babaei.net/log/blog-subscription-service_access_log;
+            #error_log     /srv/babaei.net/log/blog-subscription-service_error_log;
+            #access_log    /srv/babaei.net/log/blog-subscription-service_access_log;
 
-        charset utf-8;
-        merge_slashes on;
+            charset utf-8;
+            merge_slashes on;
 
-        location / {
-            gzip off;
+            location / {
+                gzip off;
 
-            proxy_read_timeout 300;
-            proxy_connect_timeout 300;
-            proxy_redirect off;
+                proxy_read_timeout 300;
+                proxy_connect_timeout 300;
+                proxy_redirect off;
 
-            proxy_http_version 1.1;
-            proxy_set_header Upgrade $http_upgrade;
-            proxy_set_header Connection $connection_upgrade;
-            proxy_set_header Host $http_host;
-            proxy_set_header X-Real-IP $remote_addr;
-            proxy_set_header X-Forwarded-Ssl on;
-            proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-            proxy_set_header X-Forwarded-Proto $scheme;
-            proxy_set_header X-Frame-Options SAMEORIGIN;
+                proxy_http_version 1.1;
+                proxy_set_header Upgrade $http_upgrade;
+                proxy_set_header Connection $connection_upgrade;
+                proxy_set_header Host $http_host;
+                proxy_set_header X-Real-IP $remote_addr;
+                proxy_set_header X-Forwarded-Ssl on;
+                proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+                proxy_set_header X-Forwarded-Proto $scheme;
+                proxy_set_header X-Frame-Options SAMEORIGIN;
 
-            proxy_pass http://BlogSubscriptionService;
+                proxy_pass http://BlogSubscriptionService;
+            }
         }
     }
 
@@ -277,48 +279,50 @@ _sspawn-fastcgi.db_ configuration file should be placed inside _${APP_ROOT_DIREC
 
 #### Nginx Configuration
 
-    server {
-        listen        80;
-        server_tokens off;
-        server_name   subscribe.babaei.net;
+    http {
+        server {
+            listen        80;
+            server_tokens off;
+            server_name   subscribe.babaei.net;
 
-        #error_log     /srv/babaei.net/log/blog-subscription-service_error_log;
-        #access_log    /srv/babaei.net/log/blog-subscription-service_access_log;
+            #error_log     /srv/babaei.net/log/blog-subscription-service_error_log;
+            #access_log    /srv/babaei.net/log/blog-subscription-service_access_log;
 
-        root           /srv/babaei.net/subscribe/www;
-        index          index.html subscribe.app;
-        fastcgi_index  subscribe.app;
+            root           /srv/babaei.net/subscribe/www;
+            index          index.html subscribe.app;
+            fastcgi_index  subscribe.app;
 
-        charset utf-8;
-        merge_slashes on;
+            charset utf-8;
+            merge_slashes on;
 
-        location /subscribe.app {
-            fastcgi_pass   unix:/srv/babaei.net/subscribe/tmp/blog-subscription-service.socket;
+            location /subscribe.app {
+                fastcgi_pass   unix:/srv/babaei.net/subscribe/tmp/blog-subscription-service.socket;
 
-            fastcgi_param  QUERY_STRING       $query_string;
-            fastcgi_param  REQUEST_METHOD     $request_method;
-            fastcgi_param  CONTENT_TYPE       $content_type;
-            fastcgi_param  CONTENT_LENGTH     $content_length;
+                fastcgi_param  QUERY_STRING       $query_string;
+                fastcgi_param  REQUEST_METHOD     $request_method;
+                fastcgi_param  CONTENT_TYPE       $content_type;
+                fastcgi_param  CONTENT_LENGTH     $content_length;
 
-            if ($document_uri ~ "^/subscribe.app/(.*)") {
-                set $apache_path_info /$1;
+                if ($document_uri ~ "^/subscribe.app/(.*)") {
+                    set $apache_path_info /$1;
+                }
+
+                fastcgi_param  SCRIPT_NAME        /babaei.net/subscribe/www/subscribe.app;
+                fastcgi_param  PATH_INFO          $apache_path_info;
+                fastcgi_param  REQUEST_URI        $request_uri;
+                fastcgi_param  DOCUMENT_URI       $document_uri;
+                fastcgi_param  DOCUMENT_ROOT      $document_root;
+                fastcgi_param  SERVER_PROTOCOL    $server_protocol;
+
+                fastcgi_param  GATEWAY_INTERFACE  CGI/1.1;
+                fastcgi_param  SERVER_SOFTWARE    nginx/$nginx_version;
+
+                fastcgi_param  REMOTE_ADDR        $remote_addr;
+                fastcgi_param  REMOTE_PORT        $remote_port;
+                fastcgi_param  SERVER_ADDR        $server_addr;
+                fastcgi_param  SERVER_PORT        $server_port;
+                fastcgi_param  SERVER_NAME        $server_name;
             }
-
-            fastcgi_param  SCRIPT_NAME        /babaei.net/subscribe/www/subscribe.app;
-            fastcgi_param  PATH_INFO          $apache_path_info;
-            fastcgi_param  REQUEST_URI        $request_uri;
-            fastcgi_param  DOCUMENT_URI       $document_uri;
-            fastcgi_param  DOCUMENT_ROOT      $document_root;
-            fastcgi_param  SERVER_PROTOCOL    $server_protocol;
-
-            fastcgi_param  GATEWAY_INTERFACE  CGI/1.1;
-            fastcgi_param  SERVER_SOFTWARE    nginx/$nginx_version;
-
-            fastcgi_param  REMOTE_ADDR        $remote_addr;
-            fastcgi_param  REMOTE_PORT        $remote_port;
-            fastcgi_param  SERVER_ADDR        $server_addr;
-            fastcgi_param  SERVER_PORT        $server_port;
-            fastcgi_param  SERVER_NAME        $server_name;
         }
     }
 
