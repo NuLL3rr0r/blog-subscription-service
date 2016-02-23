@@ -153,11 +153,11 @@ Aside from the core library and the service application itself, there are afew s
 * _spawn-fastcgi_: Spawns the FastCGI process of the application
 * _spawn-wthttpd_: Spawns wthttpd-server version of the application (Recommended)
 
-## spawn-whttpd.db and Nginx example configuration
+## spawn-wthttpd.db and Nginx example configuration
 
-#### spawn-whttpd Configuration:
+#### spawn-wthttpd Configuration:
 
-_spawn-whttpd.db_ configuration file should be placed inside _${APP_ROOT_DIRECTORY}/db_ directory. You may want to consult [wthttpd documentation](http://www.webtoolkit.eu/wt/doc/reference/html/InstallationUnix.html) for more info. I also recommend to take a look at [_${APP_ROOT_DIRECTORY}/etc/wt_config.xml configuration documentation](http://www.webtoolkit.eu/wt/doc/reference/html/overview.html#configuration_sec).
+_spawn-wthttpd_ configuration file should be placed inside _${APP_ROOT_DIRECTORY}/db_ directory. You may want to consult [wthttpd documentation](http://www.webtoolkit.eu/wt/doc/reference/html/InstallationUnix.html) for more info. I also recommend to take a look at [_${APP_ROOT_DIRECTORY}/etc/wt_config.xml configuration documentation](http://www.webtoolkit.eu/wt/doc/reference/html/overview.html#configuration_sec).
 
     {
         "apps" :
