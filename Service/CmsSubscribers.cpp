@@ -284,31 +284,31 @@ void CmsSubscribers::Impl::FillDataTable(const CmsSubscribers::Impl::Table &tabl
         case Table::All:
             r = Pool::Database()->Sql()
                     << (format("SELECT inbox, uuid, subscription, pending_confirm, pending_cancel, join_date, update_date"
-                               " FROM \"%1%\" ORDER BY inbox;")
+                               " FROM \"%1%\" ORDER BY inbox COLLATE \"en_US.UTF-8\" ASC;")
                         % Pool::Database()->GetTableName("SUBSCRIBERS")).str();
             break;
         case Table::EnFa:
             r = Pool::Database()->Sql()
                     << (format("SELECT inbox, uuid, subscription, pending_confirm, pending_cancel, join_date, update_date"
-                               " FROM \"%1%\" WHERE subscription = 'en_fa' ORDER BY inbox;")
+                               " FROM \"%1%\" WHERE subscription = 'en_fa' ORDER BY inbox COLLATE \"en_US.UTF-8\" ASC;")
                         % Pool::Database()->GetTableName("SUBSCRIBERS")).str();
             break;
         case Table::En:
             r = Pool::Database()->Sql()
                     << (format("SELECT inbox, uuid, subscription, pending_confirm, pending_cancel, join_date, update_date"
-                               " FROM \"%1%\" WHERE subscription = 'en' ORDER BY inbox;")
+                               " FROM \"%1%\" WHERE subscription = 'en' ORDER BY inbox COLLATE \"en_US.UTF-8\" ASC;")
                         % Pool::Database()->GetTableName("SUBSCRIBERS")).str();
             break;
         case Table::Fa:
             r = Pool::Database()->Sql()
                     << (format("SELECT inbox, uuid, subscription, pending_confirm, pending_cancel, join_date, update_date"
-                               " FROM \"%1%\" WHERE subscription = 'fa' ORDER BY inbox;")
+                               " FROM \"%1%\" WHERE subscription = 'fa' ORDER BY inbox COLLATE \"en_US.UTF-8\" ASC;")
                         % Pool::Database()->GetTableName("SUBSCRIBERS")).str();
             break;
         case Table::Inactive:
             r = Pool::Database()->Sql()
                     << (format("SELECT inbox, uuid, subscription, pending_confirm, pending_cancel, join_date, update_date"
-                               " FROM \"%1%\" WHERE subscription = 'none' ORDER BY inbox;")
+                               " FROM \"%1%\" WHERE subscription = 'none' ORDER BY inbox COLLATE \"en_US.UTF-8\" ASC;")
                         % Pool::Database()->GetTableName("SUBSCRIBERS")).str();
             break;
         }

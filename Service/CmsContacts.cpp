@@ -553,7 +553,7 @@ void CmsContacts::Impl::FillContactsDataTable()
     try {
         result r = Pool::Database()->Sql()
                 << (format("SELECT recipient, recipient_fa, address, is_default"
-                           " FROM \"%1%\" ORDER BY recipient ASC;")
+                           " FROM \"%1%\" ORDER BY recipient COLLATE \"en_US.UTF-8\" ASC;")
                     % Pool::Database()->GetTableName("CONTACTS")).str();
 
         int i = 0;
