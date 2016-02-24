@@ -118,7 +118,7 @@ public:
 
     void GetMessageTemplate(WTemplate *tmpl, const Wt::WString &title, const Wt::WString &message);
 
-    void SendMessage(const Message &type);
+    void SendMessage(const Message &type, const string &uuid, const string &inbox);
 };
 
 Subscription::Subscription() :
@@ -259,9 +259,9 @@ void Subscription::Impl::OnSubscribeFormSubmitted()
                     % Pool::Database()->GetTableName("SUBSCRIBERS")).str()
                 << inbox << row;
 
-        if (r.empty()) {
-            string uuid;
+        string uuid;
 
+        if (r.empty()) {
             while (true) {
                 CoreLib::Random::Uuid(uuid);
 
@@ -289,7 +289,7 @@ void Subscription::Impl::OnSubscribeFormSubmitted()
 
         guard.commit();
 
-        SendMessage(Message::Confirm);
+        SendMessage(Message::Confirm, uuid, inbox);
 
         MessageBox = std::make_unique<WMessageBox>(tr("home-subscription-subscribe-success-dialog-title"),
                                                    tr("home-subscription-subscribe-success-dialog-message"),
@@ -381,7 +381,7 @@ void Subscription::Impl::OnUnsubscribeFormSubmitted()
 
         guard.commit();
 
-        SendMessage(Message::Cancel);
+        SendMessage(Message::Cancel, cgiEnv->SubscriptionData.Uuid, inbox);
 
         MessageBox = std::make_unique<WMessageBox>(tr("home-subscription-unsubscribe-success-dialog-title"),
                                                    tr("home-subscription-unsubscribe-success-dialog-message"),
@@ -669,7 +669,7 @@ Wt::WWidget *Subscription::Impl::GetConfirmationPage()
 
             guard.commit();
 
-            SendMessage(Message::Confirmed);
+            SendMessage(Message::Confirmed, cgiEnv->SubscriptionData.Uuid, inbox);
 
             tmpl->bindString("title", tr("home-subscription-confirmation-congratulation-title"));
             tmpl->bindString("message", tr("home-subscription-confirmation-congratulation-message"));
@@ -1021,7 +1021,7 @@ Wt::WWidget *Subscription::Impl::GetCancellationPage()
 
             guard.commit();
 
-            SendMessage(Message::Cancelled);
+            SendMessage(Message::Cancelled, cgiEnv->SubscriptionData.Uuid, inbox);
 
             tmpl->bindString("title", tr("home-subscription-cancellation-cancelled-title"));
             tmpl->bindString("message", tr("home-subscription-cancellation-cancelled-message"));
@@ -1113,7 +1113,7 @@ void Subscription::Impl::GetMessageTemplate(WTemplate *tmpl, const Wt::WString &
     }
 }
 
-void Subscription::Impl::SendMessage(const Message &type)
+void Subscription::Impl::SendMessage(const Message &type, const string &uuid, const string &inbox)
 {
     try {
         CDate::Now n;
@@ -1225,7 +1225,7 @@ void Subscription::Impl::SendMessage(const Message &type)
 
             if (type == Message::Confirm) {
                 link += (format("?subscribe=2&recipient=%1%")
-                         % cgiEnv->SubscriptionData.Uuid).str();
+                         % uuid).str();
 
                 replace_all(htmlData, "${confirm-link}", link);
             } else if (type == Message::Cancel) {
@@ -1233,20 +1233,11 @@ void Subscription::Impl::SendMessage(const Message &type)
                 Pool::Crypto()->Encrypt(lexical_cast<string>(n.RawTime), token);
 
                 link += (format("?subscribe=-2&recipient=%1%&token=%2%")
-                         % cgiEnv->SubscriptionData.Uuid
+                         % uuid
                          % token).str();
 
                 replace_all(htmlData, "${cancel-link}", link);
             }
-
-            r = Pool::Database()->Sql()
-                    << (format("SELECT inbox FROM \"%1%\""
-                               " WHERE uuid=?;")
-                        % Pool::Database()->GetTableName("SUBSCRIBERS")).str()
-                    << cgiEnv->SubscriptionData.Uuid << row;
-
-            string inbox;
-            r >> inbox;
 
             CoreLib::Mail *mail = new CoreLib::Mail(
                         cgiEnv->GetServerInfo(CgiEnv::ServerInfo::NoReplyAddr),
