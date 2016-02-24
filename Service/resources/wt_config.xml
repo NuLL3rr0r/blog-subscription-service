@@ -382,7 +382,7 @@
            This option is required to make e.g. clientAddress() return the
            correct address.
 	  -->
-	<behind-reverse-proxy>false</behind-reverse-proxy>
+        <behind-reverse-proxy>true</behind-reverse-proxy>
 
 	<!-- Whether inline CSS is allowed.
 
