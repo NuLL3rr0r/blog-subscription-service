@@ -320,9 +320,9 @@ void CmsNewsletter::Impl::OnSendConfirmDialogClosed(Wt::StandardButton button)
             string htmlData;
             string file;
             if (recipients == tr("cms-newsletter-all-recipients")) {
-                file = "../templates/email-newsletter-template-en.wtml";
+                file = "../templates/email-newsletter-template.wtml";
             } else if (recipients == tr("cms-newsletter-english-recipients")) {
-                file = "../templates/email-newsletter-template-en.wtml";
+                file = "../templates/email-newsletter-template.wtml";
             } else if (recipients == tr("cms-newsletter-farsi-recipients")) {
                 file = "../templates/email-newsletter-template-fa.wtml";
             } else {
@@ -403,6 +403,7 @@ void CmsNewsletter::Impl::OnSendConfirmDialogClosed(Wt::StandardButton button)
                     message.assign(htmlData);
                     replace_all(message, "unsubscribe-link-en", replace_all_copy(enUnsubscribeLink, "${uuid}", uuid));
                     replace_all(message, "unsubscribe-link-fa", replace_all_copy(faUnsubscribeLink, "${uuid}", uuid));
+
 
                     CoreLib::Mail *mail = new CoreLib::Mail(
                                 cgiEnv->GetServerInfo(CgiEnv::ServerInfo::NoReplyAddr), inbox,
