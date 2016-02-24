@@ -435,7 +435,7 @@ void ContactForm::Impl::SendUserMessageEmail(const std::string &to, CDate::Now &
     string from(EmailLineEdit->text().trim().toUTF8());
     string url(UrlLineEdit->text().trim().toUTF8());
     string subject(SubjectLineEdit->text().trim().toUTF8());
-    string body(BodyTextArea->text().trim().toUTF8());
+    string body(replace_all_copy(BodyTextArea->text().trim().toUTF8(), "\n", "<br />"));
 
     if (CoreLib::FileSystem::Read(file, htmlData)) {
         replace_all(htmlData, "${from}", name);
