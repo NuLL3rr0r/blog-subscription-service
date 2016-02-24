@@ -68,9 +68,11 @@
         </div>
 
         <div class="clearfix"></div>
+    </div>
 
-        <br />
+    <br />
 
+    <div class="col-xs-12 col-sm-12 col-md-12 col-lg-12 h-center form-horizontal">
         <div class="text-center">
             ${contacts-table}
         </div>
