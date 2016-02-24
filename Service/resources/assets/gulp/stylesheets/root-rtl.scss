@@ -8,6 +8,11 @@ html, body {
     direction: rtl;
 }
 
+select {
+    padding-top: 0 !important;
+    padding-bottom: 0 !important;
+}
+
 .nav-side-menu {
     right: 0;
 
