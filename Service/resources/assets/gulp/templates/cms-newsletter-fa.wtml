@@ -37,8 +37,8 @@
 
         <div class="text-center">
             <div class="btn-group">
-                ${send-button}
                 ${clear-button}
+                ${send-button}
             </div>
 
             <div class="clearfix"></div>
