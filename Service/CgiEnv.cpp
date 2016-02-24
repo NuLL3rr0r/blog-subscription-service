@@ -120,7 +120,7 @@ CgiEnv::CgiEnv()
              % ClientInfoRecord.continent_code).str();
     if (ClientInfoRecord.latitude != "" && ClientInfoRecord.longitude != "") {
         m_pimpl->ClientInfoLocation +=
-                (format("%1%,%2%")
+                (format(" %1%,%2%")
                  % ClientInfoRecord.latitude
                  % ClientInfoRecord.longitude).str();
     }
