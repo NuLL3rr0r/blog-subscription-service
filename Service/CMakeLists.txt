@@ -319,7 +319,7 @@ IF ( BUILD_SERVICE )
         )
 
         INSTALL ( DIRECTORY
-            "${GULP_DIR}/output/templates"
+            "${GULP_DIR}/templates"
             DESTINATION "${APP_ROOT_DIR}"
             FILE_PERMISSIONS
             OWNER_READ

@@ -399,8 +399,8 @@ void CmsNewsletter::Impl::OnSendConfirmDialogClosed(Wt::StandardButton button)
                     r >> inbox >> uuid;
 
                     message.assign(htmlData);
-                    replace_all(message, "unsubscribe-link-en", replace_all_copy(enUnsubscribeLink, "${uuid}", uuid));
-                    replace_all(message, "unsubscribe-link-fa", replace_all_copy(faUnsubscribeLink, "${uuid}", uuid));
+                    replace_all(message, "${unsubscribe-link-en}", replace_all_copy(enUnsubscribeLink, "${uuid}", uuid));
+                    replace_all(message, "${unsubscribe-link-fa}", replace_all_copy(faUnsubscribeLink, "${uuid}", uuid));
 
                     CoreLib::Mail *mail = new CoreLib::Mail(
                                 cgiEnv->GetServerInfo(CgiEnv::ServerInfo::NoReplyAddr), inbox,
@@ -410,8 +410,8 @@ void CmsNewsletter::Impl::OnSendConfirmDialogClosed(Wt::StandardButton button)
                 }
 
                 message.assign(htmlData);
-                replace_all(message, "unsubscribe-link-en", "javascript:;");
-                replace_all(message, "unsubscribe-link-fa", "javascript:;");
+                replace_all(message, "${unsubscribe-link-en}", "javascript:;");
+                replace_all(message, "${unsubscribe-link-fa}", "javascript:;");
 
                 CoreLib::Mail *mail = new CoreLib::Mail(
                             cgiEnv->GetServerInfo(CgiEnv::ServerInfo::NoReplyAddr),

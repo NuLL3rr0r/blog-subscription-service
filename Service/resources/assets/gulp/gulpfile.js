@@ -137,12 +137,12 @@ gulp.task('wt-resources', function() {
     );
 });
 
-gulp.task('default', ['templates', 'scripts', 'styles', 'fonts', 'images', 'wt-resources']);
+// do not add 'templates', because minifyHtml will mess up all HTML attributes with an variable value (e.g. ${})
+gulp.task('default', ['scripts', 'styles', 'fonts', 'images', 'wt-resources']);
 
 // Public error handler
 function errorHandler (error) {
   console.log(error.toString());
   this.emit('end');
 }
-
 
