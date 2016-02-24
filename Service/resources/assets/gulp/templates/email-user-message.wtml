@@ -1,5 +1,5 @@
-<div style="direction: ltr; max-width: 800px; margin: 0 auto; overflow: hidden; font-family: 'Bitstream Vera Sans', arial, helvetica, sans-serif; font-size: 12px; font-weight: bold; color: #203070; letter-spacing: 1px; line-height: 2.4em;">
-    <div style="background: #fff; padding: 24px; line-height: 2.4em;">
+<div style="direction: ltr; max-width: 800px; margin: 0 auto; overflow: hidden; font-family: 'Bitstream Vera Sans', arial, helvetica, sans-serif; font-size: 12px; letter-spacing: 0;">
+    <div style="background: #fff; padding: 24px; font-weight: bold; color: #203070; letter-spacing: 1px; line-height: 2.4em;">
         <div>
             <h3>
                 User Message
