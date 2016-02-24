@@ -304,9 +304,7 @@ void CmsNewsletter::Impl::OnSendConfirmDialogClosed(Wt::StandardButton button)
             return;
         }
 
-        stringstream ss;
-        BodyTextEdit->htmlText(ss);
-        string bodyHtmlText(ss.str());
+        string bodyHtmlText(BodyTextEdit->text().toUTF8());
 
         if (bodyHtmlText == "") {
             BodyTextEdit->setFocus();
