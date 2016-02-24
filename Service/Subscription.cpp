@@ -254,7 +254,7 @@ void Subscription::Impl::OnSubscribeFormSubmitted()
         transaction guard(Service::Pool::Database()->Sql());
 
         result r = Pool::Database()->Sql()
-                << (format("SELECT inbox FROM \"%1%\""
+                << (format("SELECT uuid FROM \"%1%\""
                            " WHERE inbox=?;")
                     % Pool::Database()->GetTableName("SUBSCRIBERS")).str()
                 << inbox << row;
@@ -280,6 +280,8 @@ void Subscription::Impl::OnSubscribeFormSubmitted()
                                      "inbox, uuid, subscription, pending_confirm, pending_cancel, join_date, update_date",
                                      { inbox, uuid, "none", pending_confirm, "none", date, date });
         } else {
+            r >> uuid;
+
             Pool::Database()->Update("SUBSCRIBERS",
                                      "inbox",
                                      inbox,
