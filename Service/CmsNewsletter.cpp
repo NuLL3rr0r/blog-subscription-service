@@ -364,7 +364,7 @@ void CmsNewsletter::Impl::OnSendConfirmDialogClosed(Wt::StandardButton button)
                     unsubscribeLink += "/";
 
                 if (recipients == tr("cms-newsletter-all-recipients")) {
-                    unsubscribeLink += "?subscribe=-1&recipient=${uuid},&subscription=en,fa";
+                    unsubscribeLink += "?subscribe=-1&recipient=${uuid}&subscription=en,fa";
 
                     r = Pool::Database()->Sql()
                             << (format("SELECT inbox, uuid FROM \"%1%\""
