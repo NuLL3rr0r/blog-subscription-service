@@ -361,6 +361,8 @@ void Subscription::Impl::OnUnsubscribeFormSubmitted()
                 << inbox << row;
 
         if (r.empty()) {
+            guard.rollback();
+
             MessageBox = std::make_unique<WMessageBox>(tr("home-subscription-invalid-recipient-id-title"),
                                                        tr("home-subscription-invalid-recipient-id-message"),
                                                        Information, NoButton);
@@ -368,7 +370,7 @@ void Subscription::Impl::OnUnsubscribeFormSubmitted()
             MessageBox->buttonClicked().connect(this, &Subscription::Impl::OnDialogClosed);
             MessageBox->show();
 
-            guard.rollback();
+            this->GenerateCaptcha();
 
             return;
         }
