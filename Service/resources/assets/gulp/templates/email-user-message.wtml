@@ -62,71 +62,64 @@
                 </tr>
             </table>
         </div>
+    </div>
 
-        <br />
+    <div style="padding: 20px; border-top: 1px solid #ddd; color: #777; font-size: 11px;">
+        <h3>
+            Extra Info
+        </h3>
 
-        <div>
-            <h3>
-                Extra Info
-            </h3>
+        <table style="color: #777; font-size: 11px;">
+            <tr valign="top">
+                <td>
+                    IP
+                </td>
+                <td width="16"></td>
+                <td>
+                    ${client-ip}
+                </td>
+            </tr>
 
-            <table style="font-size: 12px; margin: 0; padding: 0;">
-                <tr valign="top">
-                    <td>
-                        IP
-                    </td>
-                    <td style="padding-left: 32px; padding-bottom: 16px;">
-                        <span style="color: #900; font-weight: normal;">
-                            ${client-ip}
-                        </span>
-                    </td>
-                </tr>
+            <tr valign="top">
+                <td>
+                    Location
+                </td>
+                <td width="16"></td>
+                <td>
+                    ${client-location}
+                </td>
+            </tr>
 
-                <tr valign="top">
-                    <td>
-                        Location
-                    </td>
-                    <td style="padding-left: 32px; padding-bottom: 16px;">
-                        <span style="color: #900; font-weight: normal;">
-                            ${client-location}
-                        </span>
-                    </td>
-                </tr>
+            <tr valign="top">
+                <td>
+                    User Agent
+                </td>
+                <td width="16"></td>
+                <td>
+                    ${client-user-agent}
+                </td>
+            </tr>
 
-                <tr valign="top">
-                    <td>
-                        User Agent
-                    </td>
-                    <td style="padding-left: 32px; padding-bottom: 16px;">
-                        <span style="color: #900; font-weight: normal;">
-                            ${client-user-agent}
-                        </span>
-                    </td>
-                </tr>
+            <tr valign="top">
+                <td>
+                    Referer
+                </td>
+                <td width="16"></td>
+                <td>
+                    ${client-referer}
+                </td>
+            </tr>
 
-                <tr valign="top">
-                    <td>
-                        Referer
-                    </td>
-                    <td style="padding-left: 32px; padding-bottom: 16px;">
-                        <span style="color: #900; font-weight: normal;">
-                            ${client-referer}
-                        </span>
-                    </td>
-                </tr>
-
-                <tr valign="top">
-                    <td>
-                        Time
-                    </td>
-                    <td style="padding-left: 32px; padding-bottom: 16px;">
-                        <span style="color: #900; font-weight: normal;">
-                            ${time}
-                        </span>
-                    </td>
-                </tr>
-            </table>
-        </div>
+            <tr valign="top">
+                <td>
+                    Time
+                </td>
+                <td width="16"></td>
+                <td>
+                    ${time}
+                </td>
+            </tr>
+        </table>
     </div>
 </div>
 
