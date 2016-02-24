@@ -1,9 +1,9 @@
-<div style="direction: ltr; max-width: 800px; margin: 0 auto; overflow: hidden; font-family: "Helvetica Neue",Helvetica,Arial,sans-serif; font-size: 14px;">
+<div style="direction: ltr; max-width: 800px; margin: 0 auto; overflow: hidden; font-family: 'Bitstream Vera Sans', arial, helvetica, sans-serif; font-size: 14px; letter-spacing: 0;">
     <div style="background: #fff; padding: 24px; line-height: 2.4em;">
         ${newsletter}
     </div>
 
-    <div style="padding: 20px; border-top: 1px solid #ddd; color: #777; font-size: 12px;">
+    <div style="padding: 20px; border-top: 1px solid #ddd; color: #900; font-size: 12px;">
         <a href="${unsubscribe-link}" title="Unsubscribe" style="text-decoration: none; color: #203070;">
             Unsubscribe
         </a>

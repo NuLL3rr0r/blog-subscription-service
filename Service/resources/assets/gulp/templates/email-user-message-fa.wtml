@@ -1,13 +1,14 @@
-<div style="direction: rtl; font-family: 'Bitstream Vera Sans', arial, helvetica, sans-serif; font-size: 11px; font-weight: bold; color: #203070; letter-spacing: 1px; line-height: 17px;">
-    <blockquote>
-        <br />
-        <h3>پیام کاربر</h3>
-        <blockquote>
-            <table>
+<div style="direction: rtl; max-width: 800px; margin: 0 auto; overflow: hidden; font-family: 'Bitstream Vera Sans', arial, helvetica, sans-serif; font-size: 12px; font-weight: bold; color: #203070; letter-spacing: 0; line-height: 2.4em;">
+    <div style="background: #fff; padding: 24px; line-height: 2.4em;">
+        <div>
+            <h3>
+                پیام کاربر
+            </h3>
+
+            <table style="font-size: 12px; margin: 0; padding: 0;">
                 <tr valign="top">
                     <td>نام فرستنده</td>
-                    <td width="32" style="text-align:center;">-</td>
-                    <td>
+                    <td style="padding-right: 32px; padding-bottom: 16px;">
                         <span style="color: #900; font-weight: normal;">
                             ${from}
                         </span>
@@ -16,8 +17,7 @@
 
                 <tr valign="top">
                     <td>پست الکترونیک</td>
-                    <td width="32" style="text-align:center;">-</td>
-                    <td>
+                    <td style="padding-right: 32px; padding-bottom: 16px;">
                         <span style="color: #900; font-weight: normal;">
                             ${email}
                         </span>
@@ -26,8 +26,7 @@
 
                 <tr valign="top">
                     <td>صفحه ی وب</td>
-                    <td width="32" style="text-align:center;">-</td>
-                    <td>
+                    <td style="padding-right: 32px; padding-bottom: 16px;">
                         <span style="color: #900; font-weight: normal;">
                             ${url}
                         </span>
@@ -36,8 +35,7 @@
 
                 <tr valign="top">
                     <td>موضوع پیام</td>
-                    <td width="32" style="text-align:center;">-</td>
-                    <td>
+                    <td style="padding-right: 32px; padding-bottom: 16px;">
                         <span style="color: #900; font-weight: normal;">
                             ${subject}
                         </span>
@@ -46,24 +44,28 @@
 
                 <tr valign="top">
                     <td>متن پیام</td>
-                    <td width="32" style="text-align:center;">-</td>
-                    <td>
+                    <td style="padding-right: 32px; padding-bottom: 16px;">
                         <span style="color: #900; font-weight: normal;">
                             ${body}
                         </span>
                     </td>
                 </tr>
             </table>
-        </blockquote>
+        </div>
+
         <br />
 
-        <h3>سایر اطلاعات</h3>
-        <blockquote>
-            <table>
+        <div>
+            <h3>
+                سایر اطلاعات
+            </h3>
+
+            <table style="font-size: 12px; margin: 0; padding: 0;">
                 <tr valign="top">
-                    <td>آدرس اینترنتی</td>
-                    <td width="32" style="text-align:center;">-</td>
                     <td>
+                        آدرس اینترنتی
+                    </td>
+                    <td style="direction: ltr; padding-right: 32px; padding-bottom: 16px;">
                         <span style="color: #900; font-weight: normal;">
                             ${client-ip}
                         </span>
@@ -71,9 +73,10 @@
                 </tr>
 
                 <tr valign="top">
-                    <td>محل</td>
-                    <td width="32" style="text-align:center;">-</td>
                     <td>
+                        محل
+                    </td>
+                    <td style="direction: ltr; padding-right: 32px; padding-bottom: 16px;">
                         <span style="color: #900; font-weight: normal;">
                             ${client-location}
                         </span>
@@ -81,9 +84,10 @@
                 </tr>
 
                 <tr valign="top">
-                    <td>مرورگر</td>
-                    <td width="32" style="text-align:center;">-</td>
                     <td>
+                        مرورگر
+                    </td>
+                    <td style="direction: ltr; padding-right: 32px; padding-bottom: 16px;">
                         <span style="color: #900; font-weight: normal;">
                             ${client-user-agent}
                         </span>
@@ -91,9 +95,10 @@
                 </tr>
 
                 <tr valign="top">
-                    <td>ارجاع دهنده</td>
-                    <td width="32" style="text-align:center;">-</td>
                     <td>
+                        ارجاع دهنده
+                    </td>
+                    <td style="direction: ltr; padding-right: 32px; padding-bottom: 16px;">
                         <span style="color: #900; font-weight: normal;">
                             ${client-referer}
                         </span>
@@ -101,17 +106,17 @@
                 </tr>
 
                 <tr valign="top">
-                    <td>زمان</td>
-                    <td width="32" style="text-align:center;">-</td>
                     <td>
+                        زمان
+                    </td>
+                    <td style="direction: ltr; padding-right: 32px; padding-bottom: 16px;">
                         <span style="color: #900; font-weight: normal;">
                             ${time}
                         </span>
                     </td>
                 </tr>
             </table>
-        </blockquote>
-        <br />
-    </blockquote>
+        </div>
+    </div>
 </div>
 

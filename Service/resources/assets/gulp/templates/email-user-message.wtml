@@ -1,13 +1,16 @@
-<div style="font-family: 'Bitstream Vera Sans', arial, helvetica, sans-serif; font-size: 11px; font-weight: bold; color: #203070; letter-spacing: 1px; line-height: 17px;">
-    <blockquote>
-        <br />
-        <h3>User Message</h3>
-        <blockquote>
-            <table>
+<div style="direction: ltr; max-width: 800px; margin: 0 auto; overflow: hidden; font-family: 'Bitstream Vera Sans', arial, helvetica, sans-serif; font-size: 12px; font-weight: bold; color: #203070; letter-spacing: 1px; line-height: 2.4em;">
+    <div style="background: #fff; padding: 24px; line-height: 2.4em;">
+        <div>
+            <h3>
+                User Message
+            </h3>
+
+            <table style="font-size: 12px; margin: 0; padding: 0;">
                 <tr valign="top">
-                    <td>From</td>
-                    <td width="32" style="text-align:center;">-</td>
                     <td>
+                        From
+                    </td>
+                    <td style="padding-left: 32px; padding-bottom: 16px;">
                         <span style="color: #900; font-weight: normal;">
                             ${from}
                         </span>
@@ -15,9 +18,10 @@
                 </tr>
 
                 <tr valign="top">
-                    <td>Email</td>
-                    <td width="32" style="text-align:center;">-</td>
                     <td>
+                        Email
+                    </td>
+                    <td style="padding-left: 32px; padding-bottom: 16px;">
                         <span style="color: #900; font-weight: normal;">
                             ${email}
                         </span>
@@ -25,9 +29,10 @@
                 </tr>
 
                 <tr valign="top">
-                    <td>Url</td>
-                    <td width="32" style="text-align:center;">-</td>
                     <td>
+                        Url
+                    </td>
+                    <td style="padding-left: 32px; padding-bottom: 16px;">
                         <span style="color: #900; font-weight: normal;">
                             ${url}
                         </span>
@@ -35,9 +40,10 @@
                 </tr>
 
                 <tr valign="top">
-                    <td>Subject</td>
-                    <td width="32" style="text-align:center;">-</td>
                     <td>
+                        Subject
+                    </td>
+                    <td style="padding-left: 32px; padding-bottom: 16px;">
                         <span style="color: #900; font-weight: normal;">
                             ${subject}
                         </span>
@@ -45,25 +51,31 @@
                 </tr>
 
                 <tr valign="top">
-                    <td>Body</td>
-                    <td width="32" style="text-align:center;">-</td>
                     <td>
+                        Body
+                    </td>
+                    <td style="padding-left: 32px; padding-bottom: 16px;">
                         <span style="color: #900; font-weight: normal;">
                             ${body}
                         </span>
                     </td>
                 </tr>
             </table>
-        </blockquote>
+        </div>
+
         <br />
 
-        <h3>Extra Info</h3>
-        <blockquote>
-            <table>
+        <div>
+            <h3>
+                Extra Info
+            </h3>
+
+            <table style="font-size: 12px; margin: 0; padding: 0;">
                 <tr valign="top">
-                    <td>IP</td>
-                    <td width="32" style="text-align:center;">-</td>
                     <td>
+                        IP
+                    </td>
+                    <td style="padding-left: 32px; padding-bottom: 16px;">
                         <span style="color: #900; font-weight: normal;">
                             ${client-ip}
                         </span>
@@ -71,9 +83,10 @@
                 </tr>
 
                 <tr valign="top">
-                    <td>Location</td>
-                    <td width="32" style="text-align:center;">-</td>
                     <td>
+                        Location
+                    </td>
+                    <td style="padding-left: 32px; padding-bottom: 16px;">
                         <span style="color: #900; font-weight: normal;">
                             ${client-location}
                         </span>
@@ -81,9 +94,10 @@
                 </tr>
 
                 <tr valign="top">
-                    <td>User Agent</td>
-                    <td width="32" style="text-align:center;">-</td>
                     <td>
+                        User Agent
+                    </td>
+                    <td style="padding-left: 32px; padding-bottom: 16px;">
                         <span style="color: #900; font-weight: normal;">
                             ${client-user-agent}
                         </span>
@@ -91,9 +105,10 @@
                 </tr>
 
                 <tr valign="top">
-                    <td>Referer</td>
-                    <td width="32" style="text-align:center;">-</td>
                     <td>
+                        Referer
+                    </td>
+                    <td style="padding-left: 32px; padding-bottom: 16px;">
                         <span style="color: #900; font-weight: normal;">
                             ${client-referer}
                         </span>
@@ -101,17 +116,17 @@
                 </tr>
 
                 <tr valign="top">
-                    <td>Time</td>
-                    <td width="32" style="text-align:center;">-</td>
                     <td>
+                        Time
+                    </td>
+                    <td style="padding-left: 32px; padding-bottom: 16px;">
                         <span style="color: #900; font-weight: normal;">
                             ${time}
                         </span>
                     </td>
                 </tr>
             </table>
-        </blockquote>
-        <br />
-    </blockquote>
+        </div>
+    </div>
 </div>
 

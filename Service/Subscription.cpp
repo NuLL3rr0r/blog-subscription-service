@@ -809,12 +809,23 @@ Wt::WWidget *Subscription::Impl::GetUnsubscribeForm()
                     FaContentsCheckBox->setChecked(true);
                 }
             } else {
-                if (cgiEnv->GetCurrentLanguage() == CgiEnv::Language::Fa) {
+                if (subscription == "en_fa") {
+                    EnContentsCheckBox->setChecked(true);
+                    FaContentsCheckBox->setChecked(true);
+                } else if (subscription == "en") {
+                    EnContentsCheckBox->setChecked(true);
+                    FaContentsCheckBox->setChecked(false);
+                } else if (subscription == "fa") {
                     EnContentsCheckBox->setChecked(false);
                     FaContentsCheckBox->setChecked(true);
                 } else {
-                    EnContentsCheckBox->setChecked(true);
-                    FaContentsCheckBox->setChecked(false);
+                    if (cgiEnv->GetCurrentLanguage() == CgiEnv::Language::Fa) {
+                        EnContentsCheckBox->setChecked(false);
+                        FaContentsCheckBox->setChecked(true);
+                    } else {
+                        EnContentsCheckBox->setChecked(true);
+                        FaContentsCheckBox->setChecked(false);
+                    }
                 }
             }
 

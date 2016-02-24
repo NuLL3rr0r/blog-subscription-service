@@ -1,66 +1,70 @@
-<div style="font-family: 'Bitstream Vera Sans', arial, helvetica, sans-serif; font-size: 11px; font-weight: bold; color: #203070; letter-spacing: 1px; line-height: 17px;">
-    <blockquote>
-        <br />
-        <h3>اشتراک شما تائید شد!</h3>
-        <br />
-        تبریک! اشتراک شما در خبرنامه تائید شد.
-        <br />
+<div style="direction: rtl; max-width: 800px; margin: 0 auto; overflow: hidden; font-family: 'Bitstream Vera Sans', arial, helvetica, sans-serif; font-size: 14px; letter-spacing: 0;">
+    <div style="background: #fff; padding: 24px; line-height: 2.4em;">
+        <h3>
+            اشتراک شما تائید شد!
+        </h3>
 
-        <h3>درخواست از سوی</h3>
-        <blockquote>
-            <table>
-                <tr valign="top">
-                    <td>آدرس اینترنتی</td>
-                    <td width="32" style="text-align:center;">-</td>
-                    <td>
-                        <span style="color: #900; font-weight: normal;">
-                            ${client-ip}
-                        </span>
-                    </td>
-                </tr>
+        <p>
+            تبریک! اشتراک شما در خبرنامه تائید شد.
+        </p>
+    </div>
 
-                <tr valign="top">
-                    <td>محل</td>
-                    <td width="32" style="text-align:center;">-</td>
-                    <td>
-                        <span style="color: #900; font-weight: normal;">
-                            ${client-location}
-                        </span>
-                    </td>
-                </tr>
+    <div style="padding: 20px; border-top: 1px solid #ddd; color: #777; font-size: 11px;">
+        <h3>
+            درخواست از سوی
+        </h3>
 
-                <tr valign="top">
-                    <td>مرورگر</td>
-                    <td width="32" style="text-align:center;">-</td>
-                    <td>
-                        <span style="color: #900; font-weight: normal;">
-                            ${client-user-agent}
-                        </span>
-                    </td>
-                </tr>
+        <table style="color: #777; font-size: 11px;">
+            <tr valign="top">
+                <td>
+                    آدرس اینترنتی
+                </td>
+                <td width="16"></td>
+                <td>
+                    ${client-ip}
+                </td>
+            </tr>
 
-                <tr valign="top">
-                    <td>ارجاع دهنده</td>
-                    <td width="32" style="text-align:center;">-</td>
-                    <td>
-                        <span style="color: #900; font-weight: normal;">
-                            ${client-referer}
-                        </span>
-                    </td>
-                </tr>
+            <tr valign="top">
+                <td>
+                    محل
+                </td>
+                <td width="16"></td>
+                <td>
+                    ${client-location}
+                </td>
+            </tr>
 
-                <tr valign="top">
-                    <td>زمان</td>
-                    <td width="32" style="text-align:center;">-</td>
-                    <td>
-                        <span style="color: #900; font-weight: normal;">
-                            ${time}
-                        </span>
-                    </td>
-                </tr>
-            </table>
-        </blockquote>
-        <br />
-    </blockquote>
+            <tr valign="top">
+                <td>
+                    مرورگر
+                </td>
+                <td width="16"></td>
+                <td>
+                    ${client-user-agent}
+                </td>
+            </tr>
+
+            <tr valign="top">
+                <td>
+                    ارجاع دهنده
+                </td>
+                <td width="16"></td>
+                <td>
+                    ${client-referer}
+                </td>
+            </tr>
+
+            <tr valign="top">
+                <td>
+                    زمان
+                </td>
+                <td width="16"></td>
+                <td>
+                    ${time}
+                </td>
+            </tr>
+        </table>
+    </div>
 </div>
 

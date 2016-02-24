@@ -353,32 +353,33 @@ void CmsNewsletter::Impl::OnSendConfirmDialogClosed(Wt::StandardButton button)
                 replace_all(htmlData, "${home-page-url}", homePageUrl);
                 replace_all(htmlData, "${home-page-title}", homePageTitle);
 
+                string unsubscribeLink(cgiEnv->GetServerInfo(CgiEnv::ServerInfo::URL));
+                if (!ends_with(unsubscribeLink, "/"))
+                    unsubscribeLink += "/";
+
                 if (recipients == tr("cms-newsletter-all-recipients")) {
+                    unsubscribeLink += "?subscribe=-1&recipient=${uuid},&subscription=en,fa";
+
                     r = Pool::Database()->Sql()
-                            << (format("SELECT inbox, uuid FROM \"%1%\";")
+                            << (format("SELECT inbox, uuid FROM \"%1%\";"
+                                       " WHERE subscription <> 'none';")
                                 % Pool::Database()->GetTableName("SUBSCRIBERS")).str();
                 } else if (recipients == tr("cms-newsletter-english-recipients")) {
+                    unsubscribeLink += "?lang=en&subscribe=-1&recipient=${uuid}&subscription=en";
+
                     r = Pool::Database()->Sql()
                             << (format("SELECT inbox, uuid FROM \"%1%\""
                                        " WHERE subscription = 'en_fa' OR subscription = 'en';")
                                 % Pool::Database()->GetTableName("SUBSCRIBERS")).str();
                 } else if (recipients == tr("cms-newsletter-farsi-recipients")) {
+                    unsubscribeLink += "?lang=fa&subscribe=-1&recipient=${uuid}&subscription=fa";
+
                     r = Pool::Database()->Sql()
                             << (format("SELECT inbox, uuid FROM \"%1%\""
                                        " WHERE subscription = 'en_fa' OR subscription = 'fa';")
                                 % Pool::Database()->GetTableName("SUBSCRIBERS")).str();
                 } else {
                     return;
-                }
-
-                string unsubscribeLink(cgiEnv->GetServerInfo(CgiEnv::ServerInfo::URL));
-                if (!ends_with(unsubscribeLink, "/"))
-                    unsubscribeLink += "/";
-
-                if (cgiEnv->GetCurrentLanguage() == CgiEnv::Language::Fa) {
-                    unsubscribeLink += "?subscribe=-1&recipient=%1%&subscription=fa";
-                } else {
-                    unsubscribeLink += "?subscribe=-1&recipient=%1%&subscription=en";
                 }
 
                 string message;
@@ -389,7 +390,7 @@ void CmsNewsletter::Impl::OnSendConfirmDialogClosed(Wt::StandardButton button)
                     r >> inbox >> uuid;
 
                     message.assign(replace_all_copy(htmlData, "unsubscribe-link",
-                                                    (format(unsubscribeLink) % uuid).str()));
+                                                    (replace_all_copy(unsubscribeLink, "${uuid}", uuid))));
 
                     CoreLib::Mail *mail = new CoreLib::Mail(
                                 cgiEnv->GetServerInfo(CgiEnv::ServerInfo::NoReplyAddr), inbox,
@@ -399,7 +400,7 @@ void CmsNewsletter::Impl::OnSendConfirmDialogClosed(Wt::StandardButton button)
                 }
 
                 message.assign(replace_all_copy(htmlData, "unsubscribe-link",
-                                                (format(unsubscribeLink) % "{root}").str()));
+                                                (replace_all_copy(unsubscribeLink, "${uuid}", uuid))));
 
                 CoreLib::Mail *mail = new CoreLib::Mail(
                             cgiEnv->GetServerInfo(CgiEnv::ServerInfo::NoReplyAddr),
