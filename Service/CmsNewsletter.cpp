@@ -167,11 +167,11 @@ WWidget *CmsNewsletter::Layout()
             }
 
             /// http://www.tinymce.com/wiki.php/Plugins
-            /// Excludes: compat3x,bbcode
+            /// Excludes: compat3x,bbcode,fullpage for good reasons
             /// Note: 'legacyoutput' plugin should be enabled due to the lack of HTML5 support in some mail clients
             m_pimpl->BodyTextEdit->setExtraPlugins("advlist,anchor,autolink,autoresize,autosave"
                                                    ",charmap,code,codesample,colorpicker,contextmenu"
-                                                   ",directionality,emoticons,fullpage,fullscreen,hr"
+                                                   ",directionality,emoticons,fullscreen,hr"
                                                    ",image,imagetools,importcss,insertdatetime,layer"
                                                    ",legacyoutput,link,lists,media,nonbreaking,noneditable"
                                                    ",pagebreak,paste,preview,print,save,searchreplace,spellchecker"
@@ -179,7 +179,7 @@ WWidget *CmsNewsletter::Layout()
                                                    ",visualblocks,visualchars,wordcount");
 
             /// http://www.tinymce.com/wiki.php/Configuration:toolbar%3CN%3E
-            m_pimpl->BodyTextEdit->setToolBar(0, "newdocument save restoredraft fullpage print"
+            m_pimpl->BodyTextEdit->setToolBar(0, "newdocument save restoredraft print"
                                               " | undo redo | cut copy paste pastetext | searchreplace"
                                               " | visualchars visualblocks | fullscreen preview | code"
                                               " | spellchecker | help");
@@ -404,7 +404,6 @@ void CmsNewsletter::Impl::OnSendConfirmDialogClosed(Wt::StandardButton button)
                     replace_all(message, "unsubscribe-link-en", replace_all_copy(enUnsubscribeLink, "${uuid}", uuid));
                     replace_all(message, "unsubscribe-link-fa", replace_all_copy(faUnsubscribeLink, "${uuid}", uuid));
 
-
                     CoreLib::Mail *mail = new CoreLib::Mail(
                                 cgiEnv->GetServerInfo(CgiEnv::ServerInfo::NoReplyAddr), inbox,
                                 subject, message);
@@ -412,8 +411,9 @@ void CmsNewsletter::Impl::OnSendConfirmDialogClosed(Wt::StandardButton button)
                     mail->SendAsync();
                 }
 
-                message.assign(replace_all_copy(htmlData, "unsubscribe-link",
-                                                (replace_all_copy(unsubscribeLink, "${uuid}", uuid))));
+                message.assign(htmlData);
+                replace_all(message, "unsubscribe-link-en", "javascript:;");
+                replace_all(message, "unsubscribe-link-fa", "javascript:;");
 
                 CoreLib::Mail *mail = new CoreLib::Mail(
                             cgiEnv->GetServerInfo(CgiEnv::ServerInfo::NoReplyAddr),

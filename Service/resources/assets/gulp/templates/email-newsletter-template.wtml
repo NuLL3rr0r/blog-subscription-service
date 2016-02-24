@@ -4,7 +4,7 @@
     </div>
 
     <div style="padding: 20px; border-top: 1px solid #ddd; color: #900; font-size: 12px;">
-        <a href="${unsubscribe-link}" title="Unsubscribe" style="text-decoration: none; color: #203070;">
+        <a href="${unsubscribe-link-en}" title="Unsubscribe" style="text-decoration: none; color: #203070;">
             Unsubscribe
         </a>
         to no longer receive posts from
