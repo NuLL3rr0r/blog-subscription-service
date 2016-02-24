@@ -286,12 +286,13 @@ void CmsNewsletter::Impl::OnSendButtonPressed()
 void CmsNewsletter::Impl::OnSendConfirmDialogClosed(Wt::StandardButton button)
 {
     if (button == Ok) {
-        string recipients(RecipientsComboBox->currentText().toUTF8());
+        WString recipients(RecipientsComboBox->currentText());
 
         if (recipients != tr("cms-newsletter-all-recipients")
                 && recipients != tr("cms-newsletter-english-recipients")
                 && recipients != tr("cms-newsletter-farsi-recipients")) {
             RecipientsComboBox->setFocus();
+
             return;
         }
 
@@ -324,6 +325,7 @@ void CmsNewsletter::Impl::OnSendConfirmDialogClosed(Wt::StandardButton button)
             } else if (recipients == tr("cms-newsletter-farsi-recipients")) {
                 file = "../templates/email-newsletter-template-fa.wtml";
             } else {
+                LOG_DEBUG("Ops");
                 return;
             }
 
@@ -340,6 +342,7 @@ void CmsNewsletter::Impl::OnSendConfirmDialogClosed(Wt::StandardButton button)
                 } else if (recipients == tr("cms-newsletter-farsi-recipients")) {
                     homePageFields = "homepage_url_fa, homepage_title_fa";
                 } else {
+                    LOG_DEBUG("Ops");
                     return;
                 }
 
@@ -385,6 +388,7 @@ void CmsNewsletter::Impl::OnSendConfirmDialogClosed(Wt::StandardButton button)
                                        " WHERE subscription = 'en_fa' OR subscription = 'fa';")
                                 % Pool::Database()->GetTableName("SUBSCRIBERS")).str();
                 } else {
+                    LOG_DEBUG("Ops");
                     return;
                 }
 

@@ -160,7 +160,7 @@
     <message id="cms-newsletter-send-confirm-cancel">لغو</message>
     <message id="cms-newsletter-clear">پیام جدید</message>
     <message id="cms-newsletter-clear-confirm-title">تنظیم مجدد</message>
-    <message id="cms-newsletter-clear-confirm-message">آیا مطمئن هستید؟ تمامی تغییرات شما بازنویسی خواهد شد!</message>
+    <message id="cms-newsletter-clear-confirm-message">آیا مطمئن هستید؟ تمامی تغییرات شما رونویسی خواهد شد!</message>
     <message id="cms-newsletter-clear-confirm-ok">تائید</message>
     <message id="cms-newsletter-clear-confirm-cancel">لغو</message>
     <message id="cms-newsletter-sent-successfully-title">موفق</message>
