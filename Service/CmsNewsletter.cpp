@@ -369,7 +369,7 @@ void CmsNewsletter::Impl::OnSendConfirmDialogClosed(Wt::StandardButton button)
                     unsubscribeLink += "?subscribe=-1&recipient=${uuid},&subscription=en,fa";
 
                     r = Pool::Database()->Sql()
-                            << (format("SELECT inbox, uuid FROM \"%1%\";"
+                            << (format("SELECT inbox, uuid FROM \"%1%\""
                                        " WHERE subscription <> 'none';")
                                 % Pool::Database()->GetTableName("SUBSCRIBERS")).str();
                 } else if (recipients == tr("cms-newsletter-english-recipients")) {
@@ -401,8 +401,8 @@ void CmsNewsletter::Impl::OnSendConfirmDialogClosed(Wt::StandardButton button)
                     r >> inbox >> uuid;
 
                     message.assign(htmlData);
-                    replace_all(htmlData, "unsubscribe-link-en", replace_all_copy(enUnsubscribeLink, "${uuid}", uuid));
-                    replace_all(htmlData, "unsubscribe-link-fa", replace_all_copy(faUnsubscribeLink, "${uuid}", uuid));
+                    replace_all(message, "unsubscribe-link-en", replace_all_copy(enUnsubscribeLink, "${uuid}", uuid));
+                    replace_all(message, "unsubscribe-link-fa", replace_all_copy(faUnsubscribeLink, "${uuid}", uuid));
 
                     CoreLib::Mail *mail = new CoreLib::Mail(
                                 cgiEnv->GetServerInfo(CgiEnv::ServerInfo::NoReplyAddr), inbox,
