@@ -467,7 +467,8 @@ Wt::WWidget *Subscription::Impl::GetSubscribeForm()
             EnContentsCheckBox = new WCheckBox();
             FaContentsCheckBox = new WCheckBox();
 
-            if (cgiEnv->SubscriptionData.Subscribe == CgiEnv::Subscription::Action::Subscribe
+            if ((cgiEnv->SubscriptionData.Subscribe == CgiEnv::Subscription::Action::Subscribe
+                 || cgiEnv->SubscriptionData.Subscribe == CgiEnv::Subscription::Action::None)
                     && cgiEnv->SubscriptionData.Languages.size() > 0) {
                 if (std::find(cgiEnv->SubscriptionData.Languages.begin(), cgiEnv->SubscriptionData.Languages.end(),
                               CgiEnv::Subscription::Language::En) != cgiEnv->SubscriptionData.Languages.end()) {
