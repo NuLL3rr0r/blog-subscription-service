@@ -85,6 +85,10 @@
                 </tr>
             </table>
         </blockquote>
+
+        <div class="force-terminate-all-sessions h-center">
+            ${force-terminate-all-sessions}
+        </div>
     </div>
 
     <div class="clearfix"></div>

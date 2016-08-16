@@ -803,7 +803,7 @@ void SysMon::Impl::Initialize()
 
 
     /// Initialize and start the timer
-    Timer = new Wt::WTimer();
+    Timer = new Wt::WTimer(this);
     Timer->setInterval(1000);
     Timer->timeout().connect(this, &SysMon::Impl::RefreshResourceUsage);
 }

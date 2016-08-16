@@ -33,13 +33,19 @@
  */
 
 
+#include <ctime>
+#include <boost/exception/diagnostic_information.hpp>
+#include <boost/format.hpp>
 #include <Wt/WApplication>
 #include <Wt/WContainerWidget>
 #include <Wt/WSignalMapper>
 #include <Wt/WStackedWidget>
 #include <Wt/WTemplate>
 #include <Wt/WText>
+#include <Wt/WTimer>
 #include <Wt/WWidget>
+#include <CoreLib/CDate.hpp>
+#include <CoreLib/Database.hpp>
 #include <CoreLib/FileSystem.hpp>
 #include <CoreLib/Log.hpp>
 #include <CoreLib/Random.hpp>
@@ -59,6 +65,8 @@
 #include "SysMon.hpp"
 
 using namespace std;
+using namespace boost;
+using namespace cppdb;
 using namespace Wt;
 using namespace CoreLib;
 using namespace Service;
@@ -66,7 +74,7 @@ using namespace Service;
 struct Cms::Impl : public Wt::WObject
 {
 public:
-    Wt::WStackedWidget *Contents;
+    WStackedWidget *Contents;
     WText *LastSelectedMenuItem;
 
     SysMon *SystemMonitor;
@@ -77,6 +85,12 @@ public:
 
 public:
     void OnMenuItemPressed(WText *sender);
+
+public:
+    void ValidateSession();
+
+private:
+    void ForceExit();
 };
 
 Cms::Cms()
@@ -93,6 +107,11 @@ Cms::Cms()
 
     app->root()->clear();
     app->root()->addWidget(this);
+
+    WTimer *timer = new WTimer(this);
+    timer->setInterval(60000);       // every one minute
+    timer->timeout().connect(m_pimpl.get(), &Cms::Impl::ValidateSession);
+    timer->start();
 }
 
 Cms::~Cms() = default;
@@ -258,13 +277,64 @@ void Cms::Impl::OnMenuItemPressed(WText *sender)
         }
         return;
     } else if (sender->id() == "menu-item-exit") {
-        srand((unsigned int)System::RandSeed());
-        cgiRoot->removeCookie("cms-session-user");
-        cgiRoot->removeCookie("cms-session-token");
-        cgiRoot->Exit("/?root&logout");
+        ForceExit();
         return;
     } else {
         LOG_WARNING("ERROR: INVALID STACKED-WIDGET PAGE ID!");
     }
+}
+
+void Cms::Impl::ValidateSession()
+{
+    transaction guard(Service::Pool::Database()->Sql());
+
+    try {
+        CgiRoot *cgiRoot = static_cast<CgiRoot *>(WApplication::instance());
+        CgiEnv *cgiEnv = cgiRoot->GetCgiEnvInstance();
+
+        result r = Pool::Database()->Sql()
+                << (format("SELECT expiry FROM \"%1%\""
+                           " WHERE token=?;")
+                    % Pool::Database()->GetTableName("ROOT_SESSIONS")).str()
+                << cgiEnv->SignedInUser.SessionToken << row;
+
+        string expiry("0");
+        if (!r.empty()) {
+            r >> expiry;
+        }
+
+        time_t rawTime = lexical_cast<time_t>(expiry);
+        CDate::Now n;
+
+        if (rawTime < n.RawTime) {
+            ForceExit();
+        }
+    }
+
+    catch (boost::exception &ex) {
+        LOG_ERROR(boost::diagnostic_information(ex));
+    }
+
+    catch (std::exception &ex) {
+        LOG_ERROR(ex.what());
+    }
+
+    catch (...) {
+        LOG_ERROR(UNKNOWN_ERROR);
+    }
+
+    guard.rollback();
+}
+
+void Cms::Impl::ForceExit()
+{
+    CgiRoot *cgiRoot = static_cast<CgiRoot *>(WApplication::instance());
+
+    srand((unsigned int)System::RandSeed());
+    try {
+        cgiRoot->removeCookie("cms-session-token");
+    } catch(...) {
+    }
+    cgiRoot->Exit("/?root&logout");
 }
 

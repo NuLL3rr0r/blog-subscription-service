@@ -143,13 +143,6 @@
     <message id="cms-dashboard-last-login-info-referer">ارجاع دهنده</message>
     <message id="cms-dashboard-last-login-info-time">زمان</message>
     <message id="cms-dashboard-force-terminate-all-sessions">متوقف نمودن تمامی جلسات</message>
-    <message id="cms-dashboard-force-terminate-all-sessions-confirm-title">خاتمه جلسات</message>
-    <message id="cms-dashboard-force-terminate-all-sessions-confirm-question">آیا تمامی جلسات فعال خاتمه یابند؟</message>
-    <message id="cms-dashboard-force-terminate-all-sessions-confirm-ok">بلی</message>
-    <message id="cms-dashboard-force-terminate-all-sessions-confirm-cancel">خیر</message>
-    <message id="cms-dashboard-force-terminate-all-sessions-has-been-scheduled-title">خاتمه جلسات</message>
-    <message id="cms-dashboard-force-terminate-all-sessions-has-been-scheduled-message">به زودی تمامی جلسات فعال خاتمه خواهند یافت.</message>
-    <message id="cms-dashboard-force-terminate-all-sessions-has-been-scheduled-ok">تائید</message>
     <message id="cms-newsletter-page-title">خبرنامه</message>
     <message id="cms-newsletter-recipients">دریافت کنندگان</message>
     <message id="cms-newsletter-recipients-placeholders">دریافت کنندگان</message>

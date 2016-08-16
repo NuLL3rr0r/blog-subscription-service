@@ -229,6 +229,18 @@ void InitializeDatabase()
                                                  " pwd TEXT NOT NULL, "
                                                  " recovery_pwd TEXT ");
 
+        Service::Pool::Database()->RegisterTable("ROOT_SESSIONS", "root_sessions",
+                                                 " token TEXT NOT NULL PRIMARY KEY, "
+                                                 " expiry TEXT NOT NULL DEFAULT '0', "
+                                                 " ip TEXT, "
+                                                 " location TEXT, "
+                                                 " rawtime TEXT, "
+                                                 " gdate TEXT, "
+                                                 " jdate TEXT, "
+                                                 " time TEXT, "
+                                                 " user_agent TEXT, "
+                                                 " referer TEXT ");
+
         Service::Pool::Database()->RegisterTable("SETTINGS", "settings",
                                                  " pseudo_id TEXT NOT NULL PRIMARY KEY, "
                                                  " homepage_url_en TEXT NOT NULL, "

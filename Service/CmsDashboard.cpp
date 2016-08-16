@@ -34,12 +34,16 @@
 
 
 #include <boost/exception/diagnostic_information.hpp>
+#include <boost/format.hpp>
 #include <Wt/WApplication>
+#include <Wt/WMessageBox>
+#include <Wt/WPushButton>
 #include <Wt/WString>
 #include <Wt/WTemplate>
 #include <Wt/WText>
 #include <Wt/WWidget>
 #include <CoreLib/FileSystem.hpp>
+#include <CoreLib/Database.hpp>
 #include <CoreLib/Log.hpp>
 #include "CgiEnv.hpp"
 #include "CgiRoot.hpp"
@@ -49,6 +53,7 @@
 
 using namespace std;
 using namespace boost;
+using namespace cppdb;
 using namespace Wt;
 using namespace CoreLib;
 using namespace Service;
@@ -56,8 +61,17 @@ using namespace Service;
 struct CmsDashboard::Impl : public Wt::WObject
 {
 public:
+    std::unique_ptr<Wt::WMessageBox> ForceTerminateAllSessionsMessageBox;
+    std::unique_ptr<Wt::WMessageBox> SessionTerminationScheduledMessageBox;
+
+public:
     Impl();
     ~Impl();
+
+public:
+    void OnForceTerminateAllSessionsPushButtonPressed();
+    void OnForceTerminateAllSessionsDialogClosed(Wt::StandardButton button);
+    void OnSessionTerminationScheduledDialogClosed(Wt::StandardButton button);
 };
 
 CmsDashboard::CmsDashboard()
@@ -92,6 +106,10 @@ WWidget *CmsDashboard::Layout()
             WTemplate *tmpl = new WTemplate(container);
             tmpl->setTemplateText(WString::fromUTF8(htmlData), TextFormat::XHTMLUnsafeText);
 
+
+            WPushButton *forceTerminateAllSessionsPushButton = new WPushButton(tr("cms-dashboard-force-terminate-all-sessions"));
+            forceTerminateAllSessionsPushButton->setStyleClass("btn btn-default");
+
             tmpl->bindWidget("welcome-message", new WText(tr("cms-dashboard-welcome-message")));
 
             tmpl->bindWidget("last-login-title", new WText(tr("cms-dashboard-last-login-info-title")));
@@ -108,7 +126,11 @@ WWidget *CmsDashboard::Layout()
             tmpl->bindWidget("last-login-time-gdate", new WText(WString::fromUTF8(cgiEnv->SignedInUser.LastLogin.LoginGDate)));
             tmpl->bindWidget("last-login-time-jdate", new WText(WString::fromUTF8(cgiEnv->SignedInUser.LastLogin.LoginJDate)));
             tmpl->bindWidget("last-login-time", new WText(WString::fromUTF8(cgiEnv->SignedInUser.LastLogin.LoginTime)));
-        }
+
+            tmpl->bindWidget("force-terminate-all-sessions", forceTerminateAllSessionsPushButton);
+
+            forceTerminateAllSessionsPushButton->clicked().connect(m_pimpl.get(), &CmsDashboard::Impl::OnForceTerminateAllSessionsPushButtonPressed);
+       }
     }
 
     catch (boost::exception &ex) {
@@ -132,4 +154,72 @@ CmsDashboard::Impl::Impl()
 }
 
 CmsDashboard::Impl::~Impl() = default;
+
+void CmsDashboard::Impl::OnForceTerminateAllSessionsPushButtonPressed()
+{
+    ForceTerminateAllSessionsMessageBox =
+            std::make_unique<WMessageBox>(tr("cms-dashboard-force-terminate-all-sessions-confirm-title"),
+                                              tr("cms-dashboard-force-terminate-all-sessions-confirm-question"), Warning, NoButton);
+
+    ForceTerminateAllSessionsMessageBox->addButton(tr("cms-dashboard-force-terminate-all-sessions-confirm-ok"), Ok);
+    ForceTerminateAllSessionsMessageBox->addButton(tr("cms-dashboard-force-terminate-all-sessions-confirm-cancel"), Cancel);
+
+    ForceTerminateAllSessionsMessageBox->buttonClicked().connect(this, &CmsDashboard::Impl::OnForceTerminateAllSessionsDialogClosed);
+
+    ForceTerminateAllSessionsMessageBox->show();
+}
+
+void CmsDashboard::Impl::OnForceTerminateAllSessionsDialogClosed(Wt::StandardButton button)
+{
+    try {
+        if (button == Ok) {
+
+            transaction guard(Service::Pool::Database()->Sql());
+
+            Pool::Database()->Sql()
+                        << (format("UPDATE \"%1%\""
+                                   " SET expiry='0';")
+                           % Pool::Database()->GetTableName("ROOT_SESSIONS")).str()
+                        << exec;
+
+            guard.commit();
+
+            ForceTerminateAllSessionsMessageBox.reset();
+
+            SessionTerminationScheduledMessageBox =
+                    std::make_unique<WMessageBox>(tr("cms-dashboard-force-terminate-all-sessions-has-been-scheduled-title"),
+                                                  tr("cms-dashboard-force-terminate-all-sessions-has-been-scheduled-message"),
+                                                  Warning, NoButton);
+            SessionTerminationScheduledMessageBox->addButton(tr("cms-dashboard-force-terminate-all-sessions-has-been-scheduled-ok"), Ok);
+
+            SessionTerminationScheduledMessageBox->buttonClicked().connect(
+                        this, &CmsDashboard::Impl::OnSessionTerminationScheduledDialogClosed);
+
+            SessionTerminationScheduledMessageBox->show();
+
+            return;
+        }
+    }
+
+    catch (boost::exception &ex) {
+        LOG_ERROR(boost::diagnostic_information(ex));
+    }
+
+    catch (std::exception &ex) {
+        LOG_ERROR(ex.what());
+    }
+
+    catch (...) {
+        LOG_ERROR(UNKNOWN_ERROR);
+    }
+
+    ForceTerminateAllSessionsMessageBox.reset();
+}
+
+void CmsDashboard::Impl::OnSessionTerminationScheduledDialogClosed(Wt::StandardButton button)
+{
+    (void)button;
+
+    SessionTerminationScheduledMessageBox.reset();
+}
 

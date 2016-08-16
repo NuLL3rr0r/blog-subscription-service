@@ -99,6 +99,7 @@ public:
 
 public:
     struct SignedIn {
+        std::string SessionToken;
         std::string Username;
         std::string Email;
         struct LastLoginData {

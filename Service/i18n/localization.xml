@@ -146,6 +146,14 @@
     <message id="cms-dashboard-last-login-info-user-agent">User Agent</message>
     <message id="cms-dashboard-last-login-info-referer">Referer</message>
     <message id="cms-dashboard-last-login-info-time">Time</message>
+    <message id="cms-dashboard-force-terminate-all-sessions">Force Terminate All Sessions</message>
+    <message id="cms-dashboard-force-terminate-all-sessions-confirm-title">Terminate All Sessions</message>
+    <message id="cms-dashboard-force-terminate-all-sessions-confirm-question">Force terminate all active sessions? Are you Sure?</message>
+    <message id="cms-dashboard-force-terminate-all-sessions-confirm-ok">Yes</message>
+    <message id="cms-dashboard-force-terminate-all-sessions-confirm-cancel">No</message>
+    <message id="cms-dashboard-force-terminate-all-sessions-has-been-scheduled-title">Session Termination</message>
+    <message id="cms-dashboard-force-terminate-all-sessions-has-been-scheduled-message">Session termination has been scheduled for all active sessions and will start shortly.</message>
+    <message id="cms-dashboard-force-terminate-all-sessions-has-been-scheduled-ok">OK</message>
     <message id="cms-newsletter-page-title">Newsletter</message>
     <message id="cms-newsletter-recipients">Recipients</message>
     <message id="cms-newsletter-recipients-placeholder">Recipients</message>

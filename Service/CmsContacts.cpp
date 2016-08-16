@@ -509,10 +509,11 @@ void CmsContacts::Impl::OnEraseDialogClosed(Wt::StandardButton button)
                 guard.commit();
             } else {
                 guard.rollback();
-
             }
 
             FillContactsDataTable();
+        } else {
+            guard.rollback();
         }
     }
 

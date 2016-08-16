@@ -33,6 +33,7 @@
  */
 
 
+#include <ctime>
 #include <boost/algorithm/string.hpp>
 #include <boost/exception/diagnostic_information.hpp>
 #include <boost/format.hpp>
@@ -134,29 +135,34 @@ RootLogin::RootLogin()
     try {
         if (cgiEnv->IsRootLogoutRequested()) {
             try {
-                cgiRoot->removeCookie("cms-session-user");
-            } catch (...) {
-            }
-            try {
                 cgiRoot->removeCookie("cms-session-token");
             } catch (...) {
             }
             hasValidSession = false;
         } else {
-            string user(cgiRoot->environment().getCookie("cms-session-user"));
             string token(cgiRoot->environment().getCookie("cms-session-token"));
-            Pool::Crypto()->Decrypt(user, user);
             Pool::Crypto()->Decrypt(token, token);
 
             try {
-                time_t rawTime = lexical_cast<time_t>(token);
+                result r = Pool::Database()->Sql()
+                        << (format("SELECT expiry FROM \"%1%\""
+                                   " WHERE token=?;")
+                           % Pool::Database()->GetTableName("ROOT_SESSIONS")).str()
+                                << token << row;
+
+                string expiry("0");
+                if (!r.empty()) {
+                    r >> expiry;
+                }
+
+                time_t rawTime = lexical_cast<time_t>(expiry);
 
                 CDate::Now n;
-                if (rawTime + Pool::Storage()->RootSessionLifespan() >= n.RawTime) {
+                if (rawTime >= n.RawTime) {
                     transaction guard(Service::Pool::Database()->Sql());
 
                     try {
-                        result r = Pool::Database()->Sql()
+                        r = Pool::Database()->Sql()
                                 << (format("SELECT username, email,"
                                            " last_login_ip, last_login_location,"
                                            " last_login_rawtime,"
@@ -165,7 +171,7 @@ RootLogin::RootLogin()
                                            " last_login_user_agent, last_login_referer"
                                            " FROM \"%1%\" WHERE username=?;")
                                     % Pool::Database()->GetTableName("ROOT")).str()
-                                << user << row;
+                                << Service::Pool::Storage()->RootUsername() << row;
 
                         if (!r.empty()) {
                             r >> cgiEnv->SignedInUser.Username
@@ -228,6 +234,7 @@ RootLogin::RootLogin()
     if (!hasValidSession) {
         if (cgiEnv->IsRootLogoutRequested()) {
             cgiRoot->setTitle(tr("root-logout-page-title"));
+
             this->clear();
             this->setId("RootLogoutPage");
             this->setStyleClass("root-logout-page full-width full-height");
@@ -387,7 +394,7 @@ void RootLogin::Impl::OnLoginFormSubmitted()
                     % Pool::Database()->GetTableName("ROOT")).str()
                 << user << pwd << row;
 
-        // One-time passowrd
+        // Recovery passowrd
         if (r.empty()) {
             r = Pool::Database()->Sql()
                     << (format("SELECT username, email,"
@@ -401,8 +408,8 @@ void RootLogin::Impl::OnLoginFormSubmitted()
                     << user << pwd << row;
             Pool::Database()->Update("ROOT",
                                      "username", user,
-                                     "recovery_pwd=?",
-            { "" });
+                                     "pwd=?, recovery_pwd=?",
+            { pwd, "" });
         }
 
         if (r.empty()) {
@@ -679,21 +686,53 @@ void RootLogin::Impl::PreserveSessionData(const CDate::Now &n, const std::string
                                      cgiEnv->GetClientInfo(CgiEnv::ClientInfo::Referer)
                                  });
 
-        string user;
         string token;
+        while (true) {
+            CoreLib::Random::Uuid(token);
 
-        if (saveLocally) {
-            Pool::Crypto()->Encrypt(username, user);
-            Pool::Crypto()->Encrypt(lexical_cast<std::string>(n.RawTime), token);
+            result r = Pool::Database()->Sql()
+                    << (format("SELECT token FROM \"%1%\""
+                               " WHERE token=?;")
+                        % Pool::Database()->GetTableName("ROOT_SESSIONS")).str()
+                    << token << row;
+
+            if (r.empty()) {
+                break;
+            }
         }
 
-        if (cgiRoot->environment().supportsCookies()) {
-            cgiRoot->setCookie("cms-session-user",
-                           user,
-                           Pool::Storage()->RootSessionLifespan());
-            cgiRoot->setCookie("cms-session-token",
-                           token,
-                           Pool::Storage()->RootSessionLifespan());
+        cgiEnv->SignedInUser.SessionToken = token;
+
+        string expiry("0");
+        if (saveLocally) {
+            expiry = lexical_cast<std::string>(n.RawTime + Pool::Storage()->RootSessionLifespan());
+        }
+
+        Pool::Database()->Insert("ROOT_SESSIONS",
+                                 "token, expiry,"
+                                 " ip, location,"
+                                 " rawtime, gdate, jdate, time,"
+                                 " user_agent, referer",
+                                 {
+                                     token, expiry,
+                                     cgiEnv->GetClientInfo(CgiEnv::ClientInfo::IP),
+                                     cgiEnv->GetClientInfo(CgiEnv::ClientInfo::Location),
+                                     lexical_cast<std::string>(n.RawTime),
+                                     DateConv::ToGregorian(n),
+                                     DateConv::DateConv::ToJalali(n),
+                                     DateConv::Time(n),
+                                     cgiEnv->GetClientInfo(CgiEnv::ClientInfo::Browser),
+                                     cgiEnv->GetClientInfo(CgiEnv::ClientInfo::Referer)
+                                 });
+
+        if (saveLocally) {
+            Pool::Crypto()->Encrypt(token, token);
+
+            if (cgiRoot->environment().supportsCookies()) {
+                cgiRoot->setCookie("cms-session-token",
+                               token,
+                               Pool::Storage()->RootSessionLifespan());
+            }
         }
     }
 
@@ -798,10 +837,6 @@ Wt::WWidget *RootLogin::Impl::LogoutPage()
     CgiRoot *cgiRoot = static_cast<CgiRoot *>(WApplication::instance());
     CgiEnv *cgiEnv = cgiRoot->GetCgiEnvInstance();
 
-    try {
-        cgiRoot->removeCookie("cms-session-user");
-    } catch (...) {
-    }
     try {
         cgiRoot->removeCookie("cms-session-token");
     } catch (...) {
