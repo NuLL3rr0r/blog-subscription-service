@@ -79,7 +79,7 @@ void Random::Uuid(std::string &out_uuid)
 {
     static uuids::basic_random_generator<random::mt19937> rng(&GetEngine());
     uuids::uuid u = rng();
-    out_uuid.assign(std::move(uuids::to_string(u)));
+    out_uuid.assign(uuids::to_string(u));
 }
 
 std::string Random::Uuid()
