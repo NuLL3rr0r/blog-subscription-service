@@ -301,8 +301,12 @@ IF ( CXX_CLANG )
         SET ( CXX_COMPILE_MODE "${CXX_COMPILE_MODE_11}" )
     ENDIF (  )
 
-    SET ( CLANG_CXX_FLAGS_WARN_LEVEL "-Weverything -Wno-c++98-compat -Wno-c++98-compat-pedantic -Wno-global-constructors -Wno-exit-time-destructors -Wno-padded -Wno-weak-vtables -Wno-date-time" )
+    SET ( CLANG_CXX_FLAGS_WARN_LEVEL "-Weverything -Wno-c++98-compat -Wno-c++98-compat-pedantic -Wno-global-constructors -Wno-exit-time-destructors -Wno-padded -Wno-weak-vtables" )
     SET ( CLANG_CXX_FLAGS_ISO_CPP "-pedantic" )
+
+    IF ( CLANG_MINOR GREATER 6 )
+        SET ( CLANG_CXX_FLAGS_WARN_LEVEL "${CLANG_CXX_FLAGS_WARN_LEVEL} -Wno-date-time" )
+    ENDIF (  )
 
     IF ( CMAKE_BUILD_TYPE MATCHES "ClangMinSizeRel"
             OR CMAKE_BUILD_TYPE MATCHES "ClangMaxSpeedRel"
