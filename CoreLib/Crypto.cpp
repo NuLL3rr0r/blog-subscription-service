@@ -51,6 +51,7 @@
 #include <cryptopp/sha.h>
 #include <b64/decode.h>
 #include <b64/encode.h>
+#include <sodium.h>
 #include "Crypto.hpp"
 #include "make_unique.hpp"
 
@@ -234,6 +235,33 @@ void Crypto::Base64Encode(std::istream &inputStream, std::ostream &outputStream)
     encoder.encode(inputStream, outputStream);
 }
 
+bool Crypto::Argon2i(const std::string &passwd, std::string &out_hashedPasswd,
+                     const Argon2iOpsLimit &opsLimit, const Argon2iMemLimit &memLimit)
+{
+    out_hashedPasswd.clear();
+    char hashed[crypto_pwhash_STRBYTES];
+
+    if (crypto_pwhash_str(hashed, passwd.c_str(), passwd.size(),
+                          static_cast<unsigned long long>(opsLimit),
+                          static_cast<unsigned long long>(memLimit)) != 0) {
+        // out of memory
+        return false;
+    }
+
+    out_hashedPasswd.assign(hashed);
+    return true;
+}
+
+bool Crypto::Argon2iVerify(const std::string &passwd, const std::string &hashedPasswd)
+{
+    if (crypto_pwhash_str_verify(hashedPasswd.c_str(), passwd.c_str(), passwd.size()) != 0) {
+        // wrong password
+        return false;
+    }
+
+    return true;
+}
+
 Crypto::Crypto(const Byte *key, std::size_t keyLen, const Byte *iv, std::size_t ivLen) :
     m_pimpl(make_unique<Crypto::Impl>())
 {
@@ -304,7 +332,7 @@ std::string Crypto::HexStringToString(const std::string &hexString)
     ostringstream oss;
 
     for (vector<string>::iterator it = bytes.begin(); it != bytes.end(); ++it) {
-        oss << (char)strtol(it->c_str(), NULL, 16);
+        oss << static_cast<char>(strtol(it->c_str(), NULL, 16));
     }
 
     return oss.str();
@@ -318,7 +346,7 @@ std::wstring Crypto::HexStringToWString(const std::wstring &hexString)
     wostringstream woss;
 
     for (vector<wstring>::iterator it = bytes.begin(); it != bytes.end(); ++it) {
-        woss << (wchar_t)wcstol(it->c_str(), NULL, 16);
+        woss << static_cast<wchar_t>(wcstol(it->c_str(), NULL, 16));
     }
 
     return woss.str();
