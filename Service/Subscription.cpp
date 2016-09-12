@@ -415,7 +415,7 @@ void Subscription::Impl::OnUnsubscribeFormSubmitted()
 void Subscription::Impl::GenerateCaptcha()
 {
     CaptchaImage->setImageRef(Captcha->Generate()->imageRef());
-    int captchaResult = (int)Captcha->GetResult();
+    int captchaResult = static_cast<int>(Captcha->GetResult());
     CaptchaValidator->setRange(captchaResult, captchaResult);
 }
 
@@ -501,7 +501,7 @@ Wt::WWidget *Subscription::Impl::GetSubscribeForm()
             CaptchaImage->setAlternateText(tr("home-captcha-hint"));
             CaptchaImage->setAttributeValue("title", tr("home-captcha-hint"));
 
-            int captchaResult = (int)Captcha->GetResult();
+            int captchaResult = static_cast<int>(Captcha->GetResult());
 
             CaptchaLineEdit = new WLineEdit();
             CaptchaLineEdit->setPlaceholderText(tr("home-captcha-hint"));
@@ -844,7 +844,7 @@ Wt::WWidget *Subscription::Impl::GetUnsubscribeForm()
             CaptchaImage->setAlternateText(tr("home-captcha-hint"));
             CaptchaImage->setAttributeValue("title", tr("home-captcha-hint"));
 
-            int captchaResult = (int)Captcha->GetResult();
+            int captchaResult = static_cast<int>(Captcha->GetResult());
 
             CaptchaLineEdit = new WLineEdit();
             CaptchaLineEdit->setPlaceholderText(tr("home-captcha-hint"));

@@ -70,8 +70,8 @@ Captcha::~Captcha() = default;
 
 Wt::WImage *Captcha::Generate()
 {
-    size_t n1 = (size_t)Random::Number(1, 10);
-    size_t n2 = (size_t)Random::Number(1, 10);
+    size_t n1 = static_cast<size_t>(Random::Number(1, 10));
+    size_t n2 = static_cast<size_t>(Random::Number(1, 10));
     int rotate = Random::Number(-3, 3);
     int skew = Random::Number(-4, 4);
 

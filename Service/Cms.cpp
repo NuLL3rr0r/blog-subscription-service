@@ -330,7 +330,7 @@ void Cms::Impl::ForceExit()
 {
     CgiRoot *cgiRoot = static_cast<CgiRoot *>(WApplication::instance());
 
-    srand((unsigned int)System::RandSeed());
+    srand(static_cast<unsigned int>(System::RandSeed()));
     try {
         cgiRoot->removeCookie("cms-session-token");
     } catch(...) {

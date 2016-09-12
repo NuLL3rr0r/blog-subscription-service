@@ -672,7 +672,7 @@ void SysMon::Impl::RefreshResourceUsage()
                                                                      .arg(Utility::CalculateSize(diskIoStats->read_bytes))));
             diskTable->elementAt(static_cast<int>(i) + 1, 2)->addWidget(new WText(WString(L"{1}")
                                                                      .arg(Utility::CalculateSize(diskIoStats->write_bytes))));
-            diskTable->elementAt(static_cast<int>(i) + 1, 3)->addWidget(new WText(lexical_cast<string>((long)diskIoStats->systime)));
+            diskTable->elementAt(static_cast<int>(i) + 1, 3)->addWidget(new WText(lexical_cast<string>(static_cast<long>(diskIoStats->systime))));
 
             diskTotalRead += diskIoStats->read_bytes;
             diskTotalWrite += diskIoStats->write_bytes;
@@ -725,7 +725,7 @@ void SysMon::Impl::RefreshResourceUsage()
             networkTable->elementAt(static_cast<int>(i) + 1, 5)->addWidget(new WText(lexical_cast<string>(networkIoStats->ierrors)));
             networkTable->elementAt(static_cast<int>(i) + 1, 6)->addWidget(new WText(lexical_cast<string>(networkIoStats->oerrors)));
             networkTable->elementAt(static_cast<int>(i) + 1, 7)->addWidget(new WText(lexical_cast<string>(networkIoStats->collisions)));
-            networkTable->elementAt(static_cast<int>(i) + 1, 8)->addWidget(new WText(lexical_cast<string>((long)networkIoStats->systime)));
+            networkTable->elementAt(static_cast<int>(i) + 1, 8)->addWidget(new WText(lexical_cast<string>(static_cast<long>(networkIoStats->systime))));
 
             networkTotalTx += networkIoStats->tx;
             networkTotalRx += networkIoStats->rx;
