@@ -167,7 +167,7 @@ int System::GetPidsOfProcess(const std::string &processName, std::vector<int> &p
 
         for (i = 0; i < nProcesses; ++i) {
             if (strncmp(name.c_str(), p[i].ki_comm, COMMLEN + 1) == 0) {
-                pids.push_back((int)p[i].ki_pid);
+                pids.push_back(static_cast<int>(p[i].ki_pid));
                 processesFound++;
             }
         }

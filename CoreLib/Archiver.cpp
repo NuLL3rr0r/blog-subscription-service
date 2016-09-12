@@ -120,13 +120,13 @@ bool Archiver::UnZip(const std::string &archive, const std::string &extractionPa
     zip_uint64_t sum;
 
     for (zip_int64_t i = 0; i < zip_get_num_entries(za, 0); ++i) {
-        if (zip_stat_index(za, (zip_uint64_t)i, 0, &sb) == 0) {
-            len = (zip_int64_t)strlen(sb.name);
+        if (zip_stat_index(za, static_cast<zip_uint64_t>(i), 0, &sb) == 0) {
+            len = static_cast<zip_int64_t>(strlen(sb.name));
             if (sb.name[len - 1] == '/') {
                 FileSystem::CreateDir((filesystem::path(extractionPath)
                                        / sb.name).string());
             } else {
-                zf = zip_fopen_index(za, (zip_uint64_t)i, 0);
+                zf = zip_fopen_index(za, static_cast<zip_uint64_t>(i), 0);
                 if (!zf) {
                     out_error.assign((format("Archiver::UnZip: Corrupted zip archive `%1%'!")
                                       % archive).str());
@@ -157,8 +157,8 @@ bool Archiver::UnZip(const std::string &archive, const std::string &extractionPa
                                           % archive).str());
                         return false;
                     }
-                    write(fd, buf, (size_t)len);
-                    sum += (zip_uint64_t)len;
+                    write(fd, buf, static_cast<size_t>(len));
+                    sum += static_cast<zip_uint64_t>(len);
                 }
                 close(fd);
                 zip_fclose(zf);

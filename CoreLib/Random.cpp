@@ -60,11 +60,11 @@ void Random::Characters(const Character &type, const size_t length, std::string 
 {
     boost::lock_guard<boost::mutex> guard(GetLock());
 
-    random::uniform_int_distribution<> index_dist(0, (int)Impl::GetLookupTable()[type].size() - 1);
+    random::uniform_int_distribution<> index_dist(0, static_cast<int>(Impl::GetLookupTable()[type].size()) - 1);
 
     out_chars.clear();
     for (size_t i = 0; i < length; ++i) {
-        out_chars += Impl::GetLookupTable()[type][(size_t)index_dist(GetEngine())];
+        out_chars += Impl::GetLookupTable()[type][static_cast<size_t>(index_dist(GetEngine()))];
     }
 }
 

@@ -85,7 +85,7 @@ void Compression::Compress(const Buffer &dataBuffer,
         }
 
         output.push(iostreams::back_inserter(out_compressedBuffer));
-        iostreams::write(output, &dataBuffer[0], (std::streamsize)dataBuffer.size());
+        iostreams::write(output, &dataBuffer[0], static_cast<std::streamsize>(dataBuffer.size()));
     } catch(...) {
         LOG_ERROR(COMP_ERROR)
     }
@@ -121,7 +121,7 @@ void Compression::Decompress(const Buffer &dataBuffer,
         }
 
         output.push(iostreams::back_inserter(out_uncompressedBuffer));
-        iostreams::write(output, &dataBuffer[0], (streamsize)dataBuffer.size());
+        iostreams::write(output, &dataBuffer[0], static_cast<streamsize>(dataBuffer.size()));
     } catch(...) {
         LOG_ERROR(DECOMP_ERROR)
     }

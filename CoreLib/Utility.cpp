@@ -57,7 +57,8 @@ std::string Utility::CalculateSize(const std::size_t size)
             if (size % multiplier == 0) {
                 result.assign((format("%s %s") % (size / multiplier) % units[i]).str());
             } else {
-                result.assign((format("%.2f %s") % ((float)size / (float)multiplier) % units[i]).str());
+                result.assign((format("%.2f %s") % (static_cast<float>(size) / static_cast<float>(multiplier))
+                               % units[i]).str());
             }
 
             return result;
