@@ -203,7 +203,9 @@ void CmsChangePassword::Impl::OnPasswordChangeFormSubmitted()
         CgiEnv *cgiEnv = cgiRoot->GetCgiEnvInstance();
 
         string encryptedPwd;
-        Pool::Crypto()->Hash(CurrentPasswordLineEdit->text().toUTF8(), encryptedPwd);
+        Pool::Crypto()->Argon2i(CurrentPasswordLineEdit->text().toUTF8(), encryptedPwd,
+                                CoreLib::Crypto::Argon2iOpsLimit::Sensitive,
+                                CoreLib::Crypto::Argon2iMemLimit::Sensitive);
         Pool::Crypto()->Encrypt(encryptedPwd, encryptedPwd);
 
         result r = Pool::Database()->Sql()
@@ -236,7 +238,9 @@ void CmsChangePassword::Impl::OnPasswordChangeFormSubmitted()
         }
 
         encryptedPwd.clear();
-        Pool::Crypto()->Hash(NewPasswordLineEdit->text().toUTF8(), encryptedPwd);
+        Pool::Crypto()->Argon2i(NewPasswordLineEdit->text().toUTF8(), encryptedPwd,
+                                CoreLib::Crypto::Argon2iOpsLimit::Sensitive,
+                                CoreLib::Crypto::Argon2iMemLimit::Sensitive);
         Pool::Crypto()->Encrypt(encryptedPwd, encryptedPwd);
 
         Pool::Database()->Update("ROOT",

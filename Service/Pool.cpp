@@ -88,9 +88,11 @@ const std::string &Pool::StorageStruct::RootInitialPassword() const
 {
     static string rootInitialPassowrd;
     if (rootInitialPassowrd == "") {
-        CoreLib::Crypto::Hash(
+        CoreLib::Crypto::Argon2i(
                     CoreLib::Crypto::HexStringToString(ROOT_INITIAL_PASSWORD),
-                    rootInitialPassowrd);
+                    rootInitialPassowrd,
+                    CoreLib::Crypto::Argon2iOpsLimit::Sensitive,
+                    CoreLib::Crypto::Argon2iMemLimit::Sensitive);
         Crypto()->Encrypt(rootInitialPassowrd, rootInitialPassowrd);
     }
     return rootInitialPassowrd;

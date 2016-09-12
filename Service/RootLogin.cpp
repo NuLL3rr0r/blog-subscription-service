@@ -380,7 +380,9 @@ void RootLogin::Impl::OnLoginFormSubmitted()
     try {
         string user = UsernameLineEdit->text().toUTF8();
         string pwd;
-        Pool::Crypto()->Hash(PasswordLineEdit->text().toUTF8(), pwd);
+        Pool::Crypto()->Argon2i(PasswordLineEdit->text().toUTF8(), pwd,
+                                CoreLib::Crypto::Argon2iOpsLimit::Sensitive,
+                                CoreLib::Crypto::Argon2iMemLimit::Sensitive);
         Pool::Crypto()->Encrypt(pwd, pwd);
 
         result r = Pool::Database()->Sql()
@@ -513,7 +515,9 @@ void RootLogin::Impl::OnPasswordRecoveryFormSubmitted()
         string encryptedPwd;
         Random::Characters(Random::Character::Alphanumeric,
                            static_cast<size_t>(Pool::Storage()->MaxPasswordLength()), pwd);
-        Pool::Crypto()->Hash(pwd, encryptedPwd);
+        Pool::Crypto()->Argon2i(pwd, encryptedPwd,
+                                CoreLib::Crypto::Argon2iOpsLimit::Sensitive,
+                                CoreLib::Crypto::Argon2iMemLimit::Sensitive);
         Pool::Crypto()->Encrypt(encryptedPwd, encryptedPwd);
 
         string user;

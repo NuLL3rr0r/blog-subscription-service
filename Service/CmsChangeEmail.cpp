@@ -189,7 +189,9 @@ void CmsChangeEmail::Impl::OnEmailChangeFormSubmitted()
         CgiEnv *cgiEnv = cgiRoot->GetCgiEnvInstance();
 
         string encryptedPwd;
-        Pool::Crypto()->Hash(PasswordLineEdit->text().toUTF8(), encryptedPwd);
+        Pool::Crypto()->Argon2i(PasswordLineEdit->text().toUTF8(), encryptedPwd,
+                                CoreLib::Crypto::Argon2iOpsLimit::Sensitive,
+                                CoreLib::Crypto::Argon2iMemLimit::Sensitive);
         Pool::Crypto()->Encrypt(encryptedPwd, encryptedPwd);
 
         result r = Pool::Database()->Sql()
