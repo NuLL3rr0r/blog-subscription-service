@@ -188,21 +188,27 @@ void CmsChangeEmail::Impl::OnEmailChangeFormSubmitted()
         CgiRoot *cgiRoot = static_cast<CgiRoot *>(WApplication::instance());
         CgiEnv *cgiEnv = cgiRoot->GetCgiEnvInstance();
 
-        string encryptedPwd;
-        Pool::Crypto()->Argon2i(PasswordLineEdit->text().toUTF8(), encryptedPwd,
-                                CoreLib::Crypto::Argon2iOpsLimit::Sensitive,
-                                CoreLib::Crypto::Argon2iMemLimit::Sensitive);
-        Pool::Crypto()->Encrypt(encryptedPwd, encryptedPwd);
+        bool success = false;
 
         result r = Pool::Database()->Sql()
-                << (format("SELECT email FROM \"%1%\""
-                                  " WHERE username=? AND pwd=?;")
+                << (format("SELECT pwd FROM \"%1%\""
+                                  " WHERE username=?;")
                     % Pool::Database()->GetTableName("ROOT")).str()
                 << cgiEnv->SignedInUser.Username
-                << encryptedPwd
                 << row;
 
-        if (r.empty()) {
+        if (!r.empty()) {
+            string hashedPwd;
+            r >> hashedPwd;
+
+            Pool::Crypto()->Decrypt(hashedPwd, hashedPwd);
+
+            if (Pool::Crypto()->Argon2iVerify(PasswordLineEdit->text().toUTF8(), hashedPwd)) {
+                success = true;
+            }
+        }
+
+        if (!success) {
             guard.rollback();
             m_parent->HtmlError(tr("cms-change-email-invalid-pwd-error"), ChangeEmailMessageArea);
             PasswordLineEdit->setFocus();

@@ -202,21 +202,27 @@ void CmsChangePassword::Impl::OnPasswordChangeFormSubmitted()
         CgiRoot *cgiRoot = static_cast<CgiRoot *>(WApplication::instance());
         CgiEnv *cgiEnv = cgiRoot->GetCgiEnvInstance();
 
-        string encryptedPwd;
-        Pool::Crypto()->Argon2i(CurrentPasswordLineEdit->text().toUTF8(), encryptedPwd,
-                                CoreLib::Crypto::Argon2iOpsLimit::Sensitive,
-                                CoreLib::Crypto::Argon2iMemLimit::Sensitive);
-        Pool::Crypto()->Encrypt(encryptedPwd, encryptedPwd);
+        bool success = false;
 
         result r = Pool::Database()->Sql()
                 << (format("SELECT pwd FROM \"%1%\""
-                                  " WHERE username=? AND pwd=?;")
+                                  " WHERE username=?;")
                     % Pool::Database()->GetTableName("ROOT")).str()
                 << cgiEnv->SignedInUser.Username
-                << encryptedPwd
                 << row;
 
-        if (r.empty()) {
+        if (!r.empty()) {
+            string hashedPwd;
+            r >> hashedPwd;
+
+            Pool::Crypto()->Decrypt(hashedPwd, hashedPwd);
+
+            if (Pool::Crypto()->Argon2iVerify(CurrentPasswordLineEdit->text().toUTF8(), hashedPwd)) {
+                success = true;
+            }
+        }
+
+        if (!success) {
             guard.rollback();
             m_parent->HtmlError(tr("cms-change-password-invalid-pwd-error"), ChangePasswordMessageArea);
             CurrentPasswordLineEdit->setFocus();
@@ -237,7 +243,7 @@ void CmsChangePassword::Impl::OnPasswordChangeFormSubmitted()
             return;
         }
 
-        encryptedPwd.clear();
+        string encryptedPwd;
         Pool::Crypto()->Argon2i(NewPasswordLineEdit->text().toUTF8(), encryptedPwd,
                                 CoreLib::Crypto::Argon2iOpsLimit::Sensitive,
                                 CoreLib::Crypto::Argon2iMemLimit::Sensitive);

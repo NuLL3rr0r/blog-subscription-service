@@ -379,42 +379,41 @@ void RootLogin::Impl::OnLoginFormSubmitted()
 
     try {
         string user = UsernameLineEdit->text().toUTF8();
-        string pwd;
-        Pool::Crypto()->Argon2i(PasswordLineEdit->text().toUTF8(), pwd,
-                                CoreLib::Crypto::Argon2iOpsLimit::Sensitive,
-                                CoreLib::Crypto::Argon2iMemLimit::Sensitive);
-        Pool::Crypto()->Encrypt(pwd, pwd);
+        bool success = false;
 
         result r = Pool::Database()->Sql()
-                << (format("SELECT username, email,"
-                           " last_login_ip, last_login_location,"
-                           " last_login_rawtime,"
-                           " last_login_gdate, last_login_jdate,"
-                           " last_login_time,"
-                           " last_login_user_agent, last_login_referer"
-                           " FROM \"%1%\" WHERE username=? AND pwd=?;")
+                << (format("SELECT pwd, recovery_pwd"
+                           " FROM \"%1%\" WHERE username=?;")
                     % Pool::Database()->GetTableName("ROOT")).str()
-                << user << pwd << row;
+                << user << row;
 
-        // Recovery passowrd
-        if (r.empty()) {
-            r = Pool::Database()->Sql()
-                    << (format("SELECT username, email,"
-                               " last_login_ip, last_login_location,"
-                               " last_login_rawtime,"
-                               " last_login_gdate, last_login_jdate,"
-                               " last_login_time,"
-                               " last_login_user_agent, last_login_referer"
-                               " FROM \"%1%\" WHERE username=? AND recovery_pwd=?;")
-                        % Pool::Database()->GetTableName("ROOT")).str()
-                    << user << pwd << row;
-            Pool::Database()->Update("ROOT",
-                                     "username", user,
-                                     "pwd=?, recovery_pwd=?",
-            { pwd, "" });
+        if (!r.empty()) {
+            string hashedPwd;
+            string hashedRecoveryPwd;
+            r >> hashedPwd >> hashedRecoveryPwd;
+
+            Pool::Crypto()->Decrypt(hashedPwd, hashedPwd);
+            Pool::Crypto()->Decrypt(hashedRecoveryPwd, hashedRecoveryPwd);
+
+            if (Pool::Crypto()->Argon2iVerify(PasswordLineEdit->text().toUTF8(), hashedPwd)) {
+                success = true;
+            } else if (Pool::Crypto()->Argon2iVerify(PasswordLineEdit->text().toUTF8(), hashedRecoveryPwd)) {
+                success = true;
+
+                string encryptedPwd;
+                Pool::Crypto()->Argon2i(PasswordLineEdit->text().toUTF8(), encryptedPwd,
+                                        CoreLib::Crypto::Argon2iOpsLimit::Sensitive,
+                                        CoreLib::Crypto::Argon2iMemLimit::Sensitive);
+                Pool::Crypto()->Encrypt(encryptedPwd, encryptedPwd);
+
+                Pool::Database()->Update("ROOT",
+                                         "username", user,
+                                         "pwd=?, recovery_pwd=?",
+                                         { encryptedPwd, "" });
+            }
         }
 
-        if (r.empty()) {
+        if (!success) {
             guard.rollback();
             m_parent->HtmlError(tr("root-login-fail"), LoginMessageArea);
             UsernameLineEdit->setFocus();
@@ -428,16 +427,29 @@ void RootLogin::Impl::OnLoginFormSubmitted()
         CgiEnv *cgiEnv = cgiRoot->GetCgiEnvInstance();
 
         try {
-            r >> cgiEnv->SignedInUser.Username
-                    >> cgiEnv->SignedInUser.Email
-                    >> cgiEnv->SignedInUser.LastLogin.IP
-                    >> cgiEnv->SignedInUser.LastLogin.Location
-                    >> cgiEnv->SignedInUser.LastLogin.LoginRawTime
-                    >> cgiEnv->SignedInUser.LastLogin.LoginGDate
-                    >> cgiEnv->SignedInUser.LastLogin.LoginJDate
-                    >> cgiEnv->SignedInUser.LastLogin.LoginTime
-                    >> cgiEnv->SignedInUser.LastLogin.UserAgent
-                    >> cgiEnv->SignedInUser.LastLogin.Referer;
+            r = Pool::Database()->Sql()
+                    << (format("SELECT username, email,"
+                               " last_login_ip, last_login_location,"
+                               " last_login_rawtime,"
+                               " last_login_gdate, last_login_jdate,"
+                               " last_login_time,"
+                               " last_login_user_agent, last_login_referer"
+                               " FROM \"%1%\" WHERE username=?;")
+                        % Pool::Database()->GetTableName("ROOT")).str()
+                    << user << row;
+
+            if (!r.empty()) {
+                r >> cgiEnv->SignedInUser.Username
+                        >> cgiEnv->SignedInUser.Email
+                        >> cgiEnv->SignedInUser.LastLogin.IP
+                        >> cgiEnv->SignedInUser.LastLogin.Location
+                        >> cgiEnv->SignedInUser.LastLogin.LoginRawTime
+                        >> cgiEnv->SignedInUser.LastLogin.LoginGDate
+                        >> cgiEnv->SignedInUser.LastLogin.LoginJDate
+                        >> cgiEnv->SignedInUser.LastLogin.LoginTime
+                        >> cgiEnv->SignedInUser.LastLogin.UserAgent
+                        >> cgiEnv->SignedInUser.LastLogin.Referer;
+            }
         }
 
         catch (boost::exception &ex) {
