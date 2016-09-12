@@ -388,28 +388,23 @@ void RootLogin::Impl::OnLoginFormSubmitted()
                 << user << row;
 
         if (!r.empty()) {
+            string encryptedPwd;
+            string encryptedRecoveryPwd;
+            r >> encryptedPwd >> encryptedRecoveryPwd;
+
             string hashedPwd;
             string hashedRecoveryPwd;
-            r >> hashedPwd >> hashedRecoveryPwd;
-
-            Pool::Crypto()->Decrypt(hashedPwd, hashedPwd);
-            Pool::Crypto()->Decrypt(hashedRecoveryPwd, hashedRecoveryPwd);
+            Pool::Crypto()->Decrypt(encryptedPwd, hashedPwd);
+            Pool::Crypto()->Decrypt(encryptedRecoveryPwd, hashedRecoveryPwd);
 
             if (Pool::Crypto()->Argon2iVerify(PasswordLineEdit->text().toUTF8(), hashedPwd)) {
                 success = true;
             } else if (Pool::Crypto()->Argon2iVerify(PasswordLineEdit->text().toUTF8(), hashedRecoveryPwd)) {
                 success = true;
-
-                string encryptedPwd;
-                Pool::Crypto()->Argon2i(PasswordLineEdit->text().toUTF8(), encryptedPwd,
-                                        CoreLib::Crypto::Argon2iOpsLimit::Sensitive,
-                                        CoreLib::Crypto::Argon2iMemLimit::Sensitive);
-                Pool::Crypto()->Encrypt(encryptedPwd, encryptedPwd);
-
                 Pool::Database()->Update("ROOT",
                                          "username", user,
                                          "pwd=?, recovery_pwd=?",
-                                         { encryptedPwd, "" });
+                                         { encryptedRecoveryPwd, "" });
             }
         }
 
