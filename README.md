@@ -35,6 +35,7 @@ More comes when it's ready.
 * npm (Required by Gulp)
 * PostgreSQL
 * pthread on POSIX-compliant systems
+* Sodium
 * VMime
 * Wt (Witty) Web-toolkit
 
