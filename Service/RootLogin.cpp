@@ -298,7 +298,7 @@ WWidget *RootLogin::Layout()
         m_pimpl->CaptchaImage->setAlternateText(tr("root-login-captcha-hint"));
         m_pimpl->CaptchaImage->setAttributeValue("title", tr("root-login-captcha-hint"));
 
-        int captchaResult = (int)m_pimpl->Captcha->GetResult();
+        int captchaResult = static_cast<int>(m_pimpl->Captcha->GetResult());
 
         m_pimpl->CaptchaLineEdit = new WLineEdit();
         m_pimpl->CaptchaLineEdit->setPlaceholderText(tr("root-login-captcha-hint"));
@@ -512,7 +512,7 @@ void RootLogin::Impl::OnPasswordRecoveryFormSubmitted()
         string pwd;
         string encryptedPwd;
         Random::Characters(Random::Character::Alphanumeric,
-                           (size_t)Pool::Storage()->MaxPasswordLength(), pwd);
+                           static_cast<size_t>(Pool::Storage()->MaxPasswordLength()), pwd);
         Pool::Crypto()->Hash(pwd, encryptedPwd);
         Pool::Crypto()->Encrypt(encryptedPwd, encryptedPwd);
 
@@ -586,7 +586,7 @@ void RootLogin::Impl::OnSignInAgainButtonPressed()
 void RootLogin::Impl::GenerateCaptcha()
 {
     CaptchaImage->setImageRef(Captcha->Generate()->imageRef());
-    int captchaResult = (int)Captcha->GetResult();
+    int captchaResult = static_cast<int>(Captcha->GetResult());
 
     CaptchaValidator->setRange(captchaResult, captchaResult);
 
@@ -626,7 +626,7 @@ void RootLogin::Impl::PasswordRecoveryForm()
         emailValidator->setMandatory(true);
         ForgotPassword_EmailLineEdit->setValidator(emailValidator);
 
-        int captchaResult = (int)Captcha->GetResult();
+        int captchaResult = static_cast<int>(Captcha->GetResult());
 
         ForgotPassword_CaptchaLineEdit = new WLineEdit();
         ForgotPassword_CaptchaLineEdit->setPlaceholderText(tr("root-login-captcha-hint"));

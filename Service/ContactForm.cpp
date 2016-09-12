@@ -221,7 +221,7 @@ WWidget *ContactForm::Layout()
             m_pimpl->CaptchaImage->setAlternateText(tr("home-captcha-hint"));
             m_pimpl->CaptchaImage->setAttributeValue("title", tr("home-captcha-hint"));
 
-            int captchaResult = (int)m_pimpl->Captcha->GetResult();
+            int captchaResult = static_cast<int>(m_pimpl->Captcha->GetResult());
 
             m_pimpl->CaptchaLineEdit = new WLineEdit();
             m_pimpl->CaptchaLineEdit->setPlaceholderText(tr("home-captcha-hint"));
@@ -414,7 +414,7 @@ void ContactForm::Impl::OnDialogClosed(Wt::StandardButton button)
 void ContactForm::Impl::GenerateCaptcha()
 {
     CaptchaImage->setImageRef(Captcha->Generate()->imageRef());
-    int captchaResult = (int)Captcha->GetResult();
+    int captchaResult = static_cast<int>(Captcha->GetResult());
     CaptchaValidator->setRange(captchaResult, captchaResult);
 }
 

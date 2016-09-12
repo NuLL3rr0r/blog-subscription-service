@@ -667,12 +667,12 @@ void SysMon::Impl::RefreshResourceUsage()
 
     if ((diskIoStats = sg_get_disk_io_stats_diff(&diskIoStatsEntries)) != NULL) {
         for (size_t i = 0; i < diskIoStatsEntries; ++i) {
-            diskTable->elementAt((int)i + 1, 0)->addWidget(new WText(lexical_cast<string>(diskIoStats->disk_name)));
-            diskTable->elementAt((int)i + 1, 1)->addWidget(new WText(WString(L"{1}")
+            diskTable->elementAt(static_cast<int>(i) + 1, 0)->addWidget(new WText(lexical_cast<string>(diskIoStats->disk_name)));
+            diskTable->elementAt(static_cast<int>(i) + 1, 1)->addWidget(new WText(WString(L"{1}")
                                                                      .arg(Utility::CalculateSize(diskIoStats->read_bytes))));
-            diskTable->elementAt((int)i + 1, 2)->addWidget(new WText(WString(L"{1}")
+            diskTable->elementAt(static_cast<int>(i) + 1, 2)->addWidget(new WText(WString(L"{1}")
                                                                      .arg(Utility::CalculateSize(diskIoStats->write_bytes))));
-            diskTable->elementAt((int)i + 1, 3)->addWidget(new WText(lexical_cast<string>((long)diskIoStats->systime)));
+            diskTable->elementAt(static_cast<int>(i) + 1, 3)->addWidget(new WText(lexical_cast<string>((long)diskIoStats->systime)));
 
             diskTotalRead += diskIoStats->read_bytes;
             diskTotalWrite += diskIoStats->write_bytes;
@@ -680,12 +680,12 @@ void SysMon::Impl::RefreshResourceUsage()
             ++diskIoStats;
         }
 
-        diskTable->elementAt((int)diskIoStatsEntries + 1, 0)->addWidget(new WText(tr("system-monitor-disk-io-stats-total")));
-        diskTable->elementAt((int)diskIoStatsEntries + 1, 1)->addWidget(new WText(WString(L"{1}")
+        diskTable->elementAt(static_cast<int>(diskIoStatsEntries) + 1, 0)->addWidget(new WText(tr("system-monitor-disk-io-stats-total")));
+        diskTable->elementAt(static_cast<int>(diskIoStatsEntries) + 1, 1)->addWidget(new WText(WString(L"{1}")
                                                                                   .arg(Utility::CalculateSize(diskTotalRead))));
-        diskTable->elementAt((int)diskIoStatsEntries + 1, 2)->addWidget(new WText(WString(L"{1}")
+        diskTable->elementAt(static_cast<int>(diskIoStatsEntries) + 1, 2)->addWidget(new WText(WString(L"{1}")
                                                                                   .arg(Utility::CalculateSize(diskTotalWrite))));
-        diskTable->elementAt((int)diskIoStatsEntries + 1, 3)->addWidget(new WText("-"));
+        diskTable->elementAt(static_cast<int>(diskIoStatsEntries) + 1, 3)->addWidget(new WText("-"));
     }
 
     /// Get the netowrk info
@@ -715,17 +715,17 @@ void SysMon::Impl::RefreshResourceUsage()
 
     if ((networkIoStats = sg_get_network_io_stats_diff(&networkIoStatsEntries)) != NULL) {
         for (size_t i = 0; i < networkIoStatsEntries; ++i) {
-            networkTable->elementAt((int)i + 1, 0)->addWidget(new WText(lexical_cast<string>(networkIoStats->interface_name)));
-            networkTable->elementAt((int)i + 1, 1)->addWidget(new WText(WString(L"{1}")
+            networkTable->elementAt(static_cast<int>(i) + 1, 0)->addWidget(new WText(lexical_cast<string>(networkIoStats->interface_name)));
+            networkTable->elementAt(static_cast<int>(i) + 1, 1)->addWidget(new WText(WString(L"{1}")
                                                                         .arg(Utility::CalculateSize(networkIoStats->tx))));
-            networkTable->elementAt((int)i + 1, 2)->addWidget(new WText(WString(L"{1}")
+            networkTable->elementAt(static_cast<int>(i) + 1, 2)->addWidget(new WText(WString(L"{1}")
                                                                         .arg(Utility::CalculateSize(networkIoStats->rx))));
-            networkTable->elementAt((int)i + 1, 3)->addWidget(new WText(lexical_cast<string>(networkIoStats->ipackets)));
-            networkTable->elementAt((int)i + 1, 4)->addWidget(new WText(lexical_cast<string>(networkIoStats->opackets)));
-            networkTable->elementAt((int)i + 1, 5)->addWidget(new WText(lexical_cast<string>(networkIoStats->ierrors)));
-            networkTable->elementAt((int)i + 1, 6)->addWidget(new WText(lexical_cast<string>(networkIoStats->oerrors)));
-            networkTable->elementAt((int)i + 1, 7)->addWidget(new WText(lexical_cast<string>(networkIoStats->collisions)));
-            networkTable->elementAt((int)i + 1, 8)->addWidget(new WText(lexical_cast<string>((long)networkIoStats->systime)));
+            networkTable->elementAt(static_cast<int>(i) + 1, 3)->addWidget(new WText(lexical_cast<string>(networkIoStats->ipackets)));
+            networkTable->elementAt(static_cast<int>(i) + 1, 4)->addWidget(new WText(lexical_cast<string>(networkIoStats->opackets)));
+            networkTable->elementAt(static_cast<int>(i) + 1, 5)->addWidget(new WText(lexical_cast<string>(networkIoStats->ierrors)));
+            networkTable->elementAt(static_cast<int>(i) + 1, 6)->addWidget(new WText(lexical_cast<string>(networkIoStats->oerrors)));
+            networkTable->elementAt(static_cast<int>(i) + 1, 7)->addWidget(new WText(lexical_cast<string>(networkIoStats->collisions)));
+            networkTable->elementAt(static_cast<int>(i) + 1, 8)->addWidget(new WText(lexical_cast<string>((long)networkIoStats->systime)));
 
             networkTotalTx += networkIoStats->tx;
             networkTotalRx += networkIoStats->rx;
@@ -740,17 +740,17 @@ void SysMon::Impl::RefreshResourceUsage()
             ++networkIoStats;
         }
 
-        networkTable->elementAt((int)networkIoStatsEntries + 1, 0)->addWidget(new WText(tr("system-monitor-network-io-stats-total")));
-        networkTable->elementAt((int)networkIoStatsEntries + 1, 1)->addWidget(new WText(WString(L"{1}")
+        networkTable->elementAt(static_cast<int>(networkIoStatsEntries) + 1, 0)->addWidget(new WText(tr("system-monitor-network-io-stats-total")));
+        networkTable->elementAt(static_cast<int>(networkIoStatsEntries) + 1, 1)->addWidget(new WText(WString(L"{1}")
                                                                                         .arg(Utility::CalculateSize(networkTotalTx))));
-        networkTable->elementAt((int)networkIoStatsEntries + 1, 2)->addWidget(new WText(WString(L"{1}")
+        networkTable->elementAt(static_cast<int>(networkIoStatsEntries) + 1, 2)->addWidget(new WText(WString(L"{1}")
                                                                                         .arg(Utility::CalculateSize(networkTotalRx))));
-        networkTable->elementAt((int)networkIoStatsEntries + 1, 3)->addWidget(new WText(lexical_cast<string>(networkTotalPacketsIn)));
-        networkTable->elementAt((int)networkIoStatsEntries + 1, 4)->addWidget(new WText(lexical_cast<string>(networkTotalPacketsOut)));
-        networkTable->elementAt((int)networkIoStatsEntries + 1, 5)->addWidget(new WText(lexical_cast<string>(networkTotalErrorsIn)));
-        networkTable->elementAt((int)networkIoStatsEntries + 1, 6)->addWidget(new WText(lexical_cast<string>(networkTotalErrorsOut)));
-        networkTable->elementAt((int)networkIoStatsEntries + 1, 7)->addWidget(new WText(lexical_cast<string>(networkTotalCollisions)));
-        networkTable->elementAt((int)networkIoStatsEntries + 1, 8)->addWidget(new WText("-"));
+        networkTable->elementAt(static_cast<int>(networkIoStatsEntries) + 1, 3)->addWidget(new WText(lexical_cast<string>(networkTotalPacketsIn)));
+        networkTable->elementAt(static_cast<int>(networkIoStatsEntries) + 1, 4)->addWidget(new WText(lexical_cast<string>(networkTotalPacketsOut)));
+        networkTable->elementAt(static_cast<int>(networkIoStatsEntries) + 1, 5)->addWidget(new WText(lexical_cast<string>(networkTotalErrorsIn)));
+        networkTable->elementAt(static_cast<int>(networkIoStatsEntries) + 1, 6)->addWidget(new WText(lexical_cast<string>(networkTotalErrorsOut)));
+        networkTable->elementAt(static_cast<int>(networkIoStatsEntries) + 1, 7)->addWidget(new WText(lexical_cast<string>(networkTotalCollisions)));
+        networkTable->elementAt(static_cast<int>(networkIoStatsEntries) + 1, 8)->addWidget(new WText("-"));
 
         new WBreak(NetworkInfoDiv);
     }
