@@ -164,7 +164,7 @@ Aside from the core library and the service application itself, there are afew s
 
 #### spawn-wthttpd Configuration:
 
-_spawn-wthttpd_ configuration file should be placed inside _${APP_ROOT_DIRECTORY}/db_ directory. You may want to consult [wthttpd documentation](http://www.webtoolkit.eu/wt/doc/reference/html/InstallationUnix.html) for more info. I also recommend to take a look at [_${APP_ROOT_DIRECTORY}/etc/wt_config.xml configuration documentation](http://www.webtoolkit.eu/wt/doc/reference/html/overview.html#configuration_sec).
+_spawn-wthttpd_ configuration file should be placed inside _${APP_ROOT_DIRECTORY}/db_ directory. You may want to consult [wthttpd documentation](http://www.webtoolkit.eu/wt/doc/reference/html/InstallationUnix.html) for more info. I also recommend to take a look at [${APP_ROOT_DIRECTORY}/etc/wt_config.xml configuration documentation](http://www.webtoolkit.eu/wt/doc/reference/html/overview.html#configuration_sec).
 
     {
         "apps" :
@@ -264,7 +264,7 @@ Or, if you are not confident about _spawn-wthttpd_ (you think it may crash):
 
 ### spawn-fastcgi.db Configuration
 
-_sspawn-fastcgi.db_ configuration file should be placed inside _${APP_ROOT_DIRECTORY}/db_ directory. You may want to consult [Wt FastCGI documentation](http://www.webtoolkit.eu/wt/doc/reference/html/InstallationUnix.html) for more info. I also recommend to take a look at [_${APP_ROOT_DIRECTORY}/etc/wt_config.xml configuration documentation](http://www.webtoolkit.eu/wt/doc/reference/html/overview.html#configuration_sec).
+_sspawn-fastcgi.db_ configuration file should be placed inside _${APP_ROOT_DIRECTORY}/db_ directory. You may want to consult [Wt FastCGI documentation](http://www.webtoolkit.eu/wt/doc/reference/html/InstallationUnix.html) for more info. I also recommend to take a look at [${APP_ROOT_DIRECTORY}/etc/wt_config.xml configuration documentation](http://www.webtoolkit.eu/wt/doc/reference/html/overview.html#configuration_sec).
 
     {
         "apps" :
