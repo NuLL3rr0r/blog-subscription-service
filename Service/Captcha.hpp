@@ -59,7 +59,7 @@ public:
 
 public:
     Wt::WImage *Generate();
-    std::size_t GetResult();
+    std::size_t GetResult() const;
 };
 
 

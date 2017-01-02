@@ -127,7 +127,7 @@ Wt::WImage *Captcha::Generate()
     return captchaImage;
 }
 
-std::size_t Captcha::GetResult()
+std::size_t Captcha::GetResult() const
 {
     return m_pimpl->Result;
 }
