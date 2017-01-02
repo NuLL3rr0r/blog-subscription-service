@@ -145,7 +145,7 @@
     <message id="cms-dashboard-last-login-info-location">Location</message>
     <message id="cms-dashboard-last-login-info-user-agent">User Agent</message>
     <message id="cms-dashboard-last-login-info-referer">Referer</message>
-    <message id="cms-dashboard-last-login-info-time">Time</message>
+    <message id="cms-dashboard-last-login-info-time">Time (UTC)</message>
     <message id="cms-dashboard-force-terminate-all-sessions">Force Terminate All Sessions</message>
     <message id="cms-dashboard-force-terminate-all-sessions-confirm-title">Terminate All Sessions</message>
     <message id="cms-dashboard-force-terminate-all-sessions-confirm-question">Force terminate all active sessions? Are you Sure?</message>
@@ -287,7 +287,7 @@
     <message id="system-monitor-host-info-ncpus">Number of CPUs</message>
     <message id="system-monitor-host-info-maxcpus">Maximum CPUs</message>
     <message id="system-monitor-host-info-uptime">Uptime</message>
-    <message id="system-monitor-host-info-systime">Systime</message>
+    <message id="system-monitor-host-info-systime">Systime (UTC)</message>
     <message id="system-monitor-disk-io-stats">Disk IO Statistics</message>
     <message id="system-monitor-disk-io-stats-disk-name">Disk Name</message>
     <message id="system-monitor-disk-io-stats-read-bytes">Read</message>
