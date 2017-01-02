@@ -104,7 +104,7 @@ public:
 
 private:
     void GenerateCaptcha();
-    void SendUserMessageEmail(const std::string &to, CDate::Now &n);
+    void SendUserMessageEmail(const std::string &to, const CDate::Now &n);
     void ClearForm();
 };
 
@@ -418,7 +418,7 @@ void ContactForm::Impl::GenerateCaptcha()
     CaptchaValidator->setRange(captchaResult, captchaResult);
 }
 
-void ContactForm::Impl::SendUserMessageEmail(const std::string &to, CDate::Now &n)
+void ContactForm::Impl::SendUserMessageEmail(const std::string &to, const CDate::Now &n)
 {
     CgiRoot *cgiRoot = static_cast<CgiRoot *>(WApplication::instance());
     CgiEnv *cgiEnv = cgiRoot->GetCgiEnvInstance();

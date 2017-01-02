@@ -97,7 +97,7 @@ public:
     void OnSendSuccessDialogClosed(Wt::StandardButton button);
 
 public:
-    void SetFormEnable(bool status);
+    void SetFormEnable(const bool status);
     void ResetTheForm();
 };
 
@@ -503,7 +503,7 @@ void CmsNewsletter::Impl::ResetTheForm()
     this->SetFormEnable(false);
 }
 
-void CmsNewsletter::Impl::SetFormEnable(bool status)
+void CmsNewsletter::Impl::SetFormEnable(const bool status)
 {
     if (status) {
         SendPushButton->setEnabled(true);

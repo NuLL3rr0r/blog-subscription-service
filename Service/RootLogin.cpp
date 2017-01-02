@@ -115,10 +115,10 @@ public:
     void PasswordRecoveryForm();
     void PreserveSessionData(const CDate::Now &n, const std::string &username, const bool saveLocally);
 
-    void SendLoginAlertEmail(const std::string &email, const std::string &username, CDate::Now &n);
+    void SendLoginAlertEmail(const std::string &email, const std::string &username, const CDate::Now &n);
     void SendPasswordRecoveryEmail(const std::string &email,
                                    const std::string &username, const std::string &password,
-                                   CDate::Now &n);
+                                   const CDate::Now &n);
 
     Wt::WWidget *LogoutPage();
 };
@@ -760,7 +760,7 @@ void RootLogin::Impl::PreserveSessionData(const CDate::Now &n, const std::string
     }
 }
 
-void RootLogin::Impl::SendLoginAlertEmail(const std::string &email, const std::string &username, CDate::Now &n)
+void RootLogin::Impl::SendLoginAlertEmail(const std::string &email, const std::string &username, const CDate::Now &n)
 {
     CgiRoot *cgiRoot = static_cast<CgiRoot *>(WApplication::instance());
     CgiEnv *cgiEnv = cgiRoot->GetCgiEnvInstance();
@@ -801,7 +801,7 @@ void RootLogin::Impl::SendLoginAlertEmail(const std::string &email, const std::s
 
 void RootLogin::Impl::SendPasswordRecoveryEmail(const std::string &email,
                                                 const std::string &username, const std::string &password,
-                                                CDate::Now &n)
+                                                const CDate::Now &n)
 {
     CgiRoot *cgiRoot = static_cast<CgiRoot *>(WApplication::instance());
     CgiEnv *cgiEnv = cgiRoot->GetCgiEnvInstance();

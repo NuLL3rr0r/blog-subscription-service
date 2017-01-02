@@ -90,7 +90,7 @@ public:
 
 private:
     void GetDate(const std::string &timeSinceEpoch, Wt::WString &out_date);
-    void GetSubscriptionTypeName(const std::string &type, Wt::WString &name);
+    void GetSubscriptionTypeName(const std::string &type, Wt::WString &out_name);
 
     void FillDataTable(const CmsSubscribers::Impl::Table &table);
 };
@@ -238,7 +238,7 @@ void CmsSubscribers::Impl::GetDate(const std::string &timeSinceEpoch, Wt::WStrin
     }
 }
 
-void CmsSubscribers::Impl::GetSubscriptionTypeName(const std::string &type, Wt::WString &name)
+void CmsSubscribers::Impl::GetSubscriptionTypeName(const std::string &type, Wt::WString &out_name)
 {
     static const std::string EN_FA_TYPE("en_fa");
     static const std::string EN_TYPE("en");
@@ -251,13 +251,13 @@ void CmsSubscribers::Impl::GetSubscriptionTypeName(const std::string &type, Wt::
     static const std::string NONE_NAME(tr("cms-subscribers-subscription-none").toUTF8());
 
     if (type == EN_FA_TYPE) {
-        name = WString::fromUTF8(EN_FA_NAME);
+        out_name = WString::fromUTF8(EN_FA_NAME);
     } else if (type == EN_TYPE) {
-        name = WString::fromUTF8(EN_NAME);
+        out_name = WString::fromUTF8(EN_NAME);
     } else if (type == FA_TYPE) {
-        name = WString::fromUTF8(FA_NAME);
+        out_name = WString::fromUTF8(FA_NAME);
     } else if (type == NONE_TYPE) {
-        name = WString::fromUTF8(NONE_NAME);
+        out_name = WString::fromUTF8(NONE_NAME);
     }
 }
 
