@@ -120,4 +120,3 @@ Random::Impl::CharactersHashTable &Random::Impl::GetLookupTable()
     };
     return lookupTable;
 }
-

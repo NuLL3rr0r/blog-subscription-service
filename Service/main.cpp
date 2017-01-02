@@ -325,4 +325,3 @@ void InitializeDatabase()
         LOG_ERROR("Unknown error!");
     }
 }
-

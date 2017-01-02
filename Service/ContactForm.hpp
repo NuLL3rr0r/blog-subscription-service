@@ -59,4 +59,3 @@ private:
 
 
 #endif /* SERVICE_CONTACT_FORM_HPP */
-

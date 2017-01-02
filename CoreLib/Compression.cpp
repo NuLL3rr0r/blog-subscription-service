@@ -126,4 +126,3 @@ void Compression::Decompress(const Buffer &dataBuffer,
         LOG_ERROR(DECOMP_ERROR)
     }
 }
-

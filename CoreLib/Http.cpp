@@ -120,4 +120,3 @@ bool Http::Download(const std::string &remoteAddr, const std::string &localPath,
 
     return false;
 }
-

@@ -380,4 +380,3 @@ void CgiEnv::Impl::ExtractClientInfoDetail()
     } catch(...) {
     }
 }
-

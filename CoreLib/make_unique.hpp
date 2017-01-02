@@ -60,4 +60,3 @@ std::unique_ptr<_T> make_unique(_ARGS &&...args)
 
 
 #endif /* CORELIB_MAKE_UNIQUE_HPP */
-

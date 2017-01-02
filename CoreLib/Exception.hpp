@@ -52,4 +52,3 @@ public:
 
 
 #endif /* CORELIB_EXCEPTION_HPP */
-

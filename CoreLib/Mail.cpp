@@ -379,4 +379,3 @@ Mail::Impl::Impl()
 }
 
 Mail::Impl::~Impl() = default;
-

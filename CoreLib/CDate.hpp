@@ -98,4 +98,3 @@ public:
 
 
 #endif /* CORELIB_CDATE_HPP */
-

@@ -76,4 +76,3 @@ public:
 
 
 #endif /* CORELIB_COMPRESSION_HPP */
-

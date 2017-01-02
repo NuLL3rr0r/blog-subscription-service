@@ -52,5 +52,3 @@ ELSE (  )
         MESSAGE ( FATAL_ERROR "Could not find CppDB-SQLite3 driver." )
     ENDIF (  )
 ENDIF (  )
-
-

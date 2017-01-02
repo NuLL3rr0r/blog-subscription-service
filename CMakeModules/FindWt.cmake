@@ -89,5 +89,3 @@ ELSE ( WT_RESOURCES_FOUND )
         MESSAGE ( STATUS "Could not find Wt resources" )
     ENDIF (  )
 ENDIF (  )
-
-

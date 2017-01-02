@@ -43,4 +43,3 @@ Exception::Exception(const std::string &message)
 {
 
 }
-

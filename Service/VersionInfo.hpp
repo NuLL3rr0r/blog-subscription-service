@@ -59,4 +59,3 @@
 
 
 #endif /* SERVICE_VERSIONINFO_HPP */
-

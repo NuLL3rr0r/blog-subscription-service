@@ -86,4 +86,3 @@ public:
 
 
 #endif /* CORELIB_MAILER_HPP */
-

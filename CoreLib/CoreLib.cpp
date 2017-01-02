@@ -46,4 +46,3 @@ void CoreLib::CoreLibInitialize(int argc, char **argv)
     std::string appPath(boost::algorithm::replace_last_copy(path.string(), appId, ""));
     boost::filesystem::current_path(appPath);
 }
-

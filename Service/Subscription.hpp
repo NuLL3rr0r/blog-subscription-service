@@ -59,4 +59,3 @@ private:
 
 
 #endif /* SERVICE_SUBSCRIPTION_HPP */
-

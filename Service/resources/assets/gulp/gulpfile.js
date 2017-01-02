@@ -145,4 +145,3 @@ function errorHandler (error) {
   console.log(error.toString());
   this.emit('end');
 }
-

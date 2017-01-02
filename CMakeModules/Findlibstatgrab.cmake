@@ -61,5 +61,3 @@ IF (${CMAKE_SYSTEM_NAME} MATCHES "FreeBSD")
         ENDIF (  )
     ENDIF (  )
 ENDIF (  )
-
-

@@ -155,4 +155,3 @@ HttpStatus::Impl::Impl()
 }
 
 HttpStatus::Impl::~Impl() = default;
-

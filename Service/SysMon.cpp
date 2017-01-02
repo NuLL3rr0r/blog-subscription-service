@@ -807,4 +807,3 @@ void SysMon::Impl::Initialize()
     Timer->setInterval(1000);
     Timer->timeout().connect(this, &SysMon::Impl::RefreshResourceUsage);
 }
-

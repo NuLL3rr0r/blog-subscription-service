@@ -28,4 +28,3 @@ IF ( WIN32 AND MINGW )
         libwinpthread-1.dll
     )
 ENDIF ( WIN32 AND MINGW )
-

@@ -47,5 +47,3 @@ ELSE (  )
         MESSAGE ( FATAL_ERROR "Could not find libcurl" )
     ENDIF (  )
 ENDIF (  )
-
-

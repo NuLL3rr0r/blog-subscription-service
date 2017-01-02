@@ -222,4 +222,3 @@ void CmsDashboard::Impl::OnSessionTerminationScheduledDialogClosed(Wt::StandardB
 
     SessionTerminationScheduledMessageBox.reset();
 }
-

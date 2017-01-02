@@ -1275,4 +1275,3 @@ void Subscription::Impl::SendMessage(const Message &type, const string &uuid, co
         LOG_ERROR(UNKNOWN_ERROR);
     }
 }
-

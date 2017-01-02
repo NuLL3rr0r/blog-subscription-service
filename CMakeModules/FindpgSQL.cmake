@@ -43,5 +43,3 @@ ELSE (  )
         MESSAGE ( STATUS "Could not find pgSQL" )
     ENDIF (  )
 ENDIF (  )
-
-

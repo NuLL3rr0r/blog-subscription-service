@@ -267,4 +267,3 @@ void CmsSettings::Impl::OnSaveSettingsFormSubmitted()
 
     guard.rollback();
 }
-

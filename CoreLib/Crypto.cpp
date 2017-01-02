@@ -362,4 +362,3 @@ Crypto::Impl::~Impl()
     delete IV;
     delete Key;
 }
-

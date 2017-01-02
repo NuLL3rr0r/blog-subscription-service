@@ -40,5 +40,3 @@ ELSE (  )
         MESSAGE ( STATUS "Could not find Crypto++" )
     ENDIF (  )
 ENDIF (  )
-
-

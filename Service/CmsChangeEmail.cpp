@@ -246,4 +246,3 @@ void CmsChangeEmail::Impl::OnEmailChangeFormSubmitted()
 
     guard.rollback();
 }
-

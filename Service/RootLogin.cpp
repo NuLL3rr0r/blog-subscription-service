@@ -886,4 +886,3 @@ Wt::WWidget *RootLogin::Impl::LogoutPage()
 
     return container;
 }
-

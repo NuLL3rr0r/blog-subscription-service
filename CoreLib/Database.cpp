@@ -481,4 +481,3 @@ bool Database::Initialize()
 
     return false;
 }
-

@@ -35,5 +35,3 @@
  */
 
 #include "make_unique.hpp"
-
-

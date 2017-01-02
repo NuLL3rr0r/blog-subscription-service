@@ -22,4 +22,3 @@
 
 SET ( SERVICE_EXECUTABLE_RC_FILE "resources/app.rc" )
 SET ( SERVICE_EXECUTABLE_ICON_FILE "resources/app-icon.ico" )
-

@@ -419,4 +419,3 @@ INCLUDE ( deploy.cmake )
 INCLUDE ( resources.cmake )
 
 SUBDIRS( CoreLib Utils Service )
-

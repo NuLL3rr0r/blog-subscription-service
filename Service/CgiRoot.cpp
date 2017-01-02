@@ -339,4 +339,3 @@ void CgiRoot::Impl::ReloadWithLanguage(const std::string &lang)
 
     m_parent->Exit(newQueryString);
 }
-

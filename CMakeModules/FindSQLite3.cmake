@@ -40,5 +40,3 @@ ELSE (  )
         MESSAGE ( STATUS "Could not find SQLite3" )
     ENDIF (  )
 ENDIF (  )
-
-

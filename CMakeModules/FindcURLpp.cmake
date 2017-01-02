@@ -38,5 +38,3 @@ ELSE (  )
         MESSAGE ( FATAL_ERROR "Could not find cURLpp" )
     ENDIF (  )
 ENDIF (  )
-
-

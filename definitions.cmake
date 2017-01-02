@@ -84,4 +84,3 @@ IF ( WIN32 )
 ELSE (  )
     SET ( UTILS_DEFINES "" CACHE STRING "" )
 ENDIF (  )
-

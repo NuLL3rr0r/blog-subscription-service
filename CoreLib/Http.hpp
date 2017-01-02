@@ -53,4 +53,3 @@ public:
 
 
 #endif /* CORELIB_HTTP_HPP */
-

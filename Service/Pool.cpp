@@ -373,4 +373,3 @@ CoreLib::Database *Pool::Database()
 
     return Impl::DatabaseInstance.get();
 }
-

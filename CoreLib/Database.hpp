@@ -122,4 +122,3 @@ public:
 
 
 #endif /* CORELIB_DATABASE_HPP */
-

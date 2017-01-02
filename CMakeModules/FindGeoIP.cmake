@@ -72,5 +72,3 @@ ELSE (  )
         MESSAGE ( STATUS "Could not find GeoLite-City database" )
     ENDIF (  )
 ENDIF (  )
-
-

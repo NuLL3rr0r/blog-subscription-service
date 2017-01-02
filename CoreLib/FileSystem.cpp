@@ -242,4 +242,3 @@ bool FileSystem::Write(const std::string &file, const std::string &data)
 
     return false;
 }
-

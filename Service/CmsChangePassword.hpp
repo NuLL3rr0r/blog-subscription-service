@@ -59,4 +59,3 @@ private:
 
 
 #endif /* SERVICE_CMS_CHANGE_PASSWORD_HPP */
-

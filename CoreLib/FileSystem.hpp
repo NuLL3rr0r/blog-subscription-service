@@ -61,4 +61,3 @@ public:
 
 
 #endif /* CORELIB_FILESYSTEM_HPP */
-

@@ -478,4 +478,3 @@ void ContactForm::Impl::ClearForm()
     BodyTextArea->setText("");
     CaptchaLineEdit->setText("");
 }
-

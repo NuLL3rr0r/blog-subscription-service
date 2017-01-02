@@ -511,4 +511,3 @@ void CmsNewsletter::Impl::SetFormEnable(bool status)
         SendPushButton->setDisabled(true);
     }
 }
-

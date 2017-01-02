@@ -91,4 +91,3 @@ private:
 
 
 #endif /* CORELIB_RANDOM_HPP */
-

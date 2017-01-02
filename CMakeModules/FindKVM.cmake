@@ -35,5 +35,3 @@ ELSE ( KVM_FOUND )
         MESSAGE ( FATAL_ERROR "Could not find kvm." )
     ENDIF ( KVM_FIND_REQUIRED )
 ENDIF ( KVM_FOUND )
-
-

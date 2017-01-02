@@ -88,4 +88,3 @@ public:
 
 
 #endif /* CORELIB_STOPWATCH_HPP */
-

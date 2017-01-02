@@ -363,4 +363,3 @@ void CmsSubscribers::Impl::FillDataTable(const CmsSubscribers::Impl::Table &tabl
         LOG_ERROR(UNKNOWN_ERROR);
     }
 }
-

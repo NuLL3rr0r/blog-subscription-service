@@ -68,4 +68,3 @@ std::string Utility::CalculateSize(const std::size_t size)
     result.assign("0");
     return result;
 }
-

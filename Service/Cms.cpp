@@ -337,4 +337,3 @@ void Cms::Impl::ForceExit()
     }
     cgiRoot->Exit("/?root&logout");
 }
-

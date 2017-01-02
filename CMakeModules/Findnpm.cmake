@@ -37,5 +37,3 @@ ELSE (  )
         MESSAGE ( STATUS "Could not find npm" )
     ENDIF (  )
 ENDIF (  )
-
-

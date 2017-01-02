@@ -280,4 +280,3 @@ void CmsChangePassword::Impl::OnPasswordChangeFormSubmitted()
 
     guard.rollback();
 }
-

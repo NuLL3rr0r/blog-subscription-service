@@ -88,4 +88,3 @@ void Page::HtmlInfo(const wstring& msg, WText *txt) const
     txt->setText(msg);
     txt->setStyleClass("boldText");
 }
-

@@ -177,4 +177,3 @@ bool Archiver::UnZip(const std::string &archive, const std::string &extractionPa
 
     return true;
 }
-

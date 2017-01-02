@@ -131,4 +131,3 @@ std::size_t Captcha::GetResult()
 {
     return m_pimpl->Result;
 }
-

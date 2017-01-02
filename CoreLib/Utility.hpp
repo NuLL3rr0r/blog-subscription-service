@@ -73,4 +73,3 @@ public:
 
 
 #endif /* CORELIB_UTILITY_HPP */
-

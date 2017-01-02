@@ -357,4 +357,3 @@ std::wstring DateConv::FormatToPersianNums(const std::wstring &date)
 
     return res;
 }
-

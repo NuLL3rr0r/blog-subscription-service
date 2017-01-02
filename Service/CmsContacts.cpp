@@ -644,4 +644,3 @@ Wt::WInPlaceEdit *CmsContacts::Impl::GetContactsCell(const std::string &cellValu
 
     return edit;
 }
-
