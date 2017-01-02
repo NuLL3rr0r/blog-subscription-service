@@ -141,7 +141,7 @@ std::string System::GetProcessNameFromPath(const std::string &fullPath)
     return fullPath.substr(fullPath.rfind("/") + 1);
 }
 
-int System::GetPidsOfProcess(const std::string &processName, std::vector<int> &pids)
+int System::GetPidsOfProcess(const std::string &processName, std::vector<int> &out_pids)
 {
     /// Based on code from pidof.c
 
@@ -167,7 +167,7 @@ int System::GetPidsOfProcess(const std::string &processName, std::vector<int> &p
 
         for (i = 0; i < nProcesses; ++i) {
             if (strncmp(name.c_str(), p[i].ki_comm, COMMLEN + 1) == 0) {
-                pids.push_back(static_cast<int>(p[i].ki_pid));
+                out_pids.push_back(static_cast<int>(p[i].ki_pid));
                 processesFound++;
             }
         }

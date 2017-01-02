@@ -59,7 +59,7 @@ public:
         Sensitive = crypto_pwhash_OPSLIMIT_SENSITIVE
     };
 
-    enum class Argon2iMemLimit : unsigned long long {
+    enum class Argon2iMemLimit : std::size_t {
         Interactive = crypto_pwhash_MEMLIMIT_INTERACTIVE,
         Moderate = crypto_pwhash_MEMLIMIT_MODERATE,
         Sensitive = crypto_pwhash_MEMLIMIT_SENSITIVE
@@ -70,23 +70,25 @@ private:
     std::unique_ptr<Impl> m_pimpl;
 
 public:
+    static void Initialize();
+
     static bool Encrypt(const std::string &plainText, std::string &out_encodedText,
-                        const Byte *key, std::size_t keyLen, const Byte *iv, std::size_t ivLen);
+                        const Byte *key, const std::size_t keyLen, const Byte *iv, const std::size_t ivLen);
     static bool Encrypt(const std::string &plainText, std::string &out_encodedText,
                         std::string &out_error,
-                        const Byte *key, std::size_t keyLen, const Byte *iv, std::size_t ivLen);
+                        const Byte *key, const std::size_t keyLen, const Byte *iv, const std::size_t ivLen);
     static bool Decrypt(const std::string &cipherText, std::string &out_recoveredText,
-                        const Byte *key, std::size_t keyLen, const Byte *iv, std::size_t ivLen);
+                        const Byte *key, const std::size_t keyLen, const Byte *iv, const std::size_t ivLen);
     static bool Decrypt(const std::string &cipherText, std::string &out_recoveredText,
                         std::string &out_error,
-                        const Byte *key, std::size_t keyLen, const Byte *iv, std::size_t ivLen);
+                        const Byte *key, const std::size_t keyLen, const Byte *iv, const std::size_t ivLen);
     static bool Hash(const std::string &text, std::string &out_digest);
     static bool Hash(const std::string &text, std::string &out_digest,
-                             std::string &out_error);
-    static int Base64Decode(char value);
+                     std::string &out_error);
+    static int Base64Decode(const char value);
     static int Base64Decode(const char *code, const int length, char *out_plainText);
     static void Base64Decode(std::istream &inputStream, std::ostream &outputStream);
-    static int Base64Encode(char value);
+    static int Base64Encode(const char value);
     static int Base64Encode(const char *code, const int length, char *out_plainText);
     static int Base64EncodeBlockEnd(char *out_plainText);
     static void Base64Encode(std::istream &inputStream, std::ostream &outputStream);
@@ -95,14 +97,14 @@ public:
                         const Argon2iMemLimit &memLimit = Argon2iMemLimit::Moderate);
     static bool Argon2iVerify(const std::string &passwd, const std::string &hashedPasswd);
 
-    static std::string ByteArrayToString(const unsigned char *array, size_t length);
-    static std::wstring WCharArrayToString(const wchar_t *array, size_t length);
+    static std::string ByteArrayToString(const unsigned char *array, const size_t length);
+    static std::wstring WCharArrayToString(const wchar_t *array, const size_t length);
 
     static std::string HexStringToString(const std::string &hexString);
     static std::wstring HexStringToWString(const std::wstring &hexString);
 
 public:
-    Crypto(const Byte *key, std::size_t keyLen, const Byte *iv, std::size_t ivLen);
+    Crypto(const Byte *key, const std::size_t keyLen, const Byte *iv, const std::size_t ivLen);
     virtual ~Crypto();
 
 public:

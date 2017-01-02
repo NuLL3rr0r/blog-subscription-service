@@ -153,7 +153,7 @@ void Log::Initialize(std::ostream &out_outputStream,
     s_pimpl->Storage()->Initialized = true;
 }
 
-Log::Log(EType type, const std::string &file, const std::string &func, int line, ...)
+Log::Log(const EType type, const std::string &file, const std::string &func, const int line, ...)
     : m_hasEntries(false)
 {
     assert(s_pimpl->Storage()->Initialized);

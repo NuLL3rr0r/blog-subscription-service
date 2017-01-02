@@ -40,7 +40,7 @@
 #include <string>
 
 namespace CoreLib {
-    class HttpStatus;
+class HttpStatus;
 }
 
 class CoreLib::HttpStatus

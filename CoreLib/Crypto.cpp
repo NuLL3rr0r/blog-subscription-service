@@ -38,6 +38,7 @@
 #include <stdexcept>
 #include <sstream>
 #include <utility>
+#include <cassert>
 #include <boost/algorithm/string.hpp>
 #if defined ( _WIN32 )
 #include <windows.h>
@@ -52,8 +53,9 @@
 #include <b64/decode.h>
 #include <b64/encode.h>
 #include <sodium.h>
-#include "Crypto.hpp"
 #include "make_unique.hpp"
+#include "Crypto.hpp"
+#include "Log.hpp"
 
 #define     UNKNOWN_ERROR           "Unknown error!"
 
@@ -76,8 +78,26 @@ public:
 
 };
 
+void Crypto::Initialize()
+{
+    LOG_INFO("Initializing CoreLib::Crypto...");
+
+    LOG_INFO("Initializing crypto module sodium...");
+
+    /// sodium_init()
+    /// returns 0 on success,
+    /// -1 on failure,
+    /// and 1 is the library had already been initialized.
+    int ret = sodium_init();
+    assert(ret == 0);
+
+    LOG_INFO("Crypto module sodium initialized successfully!");
+
+    LOG_INFO("CoreLib::Crypto initialized successfully!");
+}
+
 bool Crypto::Encrypt(const std::string &plainText, std::string &out_encodedText,
-                     const Byte *key, std::size_t keyLen, const Byte *iv, std::size_t ivLen)
+                     const Byte *key, const std::size_t keyLen, const Byte *iv, const std::size_t ivLen)
 {
     string err;
     return Crypto::Encrypt(plainText, out_encodedText, err, key, keyLen, iv, ivLen);
@@ -85,7 +105,7 @@ bool Crypto::Encrypt(const std::string &plainText, std::string &out_encodedText,
 
 bool Crypto::Encrypt(const std::string &plainText, std::string &out_encodedText,
                      std::string &out_error,
-                     const Byte *key, std::size_t keyLen, const Byte *iv, std::size_t ivLen)
+                     const Byte *key, const std::size_t keyLen, const Byte *iv, const std::size_t ivLen)
 {
     try {
         CBC_Mode<AES>::Encryption enc;
@@ -118,7 +138,7 @@ bool Crypto::Encrypt(const std::string &plainText, std::string &out_encodedText,
 }
 
 bool Crypto::Decrypt(const std::string &cipherText, std::string &out_recoveredText,
-                     const Byte *key, std::size_t keyLen, const Byte *iv, std::size_t ivLen)
+                     const Byte *key, const std::size_t keyLen, const Byte *iv, const std::size_t ivLen)
 {
     string err;
     return Crypto::Decrypt(cipherText, out_recoveredText, err, key, keyLen, iv, ivLen);
@@ -126,7 +146,7 @@ bool Crypto::Decrypt(const std::string &cipherText, std::string &out_recoveredTe
 
 bool Crypto::Decrypt(const std::string &cipherText, std::string &out_recoveredText,
                      std::string &out_error,
-                     const Byte *key, std::size_t keyLen, const Byte *iv, std::size_t ivLen)
+                     const Byte *key, const std::size_t keyLen, const Byte *iv, const std::size_t ivLen)
 {
     try {
         CBC_Mode<AES>::Decryption dec;
@@ -193,7 +213,7 @@ bool Crypto::Hash(const std::string &text, std::string &out_digest,
     return false;
 }
 
-int Crypto::Base64Decode(char value)
+int Crypto::Base64Decode(const char value)
 {
     base64::decoder decoder;
     return decoder.decode(value);
@@ -243,7 +263,7 @@ bool Crypto::Argon2i(const std::string &passwd, std::string &out_hashedPasswd,
 
     if (crypto_pwhash_str(hashed, passwd.c_str(), passwd.size(),
                           static_cast<unsigned long long>(opsLimit),
-                          static_cast<unsigned long long>(memLimit)) != 0) {
+                          static_cast<std::size_t>(memLimit)) != 0) {
         // out of memory
         return false;
     }
@@ -262,7 +282,7 @@ bool Crypto::Argon2iVerify(const std::string &passwd, const std::string &hashedP
     return true;
 }
 
-Crypto::Crypto(const Byte *key, std::size_t keyLen, const Byte *iv, std::size_t ivLen) :
+Crypto::Crypto(const Byte *key, const std::size_t keyLen, const Byte *iv, const std::size_t ivLen) :
     m_pimpl(make_unique<Crypto::Impl>())
 {
     m_pimpl->Key = new Byte[keyLen];
@@ -302,7 +322,7 @@ bool Crypto::Decrypt(const std::string &cipherText, std::string &out_recoveredTe
     return Crypto::Encrypt(cipherText, out_recoveredText, out_error, m_pimpl->Key, m_pimpl->KeyLen, m_pimpl->IV, m_pimpl->IVLen);
 }
 
-std::string Crypto::ByteArrayToString(const unsigned char *array, size_t length)
+std::string Crypto::ByteArrayToString(const unsigned char *array, const size_t length)
 {
     ostringstream oss;
 
@@ -313,7 +333,7 @@ std::string Crypto::ByteArrayToString(const unsigned char *array, size_t length)
     return oss.str();
 }
 
-std::wstring Crypto::WCharArrayToString(const wchar_t *array, size_t length)
+std::wstring Crypto::WCharArrayToString(const wchar_t *array, const size_t length)
 {
     wostringstream woss;
 

@@ -38,7 +38,7 @@
 
 
 namespace CoreLib {
-    void CoreLibInitialize(int argc, char **argv);
+void CoreLibInitialize(const int argc, char **argv);
 }
 
 

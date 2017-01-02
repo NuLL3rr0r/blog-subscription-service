@@ -40,7 +40,7 @@
 #include <string>
 
 namespace CoreLib {
-    class Archiver;
+class Archiver;
 }
 
 class CoreLib::Archiver
@@ -48,7 +48,7 @@ class CoreLib::Archiver
 public:
     static bool UnGzip(const std::string &archive, const std::string &extractedFile);
     static bool UnGzip(const std::string &archive, const std::string &extractedFile,
-                      std::string &out_error);
+                       std::string &out_error);
 
     static bool UnZip(const std::string &archive, const std::string &extractionPath);
     static bool UnZip(const std::string &archive, const std::string &extractionPath,

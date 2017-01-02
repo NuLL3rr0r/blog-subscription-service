@@ -37,7 +37,7 @@
 #include <boost/filesystem.hpp>
 #include "CoreLib.hpp"
 
-void CoreLib::CoreLibInitialize(int argc, char **argv)
+void CoreLib::CoreLibInitialize(const int argc, char **argv)
 {
     boost::filesystem::path path(boost::filesystem::initial_path<boost::filesystem::path>());
     if (argc > 0 && argv[0] != NULL)

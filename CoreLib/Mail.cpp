@@ -35,7 +35,6 @@
 
 #include <chrono>
 #include <queue>
-#include <cmath>
 #include <boost/bind.hpp>
 #include <boost/chrono/chrono.hpp>
 #include <boost/exception/diagnostic_information.hpp>
@@ -267,7 +266,7 @@ bool Mail::GetDeleteLater() const
     return m_pimpl->DeleteLater;
 }
 
-void Mail::SetDeleteLater(bool del) const
+void Mail::SetDeleteLater(const bool del) const
 {
     m_pimpl->DeleteLater = del;
 }
@@ -335,7 +334,7 @@ bool Mail::Send(std::string &out_error) const
     return false;
 }
 
-void Mail::SendAsync(SendCallback callback)
+void Mail::SendAsync(const SendCallback callback)
 {
     try {
         {

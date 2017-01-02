@@ -55,7 +55,7 @@ bool Http::Download(const std::string &remoteAddr, const std::string &localPath)
 }
 
 bool Http::Download(const std::string &remoteAddr, const std::string &localPath,
-                        std::string &out_error)
+                    std::string &out_error)
 {
     try {
         out_error.clear();

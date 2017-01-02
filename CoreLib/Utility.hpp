@@ -64,7 +64,7 @@ public:
     };
 
     template <typename _E>
-    static constexpr typename std::underlying_type<_E>::type ToUnderlyingType(_E e) {
+    static constexpr typename std::underlying_type<_E>::type ToUnderlyingType(const _E e) {
         return static_cast<typename std::underlying_type<_E>::type>(e);
     }
 

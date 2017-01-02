@@ -57,7 +57,7 @@ public:
     };
 
 public:
-    static void Compress(const char *data, size_t size,
+    static void Compress(const char *data, const size_t size,
                          Buffer &out_compressedBuffer,
                          const Algorithm &algorithm);
     static void Compress(const std::string &dataString,

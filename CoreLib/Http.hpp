@@ -40,7 +40,7 @@
 #include <string>
 
 namespace CoreLib {
-    class Http;
+class Http;
 }
 
 class CoreLib::Http
@@ -48,7 +48,7 @@ class CoreLib::Http
 public:
     static bool Download(const std::string &remoteAddr, const std::string &localPath);
     static bool Download(const std::string &remoteAddr, const std::string &localPath,
-                             std::string &out_error);
+                         std::string &out_error);
 };
 
 

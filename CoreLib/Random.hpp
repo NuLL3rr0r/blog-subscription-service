@@ -74,7 +74,7 @@ public:
     static std::string Characters(const Character &type, const size_t length);
 
     template <typename _T>
-    static _T Number(_T lowerBound, _T upperBound)
+    static _T Number(const _T lowerBound, const _T upperBound)
     {
         boost::lock_guard<boost::mutex> guard(GetLock());
         boost::random::uniform_int_distribution<> dist(lowerBound, upperBound);

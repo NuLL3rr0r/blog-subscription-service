@@ -68,7 +68,7 @@ bool Archiver::UnGzip(const std::string &archive, const std::string &extractedFi
         return false;
     }
     Compression::Buffer compressedContents((std::istreambuf_iterator<char>(ifs)),
-                                                        std::istreambuf_iterator<char>());
+                                           std::istreambuf_iterator<char>());
     ifs.close();
 
     Compression::Buffer uncompressedContents;
@@ -82,7 +82,7 @@ bool Archiver::UnGzip(const std::string &archive, const std::string &extractedFi
         return false;
     }
     copy(uncompressedContents.begin(), uncompressedContents.end(),
-              ostreambuf_iterator<char>(ofs));
+         ostreambuf_iterator<char>(ofs));
     ofs.flush();
     ofs.close();
 

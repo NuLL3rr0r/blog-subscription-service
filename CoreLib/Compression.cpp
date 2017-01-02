@@ -48,7 +48,7 @@ using namespace std;
 using namespace boost;
 using namespace CoreLib;
 
-void Compression::Compress(const char *data, size_t size,
+void Compression::Compress(const char *data, const size_t size,
                            Buffer &out_compressedBuffer,
                            const Algorithm &algorithm)
 {

@@ -75,13 +75,13 @@ public:
     void SetAttachments(const std::vector<std::string> &attachments);
 
     bool GetDeleteLater() const;
-    void SetDeleteLater(bool del) const;
+    void SetDeleteLater(const bool del) const;
 
 public:
     bool Send() const;
     bool Send(std::string &out_error) const;
 
-    void SendAsync(SendCallback callback = nullptr);
+    void SendAsync(const SendCallback callback = nullptr);
 };
 
 

@@ -50,10 +50,10 @@ public:
     static bool FileExists(const std::string &file);
     static std::size_t FileSize(const std::string &file);
 
-    static bool CreateDir(const std::string &dir, bool parents=true);
-    static bool Erase(const std::string &path, bool recursive=true);
+    static bool CreateDir(const std::string &dir, const bool parents = true);
+    static bool Erase(const std::string &path, const bool recursive = true);
     static bool Move(const std::string &from, const std::string &to);
-    static bool CopyFile(const std::string &from, const std::string &to, bool overwrite = true);
+    static bool CopyFile(const std::string &from, const std::string &to, const bool overwrite = true);
 
     static bool Read(const std::string &file, std::string &out_data);
     static bool Write(const std::string &file, const std::string &data);

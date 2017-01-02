@@ -108,7 +108,7 @@ size_t FileSystem::FileSize(const std::string &file)
     return 0;
 }
 
-bool FileSystem::CreateDir(const std::string &dir, bool parents)
+bool FileSystem::CreateDir(const std::string &dir, const bool parents)
 {
     try {
         filesystem::path p(dir);
@@ -129,7 +129,7 @@ bool FileSystem::CreateDir(const std::string &dir, bool parents)
     return false;
 }
 
-bool FileSystem::Erase(const std::string &path, bool recursive)
+bool FileSystem::Erase(const std::string &path, const bool recursive)
 {
     try {
         if (recursive) {
@@ -163,35 +163,12 @@ bool FileSystem::Move(const std::string &from, const std::string &to)
     return false;
 }
 
-bool FileSystem::CopyFile(const std::string &from, const std::string &to, bool overwrite)
+bool FileSystem::CopyFile(const std::string &from, const std::string &to, const bool overwrite)
 {
     try {
-        // Affects Boost 1.55.0 - 1.57.0
-        // https://svn.boost.org/trac/boost/ticket/10038
-
-        // uncomment if it won't affect you
-        //filesystem::copy_file(from, to,
-        //              overwrite ? filesystem::copy_option::overwrite_if_exists
-        //                        : filesystem::copy_option::fail_if_exists );
-
-        // start alternative - remove these lines if you are not affected by the bug
-
-        if (FileExists(to) && !overwrite)
-            return false;
-
-        ifstream ifs(from, ios::in | ios::binary);
-        if (!ifs.is_open())
-            return false;
-
-        ofstream ofs(to, ios::out | ios::binary);
-        if (!ofs.is_open())
-            return false;
-
-        ofs << ifs.rdbuf();
-        ofs.close();
-        ifs.close();
-
-        // end alternative
+        filesystem::copy_file(from, to,
+                              overwrite ? filesystem::copy_option::overwrite_if_exists
+                                        : filesystem::copy_option::fail_if_exists);
 
         return true;
     } catch(const filesystem::filesystem_error &ex) {

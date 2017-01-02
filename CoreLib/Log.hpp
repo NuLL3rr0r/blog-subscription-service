@@ -77,12 +77,12 @@ public:
                            const std::string &outputFilePrefix);
 
 public:
-    Log(EType type, const std::string &file, const std::string &func, int line, ...);
+    Log(const EType type, const std::string &file, const std::string &func, const int line, ...);
     virtual ~Log();
 
 public:
-    template<typename T>
-    Log &operator,(const T &arg)
+    template<typename _T>
+    Log &operator,(const _T &arg)
     {
         if (m_hasEntries)
             m_buffer << "\n";
