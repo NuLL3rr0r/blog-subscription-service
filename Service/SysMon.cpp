@@ -51,6 +51,7 @@
 #include <Wt/WTimer>
 #include <Wt/WWidget>
 #include <statgrab.h>
+#include <CoreLib/CDate.hpp>
 #include <CoreLib/FileSystem.hpp>
 #include <CoreLib/Log.hpp>
 #include <CoreLib/make_unique.hpp>
@@ -67,6 +68,7 @@ using namespace boost;
 using namespace Wt;
 using namespace Wt::Chart;
 using namespace CoreLib;
+using namespace CoreLib::CDate;
 using namespace Service;
 
 struct SysMon::Impl : public Wt::WObject
@@ -106,7 +108,7 @@ public:
     typedef std::map<VirtualMemory, double> VirtualMemoryInstant;
 
     typedef std::unordered_map<sg_host_state, Wt::WString,
-        CoreLib::Utility::Hasher<sg_host_state>> HostStateHashTable;
+    CoreLib::Utility::Hasher<sg_host_state>> HostStateHashTable;
 
 public:
     Wt::WTimer *Timer;
@@ -143,7 +145,7 @@ public:
 
 SysMon::SysMon()
     : Page(),
-    m_pimpl(make_unique<SysMon::Impl>())
+      m_pimpl(make_unique<SysMon::Impl>())
 {
     this->clear();
     this->setId("SysMonPage");
@@ -381,13 +383,13 @@ WWidget *SysMon::Layout()
 
 SysMon::Impl::Impl()
     : Timer(nullptr),
-    HostState {
-        {sg_unknown_configuration, tr("system-monitor-host-info-host-state-unknown-configuration")},
-        {sg_physical_host, tr("system-monitor-host-info-host-state-physical-host")},
-        {sg_virtual_machine, tr("system-monitor-host-info-host-state-virtual-machine")},
-        {sg_paravirtual_machine, tr("system-monitor-host-info-host-state-paravirtual-machine")},
-        {sg_hardware_virtualized, tr("system-monitor-host-info-host-state-hardware-virtualized")}
-    }
+      HostState {
+{sg_unknown_configuration, tr("system-monitor-host-info-host-state-unknown-configuration")},
+{sg_physical_host, tr("system-monitor-host-info-host-state-physical-host")},
+{sg_virtual_machine, tr("system-monitor-host-info-host-state-virtual-machine")},
+{sg_paravirtual_machine, tr("system-monitor-host-info-host-state-paravirtual-machine")},
+{sg_hardware_virtualized, tr("system-monitor-host-info-host-state-hardware-virtualized")}
+          }
 {
 
 }
@@ -448,29 +450,43 @@ void SysMon::Impl::RefreshResourceUsage()
         verticalHostInfoTable->elementAt(9, 0)->addWidget(new WText(tr("system-monitor-host-info-uptime")));
         verticalHostInfoTable->elementAt(10, 0)->addWidget(new WText(tr("system-monitor-host-info-systime")));
 
+        string systime(DateConv::DateTimeString(hostInfo->systime, CDate::Timezone::UTC));
+
         horizontalHostInfoTable->elementAt(1, 0)->addWidget(new WText(WString(hostInfo->os_name)));
         horizontalHostInfoTable->elementAt(1, 1)->addWidget(new WText(WString(hostInfo->os_release)));
         horizontalHostInfoTable->elementAt(1, 2)->addWidget(new WText(WString(hostInfo->os_version)));
         horizontalHostInfoTable->elementAt(1, 3)->addWidget(new WText(WString(hostInfo->platform)));
         horizontalHostInfoTable->elementAt(1, 4)->addWidget(new WText(WString(hostInfo->hostname)));
-        horizontalHostInfoTable->elementAt(1, 5)->addWidget(new WText(lexical_cast<string>(hostInfo->bitwidth)));
-        horizontalHostInfoTable->elementAt(1, 6)->addWidget(new WText(lexical_cast<string>(HostState[hostInfo->host_state])));
-        horizontalHostInfoTable->elementAt(1, 7)->addWidget(new WText(lexical_cast<string>(hostInfo->ncpus)));
-        horizontalHostInfoTable->elementAt(1, 8)->addWidget(new WText(lexical_cast<string>(hostInfo->maxcpus)));
-        horizontalHostInfoTable->elementAt(1, 9)->addWidget(new WText(lexical_cast<string>(hostInfo->uptime)));
-        horizontalHostInfoTable->elementAt(1, 10)->addWidget(new WText(lexical_cast<string>(hostInfo->systime)));
+        horizontalHostInfoTable->elementAt(1, 5)->addWidget(
+                    new WText(WString::fromUTF8(lexical_cast<string>(hostInfo->bitwidth))));
+        horizontalHostInfoTable->elementAt(1, 6)->addWidget(
+                    new WText(WString::fromUTF8(lexical_cast<string>(HostState[hostInfo->host_state]))));
+        horizontalHostInfoTable->elementAt(1, 7)->addWidget(
+                    new WText(WString::fromUTF8(lexical_cast<string>(hostInfo->ncpus))));
+        horizontalHostInfoTable->elementAt(1, 8)->addWidget(
+                    new WText(WString::fromUTF8(lexical_cast<string>(hostInfo->maxcpus))));
+        horizontalHostInfoTable->elementAt(1, 9)->addWidget(
+                    new WText(WString::fromUTF8(lexical_cast<string>(DateConv::SecondsToHumanReadableTime(hostInfo->uptime)))));
+        horizontalHostInfoTable->elementAt(1, 10)->addWidget(
+                    new WText(WString::fromUTF8(lexical_cast<string>(systime))));
 
         verticalHostInfoTable->elementAt(0, 1)->addWidget(new WText(WString(hostInfo->os_name)));
         verticalHostInfoTable->elementAt(1, 1)->addWidget(new WText(WString(hostInfo->os_release)));
         verticalHostInfoTable->elementAt(2, 1)->addWidget(new WText(WString(hostInfo->os_version)));
         verticalHostInfoTable->elementAt(3, 1)->addWidget(new WText(WString(hostInfo->platform)));
         verticalHostInfoTable->elementAt(4, 1)->addWidget(new WText(WString(hostInfo->hostname)));
-        verticalHostInfoTable->elementAt(5, 1)->addWidget(new WText(lexical_cast<string>(hostInfo->bitwidth)));
-        verticalHostInfoTable->elementAt(6, 1)->addWidget(new WText(lexical_cast<string>(HostState[hostInfo->host_state])));
-        verticalHostInfoTable->elementAt(7, 1)->addWidget(new WText(lexical_cast<string>(hostInfo->ncpus)));
-        verticalHostInfoTable->elementAt(8, 1)->addWidget(new WText(lexical_cast<string>(hostInfo->maxcpus)));
-        verticalHostInfoTable->elementAt(9, 1)->addWidget(new WText(lexical_cast<string>(hostInfo->uptime)));
-        verticalHostInfoTable->elementAt(10, 1)->addWidget(new WText(lexical_cast<string>(hostInfo->systime)));
+        verticalHostInfoTable->elementAt(5, 1)->addWidget(
+                    new WText(WString::fromUTF8(lexical_cast<string>(hostInfo->bitwidth))));
+        verticalHostInfoTable->elementAt(6, 1)->addWidget(
+                    new WText(WString::fromUTF8(lexical_cast<string>(HostState[hostInfo->host_state]))));
+        verticalHostInfoTable->elementAt(7, 1)->addWidget(
+                    new WText(WString::fromUTF8(lexical_cast<string>(hostInfo->ncpus))));
+        verticalHostInfoTable->elementAt(8, 1)->addWidget(
+                    new WText(WString::fromUTF8(lexical_cast<string>(hostInfo->maxcpus))));
+        verticalHostInfoTable->elementAt(9, 1)->addWidget
+                (new WText(WString::fromUTF8(lexical_cast<string>(DateConv::SecondsToHumanReadableTime(hostInfo->uptime)))));
+        verticalHostInfoTable->elementAt(10, 1)->addWidget(
+                    new WText(WString::fromUTF8(lexical_cast<string>(systime))));
     }
 
     /// Shift and fill the CPU usage cache and model
@@ -667,12 +683,14 @@ void SysMon::Impl::RefreshResourceUsage()
 
     if ((diskIoStats = sg_get_disk_io_stats_diff(&diskIoStatsEntries)) != NULL) {
         for (size_t i = 0; i < diskIoStatsEntries; ++i) {
-            diskTable->elementAt(static_cast<int>(i) + 1, 0)->addWidget(new WText(lexical_cast<string>(diskIoStats->disk_name)));
-            diskTable->elementAt(static_cast<int>(i) + 1, 1)->addWidget(new WText(WString(L"{1}")
-                                                                     .arg(Utility::CalculateSize(diskIoStats->read_bytes))));
-            diskTable->elementAt(static_cast<int>(i) + 1, 2)->addWidget(new WText(WString(L"{1}")
-                                                                     .arg(Utility::CalculateSize(diskIoStats->write_bytes))));
-            diskTable->elementAt(static_cast<int>(i) + 1, 3)->addWidget(new WText(lexical_cast<string>(static_cast<long>(diskIoStats->systime))));
+            diskTable->elementAt(static_cast<int>(i) + 1, 0)->addWidget(
+                        new WText(WString::fromUTF8(lexical_cast<string>(diskIoStats->disk_name))));
+            diskTable->elementAt(static_cast<int>(i) + 1, 1)->addWidget(
+                        new WText(WString(L"{1}").arg(Utility::CalculateSize(diskIoStats->read_bytes))));
+            diskTable->elementAt(static_cast<int>(i) + 1, 2)->addWidget(
+                        new WText(WString(L"{1}").arg(Utility::CalculateSize(diskIoStats->write_bytes))));
+            diskTable->elementAt(static_cast<int>(i) + 1, 3)->addWidget(
+                        new WText(WString::fromUTF8(lexical_cast<string>(static_cast<long>(diskIoStats->systime)))));
 
             diskTotalRead += diskIoStats->read_bytes;
             diskTotalWrite += diskIoStats->write_bytes;
@@ -680,12 +698,13 @@ void SysMon::Impl::RefreshResourceUsage()
             ++diskIoStats;
         }
 
-        diskTable->elementAt(static_cast<int>(diskIoStatsEntries) + 1, 0)->addWidget(new WText(tr("system-monitor-disk-io-stats-total")));
-        diskTable->elementAt(static_cast<int>(diskIoStatsEntries) + 1, 1)->addWidget(new WText(WString(L"{1}")
-                                                                                  .arg(Utility::CalculateSize(diskTotalRead))));
-        diskTable->elementAt(static_cast<int>(diskIoStatsEntries) + 1, 2)->addWidget(new WText(WString(L"{1}")
-                                                                                  .arg(Utility::CalculateSize(diskTotalWrite))));
-        diskTable->elementAt(static_cast<int>(diskIoStatsEntries) + 1, 3)->addWidget(new WText("-"));
+        diskTable->elementAt(static_cast<int>(diskIoStatsEntries) + 1, 0)->addWidget(
+                    new WText(tr("system-monitor-disk-io-stats-total")));
+        diskTable->elementAt(static_cast<int>(diskIoStatsEntries) + 1, 1)->addWidget(
+                    new WText(WString(L"{1}").arg(Utility::CalculateSize(diskTotalRead))));
+        diskTable->elementAt(static_cast<int>(diskIoStatsEntries) + 1, 2)->addWidget(
+                    new WText(WString(L"{1}").arg(Utility::CalculateSize(diskTotalWrite))));
+        diskTable->elementAt(static_cast<int>(diskIoStatsEntries) + 1, 3)->addWidget(new WText(L"-"));
     }
 
     /// Get the netowrk info
@@ -715,17 +734,24 @@ void SysMon::Impl::RefreshResourceUsage()
 
     if ((networkIoStats = sg_get_network_io_stats_diff(&networkIoStatsEntries)) != NULL) {
         for (size_t i = 0; i < networkIoStatsEntries; ++i) {
-            networkTable->elementAt(static_cast<int>(i) + 1, 0)->addWidget(new WText(lexical_cast<string>(networkIoStats->interface_name)));
-            networkTable->elementAt(static_cast<int>(i) + 1, 1)->addWidget(new WText(WString(L"{1}")
-                                                                        .arg(Utility::CalculateSize(networkIoStats->tx))));
-            networkTable->elementAt(static_cast<int>(i) + 1, 2)->addWidget(new WText(WString(L"{1}")
-                                                                        .arg(Utility::CalculateSize(networkIoStats->rx))));
-            networkTable->elementAt(static_cast<int>(i) + 1, 3)->addWidget(new WText(lexical_cast<string>(networkIoStats->ipackets)));
-            networkTable->elementAt(static_cast<int>(i) + 1, 4)->addWidget(new WText(lexical_cast<string>(networkIoStats->opackets)));
-            networkTable->elementAt(static_cast<int>(i) + 1, 5)->addWidget(new WText(lexical_cast<string>(networkIoStats->ierrors)));
-            networkTable->elementAt(static_cast<int>(i) + 1, 6)->addWidget(new WText(lexical_cast<string>(networkIoStats->oerrors)));
-            networkTable->elementAt(static_cast<int>(i) + 1, 7)->addWidget(new WText(lexical_cast<string>(networkIoStats->collisions)));
-            networkTable->elementAt(static_cast<int>(i) + 1, 8)->addWidget(new WText(lexical_cast<string>(static_cast<long>(networkIoStats->systime))));
+            networkTable->elementAt(static_cast<int>(i) + 1, 0)->addWidget(
+                        new WText(WString::fromUTF8(lexical_cast<string>(networkIoStats->interface_name))));
+            networkTable->elementAt(static_cast<int>(i) + 1, 1)->addWidget(
+                        new WText(WString(L"{1}").arg(Utility::CalculateSize(networkIoStats->tx))));
+            networkTable->elementAt(static_cast<int>(i) + 1, 2)->addWidget(
+                        new WText(WString(L"{1}").arg(Utility::CalculateSize(networkIoStats->rx))));
+            networkTable->elementAt(static_cast<int>(i) + 1, 3)->addWidget(
+                        new WText(WString::fromUTF8(lexical_cast<string>(networkIoStats->ipackets))));
+            networkTable->elementAt(static_cast<int>(i) + 1, 4)->addWidget(
+                        new WText(WString::fromUTF8(lexical_cast<string>(networkIoStats->opackets))));
+            networkTable->elementAt(static_cast<int>(i) + 1, 5)->addWidget(
+                        new WText(WString::fromUTF8(lexical_cast<string>(networkIoStats->ierrors))));
+            networkTable->elementAt(static_cast<int>(i) + 1, 6)->addWidget(
+                        new WText(WString::fromUTF8(lexical_cast<string>(networkIoStats->oerrors))));
+            networkTable->elementAt(static_cast<int>(i) + 1, 7)->addWidget(
+                        new WText(WString::fromUTF8(lexical_cast<string>(networkIoStats->collisions))));
+            networkTable->elementAt(static_cast<int>(i) + 1, 8)->addWidget(
+                        new WText(WString::fromUTF8(lexical_cast<string>(static_cast<long>(networkIoStats->systime)))));
 
             networkTotalTx += networkIoStats->tx;
             networkTotalRx += networkIoStats->rx;
@@ -740,17 +766,23 @@ void SysMon::Impl::RefreshResourceUsage()
             ++networkIoStats;
         }
 
-        networkTable->elementAt(static_cast<int>(networkIoStatsEntries) + 1, 0)->addWidget(new WText(tr("system-monitor-network-io-stats-total")));
-        networkTable->elementAt(static_cast<int>(networkIoStatsEntries) + 1, 1)->addWidget(new WText(WString(L"{1}")
-                                                                                        .arg(Utility::CalculateSize(networkTotalTx))));
-        networkTable->elementAt(static_cast<int>(networkIoStatsEntries) + 1, 2)->addWidget(new WText(WString(L"{1}")
-                                                                                        .arg(Utility::CalculateSize(networkTotalRx))));
-        networkTable->elementAt(static_cast<int>(networkIoStatsEntries) + 1, 3)->addWidget(new WText(lexical_cast<string>(networkTotalPacketsIn)));
-        networkTable->elementAt(static_cast<int>(networkIoStatsEntries) + 1, 4)->addWidget(new WText(lexical_cast<string>(networkTotalPacketsOut)));
-        networkTable->elementAt(static_cast<int>(networkIoStatsEntries) + 1, 5)->addWidget(new WText(lexical_cast<string>(networkTotalErrorsIn)));
-        networkTable->elementAt(static_cast<int>(networkIoStatsEntries) + 1, 6)->addWidget(new WText(lexical_cast<string>(networkTotalErrorsOut)));
-        networkTable->elementAt(static_cast<int>(networkIoStatsEntries) + 1, 7)->addWidget(new WText(lexical_cast<string>(networkTotalCollisions)));
-        networkTable->elementAt(static_cast<int>(networkIoStatsEntries) + 1, 8)->addWidget(new WText("-"));
+        networkTable->elementAt(static_cast<int>(networkIoStatsEntries) + 1, 0)->addWidget(
+                    new WText(tr("system-monitor-network-io-stats-total")));
+        networkTable->elementAt(static_cast<int>(networkIoStatsEntries) + 1, 1)->addWidget(
+                    new WText(WString(L"{1}").arg(Utility::CalculateSize(networkTotalTx))));
+        networkTable->elementAt(static_cast<int>(networkIoStatsEntries) + 1, 2)->addWidget(
+                    new WText(WString(L"{1}").arg(Utility::CalculateSize(networkTotalRx))));
+        networkTable->elementAt(static_cast<int>(networkIoStatsEntries) + 1, 3)->addWidget(
+                    new WText(WString::fromUTF8(lexical_cast<string>(networkTotalPacketsIn))));
+        networkTable->elementAt(static_cast<int>(networkIoStatsEntries) + 1, 4)->addWidget(
+                    new WText(WString::fromUTF8(lexical_cast<string>(networkTotalPacketsOut))));
+        networkTable->elementAt(static_cast<int>(networkIoStatsEntries) + 1, 5)->addWidget(
+                    new WText(WString::fromUTF8(lexical_cast<string>(networkTotalErrorsIn))));
+        networkTable->elementAt(static_cast<int>(networkIoStatsEntries) + 1, 6)->addWidget(
+                    new WText(WString::fromUTF8(lexical_cast<string>(networkTotalErrorsOut))));
+        networkTable->elementAt(static_cast<int>(networkIoStatsEntries) + 1, 7)->addWidget(
+                    new WText(WString::fromUTF8(lexical_cast<string>(networkTotalCollisions))));
+        networkTable->elementAt(static_cast<int>(networkIoStatsEntries) + 1, 8)->addWidget(new WText(L"-"));
 
         new WBreak(NetworkInfoDiv);
     }
