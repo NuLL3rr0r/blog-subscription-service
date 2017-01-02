@@ -196,12 +196,12 @@ RootLogin::RootLogin()
                         }
                     }
 
-                    catch (boost::exception &ex) {
+                    catch (const boost::exception &ex) {
                         guard.rollback();
                         LOG_ERROR(boost::diagnostic_information(ex));
                     }
 
-                    catch (std::exception &ex) {
+                    catch (const std::exception &ex) {
                         guard.rollback();
                         LOG_ERROR(ex.what());
                     }
@@ -219,11 +219,11 @@ RootLogin::RootLogin()
         }
     }
 
-    catch (boost::exception &ex) {
+    catch (const boost::exception &ex) {
         LOG_ERROR(boost::diagnostic_information(ex));
     }
 
-    catch (std::exception &ex) {
+    catch (const std::exception &ex) {
         LOG_ERROR(ex.what());
     }
 
@@ -447,11 +447,11 @@ void RootLogin::Impl::OnLoginFormSubmitted()
             }
         }
 
-        catch (boost::exception &ex) {
+        catch (const boost::exception &ex) {
             LOG_ERROR(boost::diagnostic_information(ex));
         }
 
-        catch (std::exception &ex) {
+        catch (const std::exception &ex) {
             LOG_ERROR(ex.what());
         }
 
@@ -474,11 +474,11 @@ void RootLogin::Impl::OnLoginFormSubmitted()
         return;
     }
 
-    catch (boost::exception &ex) {
+    catch (const boost::exception &ex) {
         LOG_ERROR(boost::diagnostic_information(ex));
     }
 
-    catch (std::exception &ex) {
+    catch (const std::exception &ex) {
         LOG_ERROR(ex.what());
     }
 
@@ -546,11 +546,11 @@ void RootLogin::Impl::OnPasswordRecoveryFormSubmitted()
         return;
     }
 
-    catch (boost::exception &ex) {
+    catch (const boost::exception &ex) {
         LOG_ERROR(boost::diagnostic_information(ex));
     }
 
-    catch (std::exception &ex) {
+    catch (const std::exception &ex) {
         LOG_ERROR(ex.what());
     }
 
@@ -747,11 +747,11 @@ void RootLogin::Impl::PreserveSessionData(const CDate::Now &n, const std::string
         }
     }
 
-    catch (boost::exception &ex) {
+    catch (const boost::exception &ex) {
         LOG_ERROR(boost::diagnostic_information(ex));
     }
 
-    catch (std::exception &ex) {
+    catch (const std::exception &ex) {
         LOG_ERROR(ex.what());
     }
 

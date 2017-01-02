@@ -200,11 +200,11 @@ WWidget *CmsContacts::Layout()
         }
     }
 
-    catch (boost::exception &ex) {
+    catch (const boost::exception &ex) {
         LOG_ERROR(boost::diagnostic_information(ex));
     }
 
-    catch (std::exception &ex) {
+    catch (const std::exception &ex) {
         LOG_ERROR(ex.what());
     }
 
@@ -280,11 +280,11 @@ void CmsContacts::Impl::OnAddContactFormSubmitted()
         return;
     }
 
-    catch (boost::exception &ex) {
+    catch (const boost::exception &ex) {
         LOG_ERROR(boost::diagnostic_information(ex));
     }
 
-    catch (std::exception &ex) {
+    catch (const std::exception &ex) {
         LOG_ERROR(ex.what());
     }
 
@@ -375,11 +375,11 @@ void CmsContacts::Impl::OnCellSaveButtonPressed(Wt::WInPlaceEdit *inPlaceEdit)
         return;
     }
 
-    catch (boost::exception &ex) {
+    catch (const boost::exception &ex) {
         LOG_ERROR(boost::diagnostic_information(ex));
     }
 
-    catch (std::exception &ex) {
+    catch (const std::exception &ex) {
         LOG_ERROR(ex.what());
     }
 
@@ -426,11 +426,11 @@ void CmsContacts::Impl::OnSetDefaultCheckBoxStateChanged(Wt::WCheckBox *checkbox
         FillContactsDataTable();
     }
 
-    catch (boost::exception &ex) {
+    catch (const boost::exception &ex) {
         LOG_ERROR(boost::diagnostic_information(ex));
     }
 
-    catch (std::exception &ex) {
+    catch (const std::exception &ex) {
         LOG_ERROR(ex.what());
     }
 
@@ -476,11 +476,11 @@ void CmsContacts::Impl::OnEraseButtonPressed(Wt::WPushButton *button)
         EraseMessageBox->show();
     }
 
-    catch (boost::exception &ex) {
+    catch (const boost::exception &ex) {
         LOG_ERROR(boost::diagnostic_information(ex));
     }
 
-    catch (std::exception &ex) {
+    catch (const std::exception &ex) {
         LOG_ERROR(ex.what());
     }
 
@@ -517,12 +517,12 @@ void CmsContacts::Impl::OnEraseDialogClosed(Wt::StandardButton button)
         }
     }
 
-    catch (boost::exception &ex) {
+    catch (const boost::exception &ex) {
         guard.rollback();
         LOG_ERROR(boost::diagnostic_information(ex));
     }
 
-    catch (std::exception &ex) {
+    catch (const std::exception &ex) {
         guard.rollback();
         LOG_ERROR(ex.what());
     }
@@ -600,11 +600,11 @@ void CmsContacts::Impl::FillContactsDataTable()
         }
     }
 
-    catch (boost::exception &ex) {
+    catch (const boost::exception &ex) {
         LOG_ERROR(boost::diagnostic_information(ex));
     }
 
-    catch (std::exception &ex) {
+    catch (const std::exception &ex) {
         LOG_ERROR(ex.what());
     }
 

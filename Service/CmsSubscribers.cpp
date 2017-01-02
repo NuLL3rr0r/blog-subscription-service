@@ -164,11 +164,11 @@ WWidget *CmsSubscribers::Layout()
         }
     }
 
-    catch (boost::exception &ex) {
+    catch (const boost::exception &ex) {
         LOG_ERROR(boost::diagnostic_information(ex));
     }
 
-    catch (std::exception &ex) {
+    catch (const std::exception &ex) {
         LOG_ERROR(ex.what());
     }
 
@@ -351,11 +351,11 @@ void CmsSubscribers::Impl::FillDataTable(const CmsSubscribers::Impl::Table &tabl
         }
     }
 
-    catch (boost::exception &ex) {
+    catch (const boost::exception &ex) {
         LOG_ERROR(boost::diagnostic_information(ex));
     }
 
-    catch (std::exception &ex) {
+    catch (const std::exception &ex) {
         LOG_ERROR(ex.what());
     }
 

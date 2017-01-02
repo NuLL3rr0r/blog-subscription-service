@@ -133,11 +133,11 @@ WWidget *CmsDashboard::Layout()
        }
     }
 
-    catch (boost::exception &ex) {
+    catch (const boost::exception &ex) {
         LOG_ERROR(boost::diagnostic_information(ex));
     }
 
-    catch (std::exception &ex) {
+    catch (const std::exception &ex) {
         LOG_ERROR(ex.what());
     }
 
@@ -201,11 +201,11 @@ void CmsDashboard::Impl::OnForceTerminateAllSessionsDialogClosed(Wt::StandardBut
         }
     }
 
-    catch (boost::exception &ex) {
+    catch (const boost::exception &ex) {
         LOG_ERROR(boost::diagnostic_information(ex));
     }
 
-    catch (std::exception &ex) {
+    catch (const std::exception &ex) {
         LOG_ERROR(ex.what());
     }
 

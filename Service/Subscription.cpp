@@ -305,11 +305,11 @@ void Subscription::Impl::OnSubscribeFormSubmitted()
         return;
     }
 
-    catch (boost::exception &ex) {
+    catch (const boost::exception &ex) {
         LOG_ERROR(boost::diagnostic_information(ex));
     }
 
-    catch (std::exception &ex) {
+    catch (const std::exception &ex) {
         LOG_ERROR(ex.what());
     }
 
@@ -399,11 +399,11 @@ void Subscription::Impl::OnUnsubscribeFormSubmitted()
         return;
     }
 
-    catch (boost::exception &ex) {
+    catch (const boost::exception &ex) {
         LOG_ERROR(boost::diagnostic_information(ex));
     }
 
-    catch (std::exception &ex) {
+    catch (const std::exception &ex) {
         LOG_ERROR(ex.what());
     }
 
@@ -539,11 +539,11 @@ Wt::WWidget *Subscription::Impl::GetSubscribeForm()
         }
     }
 
-    catch (boost::exception &ex) {
+    catch (const boost::exception &ex) {
         LOG_ERROR(boost::diagnostic_information(ex));
     }
 
-    catch (std::exception &ex) {
+    catch (const std::exception &ex) {
         LOG_ERROR(ex.what());
     }
 
@@ -705,11 +705,11 @@ Wt::WWidget *Subscription::Impl::GetConfirmationPage()
         }
     }
 
-    catch (boost::exception &ex) {
+    catch (const boost::exception &ex) {
         LOG_ERROR(boost::diagnostic_information(ex));
     }
 
-    catch (std::exception &ex) {
+    catch (const std::exception &ex) {
         LOG_ERROR(ex.what());
     }
 
@@ -911,11 +911,11 @@ Wt::WWidget *Subscription::Impl::GetUnsubscribeForm()
         }
     }
 
-    catch (boost::exception &ex) {
+    catch (const boost::exception &ex) {
         LOG_ERROR(boost::diagnostic_information(ex));
     }
 
-    catch (std::exception &ex) {
+    catch (const std::exception &ex) {
         LOG_ERROR(ex.what());
     }
 
@@ -1068,11 +1068,11 @@ Wt::WWidget *Subscription::Impl::GetCancellationPage()
         }
     }
 
-    catch (boost::exception &ex) {
+    catch (const boost::exception &ex) {
         LOG_ERROR(boost::diagnostic_information(ex));
     }
 
-    catch (std::exception &ex) {
+    catch (const std::exception &ex) {
         LOG_ERROR(ex.what());
     }
 
@@ -1263,11 +1263,11 @@ void Subscription::Impl::SendMessage(const Message &type, const string &uuid, co
         }
     }
 
-    catch (boost::exception &ex) {
+    catch (const boost::exception &ex) {
         LOG_ERROR(boost::diagnostic_information(ex));
     }
 
-    catch (std::exception &ex) {
+    catch (const std::exception &ex) {
         LOG_ERROR(ex.what());
     }
 

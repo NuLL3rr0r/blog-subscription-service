@@ -176,23 +176,23 @@ int main(int argc, char **argv)
         sg_shutdown();
     }
 
-    catch (Service::Exception &ex) {
+    catch (const Service::Exception &ex) {
         LOG_ERROR(ex.what());
     }
 
-    catch (CoreLib::Exception &ex) {
+    catch (const CoreLib::Exception &ex) {
         LOG_ERROR(ex.what());
     }
 
-    catch (Wt::WServer::Exception &ex) {
+    catch (const Wt::WServer::Exception &ex) {
         LOG_ERROR(ex.what());
     }
 
-    catch (boost::exception &ex) {
+    catch (const boost::exception &ex) {
         LOG_ERROR(boost::diagnostic_information(ex));
     }
 
-    catch (std::exception &ex) {
+    catch (const std::exception &ex) {
         LOG_ERROR(ex.what());
     }
 
@@ -317,7 +317,7 @@ void InitializeDatabase()
         guard.commit();
     }
 
-    catch (std::exception &ex) {
+    catch (const std::exception &ex) {
         LOG_ERROR(ex.what());
     }
 
