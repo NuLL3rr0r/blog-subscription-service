@@ -18,6 +18,7 @@ More comes when it's ready.
 * C++11 is the minimum required version of C++
 * Bootsrap 3.x (Included)
 * Boost (bzip2, date_time, filesystem, iostreams, random, regex, system, thread, zlib)
+* cereal (Included)
 * CMake (Ninja, BSD Make and GNU Make are supported)
 * CppDB
 * Crypto++
