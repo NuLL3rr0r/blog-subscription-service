@@ -157,8 +157,8 @@ RootLogin::RootLogin()
 
                 time_t rawTime = lexical_cast<time_t>(expiry);
 
-                CDate::Now n;
-                if (rawTime >= n.RawTime) {
+                CDate::Now n(CDate::Timezone::UTC);
+                if (rawTime >= n.RawTime()) {
                     transaction guard(Service::Pool::Database()->Sql());
 
                     try {
@@ -416,7 +416,7 @@ void RootLogin::Impl::OnLoginFormSubmitted()
             return;
         }
 
-        CDate::Now n;
+        CDate::Now n(CDate::Timezone::UTC);
 
         CgiRoot *cgiRoot = static_cast<CgiRoot *>(WApplication::instance());
         CgiEnv *cgiEnv = cgiRoot->GetCgiEnvInstance();
@@ -516,7 +516,7 @@ void RootLogin::Impl::OnPasswordRecoveryFormSubmitted()
             return;
         }
 
-        CDate::Now n;
+        CDate::Now n(CDate::Timezone::UTC);
 
         string pwd;
         string encryptedPwd;
@@ -689,7 +689,7 @@ void RootLogin::Impl::PreserveSessionData(const CDate::Now &n, const std::string
                                  {
                                      cgiEnv->GetClientInfo(CgiEnv::ClientInfo::IP),
                                      cgiEnv->GetClientInfo(CgiEnv::ClientInfo::Location),
-                                     lexical_cast<std::string>(n.RawTime),
+                                     lexical_cast<std::string>(n.RawTime()),
                                      DateConv::ToGregorian(n),
                                      DateConv::DateConv::ToJalali(n),
                                      DateConv::Time(n),
@@ -716,7 +716,7 @@ void RootLogin::Impl::PreserveSessionData(const CDate::Now &n, const std::string
 
         string expiry("0");
         if (saveLocally) {
-            expiry = lexical_cast<std::string>(n.RawTime + Pool::Storage()->RootSessionLifespan());
+            expiry = lexical_cast<std::string>(n.RawTime() + Pool::Storage()->RootSessionLifespan());
         }
 
         Pool::Database()->Insert("ROOT_SESSIONS",
@@ -728,7 +728,7 @@ void RootLogin::Impl::PreserveSessionData(const CDate::Now &n, const std::string
                                      token, expiry,
                                      cgiEnv->GetClientInfo(CgiEnv::ClientInfo::IP),
                                      cgiEnv->GetClientInfo(CgiEnv::ClientInfo::Location),
-                                     lexical_cast<std::string>(n.RawTime),
+                                     lexical_cast<std::string>(n.RawTime()),
                                      DateConv::ToGregorian(n),
                                      DateConv::DateConv::ToJalali(n),
                                      DateConv::Time(n),
@@ -786,7 +786,7 @@ void RootLogin::Impl::SendLoginAlertEmail(const std::string &email, const std::s
         replace_all(htmlData, "${time}",
                            DateConv::ToJalali(n)
                            + " ~ "
-                           + algorithm::trim_copy(DateConv::RawLocalDateTime(n)));
+                           + algorithm::trim_copy(DateConv::DateTimeString(n)));
 
         CoreLib::Mail *mail = new CoreLib::Mail(
                     cgiEnv->GetServerInfo(CgiEnv::ServerInfo::NoReplyAddr), email,
@@ -830,7 +830,7 @@ void RootLogin::Impl::SendPasswordRecoveryEmail(const std::string &email,
         replace_all(htmlData, "${time}",
                            DateConv::ToJalali(n)
                            + " ~ "
-                           + algorithm::trim_copy(DateConv::RawLocalDateTime(n)));
+                           + algorithm::trim_copy(DateConv::DateTimeString(n)));
 
         CoreLib::Mail *mail = new CoreLib::Mail(
                     cgiEnv->GetServerInfo(CgiEnv::ServerInfo::NoReplyAddr), email,

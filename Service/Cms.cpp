@@ -304,9 +304,9 @@ void Cms::Impl::ValidateSession()
         }
 
         time_t rawTime = lexical_cast<time_t>(expiry);
-        CDate::Now n;
+        CDate::Now n(CDate::Timezone::UTC);
 
-        if (rawTime < n.RawTime) {
+        if (rawTime < n.RawTime()) {
             ForceExit();
         }
     }

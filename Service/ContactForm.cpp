@@ -315,7 +315,7 @@ void ContactForm::Impl::OnContactFormSubmitted()
     }
 
     try {
-        CDate::Now n;
+        CDate::Now n(CDate::Timezone::UTC);
         CgiRoot *cgiRoot = static_cast<CgiRoot *>(WApplication::instance());
         CgiEnv *cgiEnv = cgiRoot->GetCgiEnvInstance();
 
@@ -454,7 +454,7 @@ void ContactForm::Impl::SendUserMessageEmail(const std::string &to, CDate::Now &
         replace_all(htmlData, "${time}",
                            DateConv::ToJalali(n)
                            + " ~ "
-                           + algorithm::trim_copy(DateConv::RawLocalDateTime(n)));
+                           + algorithm::trim_copy(DateConv::DateTimeString(n)));
 
         CoreLib::Mail *mail = new CoreLib::Mail(from, to,
                     (format(tr("home-contact-form-email-subject").toUTF8())

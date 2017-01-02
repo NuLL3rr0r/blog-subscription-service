@@ -40,60 +40,73 @@
 #define CORELIB_CDATE_HPP
 
 
+#include <memory>
 #include <string>
 #include <ctime>
 
 namespace CoreLib {
 namespace CDate {
-class DateConv;
+enum class Timezone : unsigned char {
+    Local,
+    UTC
+};
+
 class Now;
+class DateConv;
 }
 }
+
+class CoreLib::CDate::Now
+{
+
+private:
+    struct Impl;
+    std::unique_ptr<Impl> m_pimpl;
+
+public:
+    Now(const CDate::Timezone &tz);
+    virtual ~Now();
+
+public:
+    const struct tm *TimeInfo() const;
+    const Timezone &TimezoneOffset() const;
+    time_t RawTime() const;
+    int DaylightSavingTime() const;
+    int DayOfMonth() const;
+    int DayOfWeek() const;
+    int DayOfYear() const;
+    int Hour() const;
+    int Minutes() const;
+    int Month() const;
+    int Seconds() const;
+    int Year() const;
+};
+
 
 class CoreLib::CDate::DateConv
 {
 public:
-    static std::string CalcToG(int jYear, int dayOfYear);
-    static std::string CalcToJ(int gYear, int dayOfYear);
-    static bool IsRangeValidG(int gYear, int gMonth, int gDay);
-    static bool IsRangeValidJ(int jYear, int jMonth, int jDay);
-    static int DayOfYearG(int gYear, int gMonth, int gDay);
-    static int DayOfYearJ(int jYear, int jMonth, int jDay);
-    static bool IsLeapYearG(int gYear);
-    static bool IsLeapYearJ(int jYear);
-    static std::string ToGregorian(int jYear, int jMonth, int jDay);
-    static std::string ToGregorian();
-    static std::string ToJalali(int gYear, int gMonth, int gDay);
-    static std::string ToJalali();
+    static std::string CalcToG(const int jYear, const int dayOfYear);
+    static std::string CalcToJ(const int gYear, const int dayOfYear);
+    static bool IsRangeValidG(const int gYear, const int gMonth, const int gDay);
+    static bool IsRangeValidJ(const int jYear, const int jMonth, const int jDay);
+    static int DayOfYearG(const int gYear, const int gMonth, const int gDay);
+    static int DayOfYearJ(const int jYear, const int jMonth, const int jDay);
+    static bool IsLeapYearG(const int gYear);
+    static bool IsLeapYearJ(const int jYear);
+    static std::string ToGregorian(const int jYear, const int jMonth, const int jDay);
+    static std::string ToGregorian(const CDate::Timezone &tz = CDate::Timezone::Local);
+    static std::string ToJalali(const int gYear, const int gMonth, const int gDay);
+    static std::string ToJalali(const CDate::Timezone &tz = CDate::Timezone::Local);
     static std::string ToGregorian(const CDate::Now &now);
     static std::string ToJalali(const CDate::Now &now);
     static std::string Time(const CDate::Now &now);
-    static std::string RawLocalDateTime(const CDate::Now &now);
+    static std::string DateTimeString(const std::time_t rawTime, const CDate::Timezone &tz);
+    static std::string DateTimeString(const CDate::Now &now);
     static std::wstring GetPersianDayOfWeek(const CDate::Now &now);
     static std::wstring FormatToPersianNums(const std::string &date);
     static std::wstring FormatToPersianNums(const std::wstring &date);
-
-private:
-    static std::string IntToStr(int num);
-};
-
-class CoreLib::CDate::Now
-{
-public:
-    Now();
-    virtual ~Now();
-
-    time_t RawTime;
-    int Hour;
-    int DaylightSavingTime;
-    int DayOfMonth;
-    int Minutes;
-    int Month;
-    int Seconds;
-    int DayOfWeek;
-    int DayOfYear;
-    int Year;
-    struct tm *TimeInfo;
+    static std::string SecondsToHumanReadableTime(const std::time_t seconds);
 };
 
 

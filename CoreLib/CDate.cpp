@@ -45,36 +45,114 @@ using namespace std;
 using namespace boost;
 using namespace CoreLib::CDate;
 
-Now::Now()
+struct Now::Impl
 {
-    time(&RawTime);
-    TimeInfo = localtime(&RawTime);
-    // Full date+time
-    //asctime(timeInfo);
+    struct tm *TimeInfo;
+    Timezone Timezone;
+    time_t RawTime;
+    int DaylightSavingTime;
+    int DayOfMonth;
+    int DayOfWeek;
+    int DayOfYear;
+    int Hour;
+    int Minutes;
+    int Month;
+    int Seconds;
+    int Year;
+};
 
-    Hour = TimeInfo->tm_hour; //  hour (0 - 23)
-    DaylightSavingTime = TimeInfo->tm_isdst; //  Daylight saving time enabled (> 0), disabled (= 0), or unknown (< 0)
-    DayOfMonth = TimeInfo->tm_mday; //  day of the month (1 - 31)
-    Minutes = TimeInfo->tm_min; //  minutes (0 - 59)
-    Month = TimeInfo->tm_mon + 1; //  month (0 - 11, 0 = January)
-    Seconds = TimeInfo->tm_sec != 60 ? TimeInfo->tm_sec : 59; //  seconds (0 - 60, 60 = Leap second)
+Now::Now(const Timezone &tz)
+    : m_pimpl(make_unique<Now::Impl>())
+{
+    m_pimpl->Timezone = tz;
+
+    time(&m_pimpl->RawTime);
+    if (tz == Timezone::UTC) {
+        m_pimpl->TimeInfo = gmtime(&m_pimpl->RawTime);
+    } else {
+        m_pimpl->TimeInfo = localtime(&m_pimpl->RawTime);
+    }
+
+    m_pimpl->Hour = m_pimpl->TimeInfo->tm_hour; //  hour (0 - 23)
+    m_pimpl->Minutes = m_pimpl->TimeInfo->tm_min; //  minutes (0 - 59)
     /*
     A leap second is a plus or minus one-second adjustment to the Coordinated Universal Time (UTC) time scale that keeps it close to mean solar time.
     When a positive leap second is added at 23:59:60 UTC, it delays the start of the following UTC day (at 00:00:00 UTC) by one second, effectively slowing the UTC clock.
     */
-    DayOfWeek = TimeInfo->tm_wday + 1; //  day of the week (0 - 6, 0 = Sunday)
-    DayOfYear = TimeInfo->tm_yday + 1; //  day of the year (0 - 365)
-    Year = TimeInfo->tm_year + 1900; //  year since 1900
+    m_pimpl->Seconds = m_pimpl->TimeInfo->tm_sec != 60 ? m_pimpl->TimeInfo->tm_sec : 59; //  seconds (0 - 60, 60 = Leap second)
+
+    m_pimpl->DayOfWeek = m_pimpl->TimeInfo->tm_wday + 1; //  day of the week (0 - 6, 0 = Sunday)
+    m_pimpl->DayOfMonth = m_pimpl->TimeInfo->tm_mday; //  day of the month (1 - 31)
+    m_pimpl->DayOfYear = m_pimpl->TimeInfo->tm_yday + 1; //  day of the year (0 - 365)
+    m_pimpl->Month = m_pimpl->TimeInfo->tm_mon + 1; //  month (0 - 11, 0 = January)
+    m_pimpl->Year = m_pimpl->TimeInfo->tm_year + 1900; //  year since 1900
+
+    m_pimpl->DaylightSavingTime = m_pimpl->TimeInfo->tm_isdst; //  Daylight saving time enabled (> 0), disabled (= 0), or unknown (< 0)
 }
 
 Now::~Now() = default;
 
-std::string DateConv::IntToStr(int num)
+const struct tm *Now::TimeInfo() const
 {
-    return lexical_cast<string>(num);
+    return m_pimpl->TimeInfo;
 }
 
-std::string DateConv::CalcToG(int jYear, int dayOfYear)
+const CoreLib::CDate::Timezone &Now::TimezoneOffset() const
+{
+    return m_pimpl->Timezone;
+}
+
+time_t Now::RawTime() const
+{
+    return m_pimpl->RawTime;
+}
+
+int Now::DaylightSavingTime() const
+{
+    return m_pimpl->DaylightSavingTime;
+}
+
+int Now::DayOfMonth() const
+{
+    return m_pimpl->DayOfMonth;
+}
+
+int Now::DayOfWeek() const
+{
+    return m_pimpl->DayOfWeek;
+}
+
+int Now::DayOfYear() const
+{
+    return m_pimpl->DayOfYear;
+}
+
+int Now::Hour() const
+{
+    return m_pimpl->Hour;
+}
+
+int Now::Minutes() const
+{
+    return m_pimpl->Minutes;
+}
+
+int Now::Month() const
+{
+    return m_pimpl->Month;
+}
+
+int Now::Seconds() const
+{
+    return m_pimpl->Seconds;
+}
+
+int Now::Year() const
+{
+    return m_pimpl->Year;
+}
+
+std::string DateConv::CalcToG(const int jYear, const int dayOfYear)
 {
     bool isLeapYear = IsLeapYearJ(jYear);
     int dayMatch[13] = { !isLeapYear ? 287 : 288, !isLeapYear ? 318 : 319, !isLeapYear && !IsLeapYearJ(jYear + 1) ? 346 : 347, !isLeapYear ? 12 : 13, !isLeapYear ? 42 : 43, !isLeapYear ? 73 : 74, !isLeapYear ? 103 : 104, !isLeapYear ? 134 : 135, !isLeapYear ? 165 : 166, !isLeapYear ? 195 : 196, !isLeapYear ? 226 : 227, !isLeapYear ? 256 : 257, 999 };
@@ -84,18 +162,18 @@ std::string DateConv::CalcToG(int jYear, int dayOfYear)
 
     for (int i = 0; i < 12; ++i)
         if ((dayOfYear >= dayMatch[i] && dayOfYear < dayMatch[i + 1]) || ((dayOfYear >= dayMatch[i] || dayOfYear < dayMatch[i + 1]) && (i == 2))) {
-            gDay = IntToStr(dayOfYear >= dayMatch[i] ? dayOfYear - dayMatch[i] + 1 : !isLeapYear ? dayOfYear + 20 : dayOfYear + 19);
-            gMonth = IntToStr(i + 1);
+            gDay = lexical_cast<string>(dayOfYear >= dayMatch[i] ? dayOfYear - dayMatch[i] + 1 : !isLeapYear ? dayOfYear + 20 : dayOfYear + 19);
+            gMonth = lexical_cast<string>(i + 1);
             break;
         }
 
-    return IntToStr(dayOfYear < dayMatch[0] ? jYear + 621 : jYear + 622) + "/" +
+    return lexical_cast<string>(dayOfYear < dayMatch[0] ? jYear + 621 : jYear + 622) + "/" +
             (gMonth.size() == 1 ? "0" + gMonth : gMonth)
             + "/" +
             (gDay.size() != 1 ? gDay : "0" + gDay);
 }
 
-std::string DateConv::CalcToJ(int gYear, int dayOfYear)
+std::string DateConv::CalcToJ(const int gYear, const int dayOfYear)
 {
     bool isLeapYear = IsLeapYearG(gYear - 1);
     int dayMatch[13] = { 80, 111, 142, 173, 204, 235, 266, 296, 326, 356, !isLeapYear ? 21 : 20, !isLeapYear ? 51 : 50, 999 };
@@ -105,18 +183,18 @@ std::string DateConv::CalcToJ(int gYear, int dayOfYear)
 
     for (int i = 0; i < 12; ++i)
         if ((dayOfYear >= dayMatch[i] && dayOfYear < dayMatch[i + 1]) || ((dayOfYear >= dayMatch[i] || dayOfYear < dayMatch[i + 1]) && (i == 9))) {
-            jDay = IntToStr(dayOfYear >= dayMatch[i] ? dayOfYear - dayMatch[i] + 1 : !isLeapYear ? dayOfYear + 10 : dayOfYear + 11);
-            jMonth = IntToStr(i + 1);
+            jDay = lexical_cast<string>(dayOfYear >= dayMatch[i] ? dayOfYear - dayMatch[i] + 1 : !isLeapYear ? dayOfYear + 10 : dayOfYear + 11);
+            jMonth = lexical_cast<string>(i + 1);
             break;
         }
 
-    return IntToStr(dayOfYear > 79 ? gYear - 621 : gYear - 622) + "/" +
+    return lexical_cast<string>(dayOfYear > 79 ? gYear - 621 : gYear - 622) + "/" +
             (jMonth.size() == 1 ? "0" + jMonth : jMonth)
             + "/" +
             (jDay.size() != 1 ? jDay : "0" + jDay);
 }
 
-bool DateConv::IsRangeValidG(int gYear, int gMonth, int gDay)
+bool DateConv::IsRangeValidG(const int gYear, const int gMonth, const int gDay)
 {
     int gMonths[12] = { 31, !IsLeapYearG(gYear) ? 28 : 29, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31 };
 
@@ -128,7 +206,7 @@ bool DateConv::IsRangeValidG(int gYear, int gMonth, int gDay)
     return false;
 }
 
-bool DateConv::IsRangeValidJ(int jYear, int jMonth, int jDay)
+bool DateConv::IsRangeValidJ(const int jYear, const int jMonth, const int jDay)
 {
     int jMonths[12] = { 31, 31, 31, 31, 31, 31, 30, 30, 30, 30, 30, !IsLeapYearJ(jYear) ? 29 : 30 };
 
@@ -140,7 +218,7 @@ bool DateConv::IsRangeValidJ(int jYear, int jMonth, int jDay)
     return false;
 }
 
-int DateConv::DayOfYearG(int gYear, int gMonth, int gDay)
+int DateConv::DayOfYearG(const int gYear, const int gMonth, const int gDay)
 {
     int gMonths[12] = { 31, !IsLeapYearG(gYear) ? 28 : 29, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31 };
     int result = 0;
@@ -151,7 +229,7 @@ int DateConv::DayOfYearG(int gYear, int gMonth, int gDay)
     return result + gDay;
 }
 
-int DateConv::DayOfYearJ(int jYear, int jMonth, int jDay)
+int DateConv::DayOfYearJ(const int jYear, const int jMonth, const int jDay)
 {
     int jMonths[12] = { 31, 31, 31, 31, 31, 31, 30, 30, 30, 30, 30, !IsLeapYearJ(jYear) ? 29 : 30 };
     int result = 0;
@@ -162,21 +240,21 @@ int DateConv::DayOfYearJ(int jYear, int jMonth, int jDay)
     return result + jDay;
 }
 
-bool DateConv::IsLeapYearG(int gYear)
+bool DateConv::IsLeapYearG(const int gYear)
 {
     int modulus = gYear % 4;
 
     return gYear > 0 && modulus == 0 ? true : gYear < 0 && modulus == 0 ? true : gYear == 0 ? true : false;
 }
 
-bool DateConv::IsLeapYearJ(int jYear)
+bool DateConv::IsLeapYearJ(const int jYear)
 {
     int modulus = jYear % 4;
 
     return jYear > 0 && modulus == 3 ? true : jYear < 0 && modulus == -1 ? true : false;
 }
 
-std::string DateConv::ToGregorian(int jYear, int jMonth, int jDay)
+std::string DateConv::ToGregorian(const int jYear, const int jMonth, const int jDay)
 {
     if (!IsRangeValidJ(jYear, jMonth, jDay))
         return "";
@@ -184,14 +262,14 @@ std::string DateConv::ToGregorian(int jYear, int jMonth, int jDay)
     return CalcToG(jYear, DayOfYearJ(jYear, jMonth, jDay));
 }
 
-std::string DateConv::ToGregorian()
+std::string DateConv::ToGregorian(const CDate::Timezone &tz)
 {
-    Now n;
+    Now n(tz);
 
-    string m = IntToStr(n.Month);
-    string d = IntToStr(n.DayOfMonth);
+    string m = lexical_cast<string>(n.Month());
+    string d = lexical_cast<string>(n.DayOfMonth());
 
-    return IntToStr(n.Year) + "/" +
+    return lexical_cast<string>(n.Year()) + "/" +
             (m.size() == 1 ? "0" + m : m)
             + "/" +
             (d.size() != 1 ? d : "0" + d);
@@ -205,18 +283,18 @@ std::string DateConv::ToJalali(int gYear, int gMonth, int gDay)
     return CalcToJ(gYear, DayOfYearG(gYear, gMonth, gDay));
 }
 
-std::string DateConv::ToJalali()
+std::string DateConv::ToJalali(const CDate::Timezone &tz)
 {
-    Now n;
-    return CalcToJ(n.Year, n.DayOfYear);
+    Now n(tz);
+    return CalcToJ(n.Year(), n.DayOfYear());
 }
 
 std::string DateConv::ToGregorian(const CDate::Now &now)
 {
-    string m = IntToStr(now.Month);
-    string d = IntToStr(now.DayOfMonth);
+    string m = lexical_cast<string>(now.Month());
+    string d = lexical_cast<string>(now.DayOfMonth());
 
-    return IntToStr(now.Year) + "/" +
+    return lexical_cast<string>(now.Year()) + "/" +
             (m.size() == 1 ? "0" + m : m)
             + "/" +
             (d.size() != 1 ? d : "0" + d);
@@ -224,14 +302,14 @@ std::string DateConv::ToGregorian(const CDate::Now &now)
 
 std::string DateConv::ToJalali(const CDate::Now &now)
 {
-    return CalcToJ(now.Year, now.DayOfYear);
+    return CalcToJ(now.Year(), now.DayOfYear());
 }
 
 std::string DateConv::Time(const CDate::Now &now)
 {
-    string s = IntToStr(now.Seconds);
-    string m = IntToStr(now.Minutes);
-    string h = IntToStr(now.Hour);
+    string s = lexical_cast<string>(now.Seconds());
+    string m = lexical_cast<string>(now.Minutes());
+    string h = lexical_cast<string>(now.Hour());
 
     return (h.size() == 1 ? "0" + h : h) + ":" +
             (m.size() == 1 ? "0" + m : m)
@@ -239,14 +317,23 @@ std::string DateConv::Time(const CDate::Now &now)
             (s.size() != 1 ? s : "0" + s);
 }
 
-std::string DateConv::RawLocalDateTime(const CDate::Now &now)
+std::string DateConv::DateTimeString(const std::time_t rawTime, const CDate::Timezone &tz)
 {
-    return asctime(now.TimeInfo);
+    if (tz == CDate::Timezone::UTC) {
+        return asctime(gmtime(&rawTime));
+    } else {
+        return asctime(localtime(&rawTime));
+    }
+}
+
+std::string DateConv::DateTimeString(const CDate::Now &now)
+{
+    return asctime(now.TimeInfo());
 }
 
 std::wstring DateConv::GetPersianDayOfWeek(const CDate::Now &now)
 {
-    switch (now.DayOfWeek) {
+    switch (now.DayOfWeek()) {
     case 7:
         return L"شنبه";
     case 1:
@@ -356,4 +443,99 @@ std::wstring DateConv::FormatToPersianNums(const std::wstring &date)
     }
 
     return res;
+}
+
+std::string DateConv::SecondsToHumanReadableTime(const std::time_t seconds)
+{
+    tm *timeInfo = gmtime(&seconds);
+
+    stringstream ss;
+
+    int years = timeInfo->tm_year - 70; // years since 1900
+
+    if (years > 0) {
+        ss << years;
+        if (years == 1) {
+            ss << " year";
+        } else {
+            ss << " years";
+        }
+    }
+
+    int months = timeInfo->tm_mon; // months since January, 0-11
+
+    if (months > 0) {
+        if (ss.str().size() > 0) {
+            ss << ", ";
+        }
+
+        ss << months;
+        if (months == 1) {
+            ss << " month";
+        } else {
+            ss << " months";
+        }
+    }
+
+    int days = timeInfo->tm_mday - 1; // day of the month, 1-31
+
+    if (days > 0) {
+        if (ss.str().size() > 0) {
+            ss << ", ";
+        }
+
+        ss << days;
+        if (days == 1) {
+            ss << " day";
+        } else {
+            ss << " days";
+        }
+    }
+
+    int hours = timeInfo->tm_hour; // hours since midnight, 0-23
+
+    if (hours > 0) {
+        if (ss.str().size() > 0) {
+            ss << ", ";
+        }
+
+        ss << hours;
+        if (hours == 1) {
+            ss << " hour";
+        } else {
+            ss << " hours";
+        }
+    }
+
+    int minutes = timeInfo->tm_min; // minutes after the hour, 0-59
+
+    if (minutes > 0) {
+        if (ss.str().size() > 0) {
+            ss << ", ";
+        }
+
+        ss << minutes;
+        if (minutes == 1) {
+            ss << " minute";
+        } else {
+            ss << " minutes";
+        }
+    }
+
+    int seconds_ = timeInfo->tm_sec; // seconds after the minute, 0-61
+
+    if (seconds_ > 0) {
+        if (ss.str().size() > 0) {
+            ss << ", ";
+        }
+
+        ss << seconds_;
+        if (seconds_ == 1) {
+            ss << " second";
+        } else {
+            ss << " seconds";
+        }
+    }
+
+    return ss.str();
 }

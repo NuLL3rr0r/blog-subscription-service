@@ -236,8 +236,8 @@ void Subscription::Impl::OnSubscribeFormSubmitted()
     }
 
     try {
-        CDate::Now n;
-        string date(lexical_cast<std::string>(n.RawTime));
+        CDate::Now n(CDate::Timezone::UTC);
+        string date(lexical_cast<std::string>(n.RawTime()));
         string inbox(EmailLineEdit->text().trim().toUTF8());
 
         string pending_confirm;
@@ -592,8 +592,8 @@ Wt::WWidget *Subscription::Impl::GetConfirmationPage()
             return tmpl;
         }
 
-        CDate::Now n;
-        string date(lexical_cast<std::string>(n.RawTime));
+        CDate::Now n(CDate::Timezone::UTC);
+        string date(lexical_cast<std::string>(n.RawTime()));
 
         string inbox;
         string subscription;
@@ -963,11 +963,11 @@ Wt::WWidget *Subscription::Impl::GetCancellationPage()
         return tmpl;
     }
 
-    CDate::Now n;
-    string date(lexical_cast<std::string>(n.RawTime));
+    CDate::Now n(CDate::Timezone::UTC);
+    string date(lexical_cast<std::string>(n.RawTime()));
 
     if (cgiEnv->SubscriptionData.Timestamp == 0
-            || (n.RawTime - cgiEnv->SubscriptionData.Timestamp) >= Pool::Storage()->TokenLifespan()) {
+            || (n.RawTime() - cgiEnv->SubscriptionData.Timestamp) >= Pool::Storage()->TokenLifespan()) {
         cgiRoot->setTitle(tr("home-subscription-token-has-expired-title"));
         this->GetMessageTemplate(tmpl,
                                  tr("home-subscription-token-has-expired-title"),
@@ -1132,7 +1132,7 @@ void Subscription::Impl::GetMessageTemplate(WTemplate *tmpl, const Wt::WString &
 void Subscription::Impl::SendMessage(const Message &type, const string &uuid, const string &inbox)
 {
     try {
-        CDate::Now n;
+        CDate::Now n(CDate::Timezone::UTC);
 
         CgiRoot *cgiRoot = static_cast<CgiRoot *>(WApplication::instance());
         CgiEnv *cgiEnv = cgiRoot->GetCgiEnvInstance();
@@ -1205,10 +1205,10 @@ void Subscription::Impl::SendMessage(const Message &type, const string &uuid, co
                 replace_all(htmlData, "${time}",
                             (format("%1% ~ %2%")
                              % WString(DateConv::FormatToPersianNums(DateConv::ToJalali(n))).toUTF8()
-                             % algorithm::trim_copy(DateConv::RawLocalDateTime(n))).str());
+                             % algorithm::trim_copy(DateConv::DateTimeString(n))).str());
             } else {
                 replace_all(htmlData, "${time}",
-                            algorithm::trim_copy(DateConv::RawLocalDateTime(n)));
+                            algorithm::trim_copy(DateConv::DateTimeString(n)));
             }
 
             string homePageFields;
@@ -1246,7 +1246,7 @@ void Subscription::Impl::SendMessage(const Message &type, const string &uuid, co
                 replace_all(htmlData, "${confirm-link}", link);
             } else if (type == Message::Cancel) {
                 std::string token;
-                Pool::Crypto()->Encrypt(lexical_cast<string>(n.RawTime), token);
+                Pool::Crypto()->Encrypt(lexical_cast<string>(n.RawTime()), token);
 
                 link += (format("?subscribe=-2&recipient=%1%&token=%2%")
                          % uuid
