@@ -103,7 +103,7 @@ Wt::WImage *Captcha::Generate()
     string captchaPath;
 
     do {
-        boost::filesystem::path tempPath;
+        boost::filesystem::path tempPath(APPLICATION_TEMP_PATH);
         boost::filesystem::path fileName(
                     (boost::format("%1%%2%")
                      % "captcha-"
