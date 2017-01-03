@@ -20,6 +20,7 @@ More comes when it's ready.
 * Boost (bzip2, date_time, filesystem, iostreams, random, regex, system, thread, zlib)
 * cereal (Included)
 * CMake (Ninja, BSD Make and GNU Make are supported)
+* cotire (Included)
 * CppDB
 * Crypto++
 * cURLpp

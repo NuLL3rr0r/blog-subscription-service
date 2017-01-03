@@ -347,3 +347,6 @@ IF ( BUILD_SERVICE )
         )
     ENDIF (  )
 ENDIF (  )
+
+
+COTIRE ( ${SERVICE_BIN_FILE} )

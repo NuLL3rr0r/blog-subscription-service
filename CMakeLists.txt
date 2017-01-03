@@ -32,6 +32,10 @@ IF ( NOT ${CMAKE_VERSION} VERSION_LESS 3.0 )
     ENDIF(  )
 ENDIF (  )
 
+IF ( POLICY CMP0058)
+    CMAKE_POLICY ( SET CMP0058 NEW)
+ENDIF (  )
+
 PROJECT ( BLOG_SUBSCRIPTION_SERVICE )
 SET ( CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/CMakeModules" "${CMAKE_MODULE_PATH}" )
 
@@ -417,5 +421,7 @@ ENDIF (  )
 INCLUDE ( definitions.cmake )
 INCLUDE ( deploy.cmake )
 INCLUDE ( resources.cmake )
+
+INCLUDE ( cotire )
 
 SUBDIRS( CoreLib Utils Service )
