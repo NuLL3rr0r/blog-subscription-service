@@ -34,6 +34,8 @@
 
 
 #include <list>
+#include <boost/filesystem/path.hpp>
+#include <boost/format.hpp>
 #include <Wt/WImage>
 #include <Wt/WMemoryResource>
 #if MAGICKPP_BACKEND == MAGICKPP_GM
@@ -92,22 +94,24 @@ Wt::WImage *Captcha::Generate()
     drawList.push_back(DrawableTextDecoration(UnderlineDecoration));
     drawList.push_back(DrawableGravity(CenterGravity));
 
-
     drawList.push_back(DrawableRotation(rotate));
     drawList.push_back(DrawableRotation(skew));
     drawList.push_back(DrawableText(0, 0, captcha));
 
     img.draw(drawList);
 
-
     string captchaPath;
 
     do {
-        captchaPath = "../tmp/captcha-";
-        captchaPath += Random::Characters(Random::Character::Alphanumeric, 24);
-        captchaPath += ".png";
+        boost::filesystem::path tempPath;
+        boost::filesystem::path fileName(
+                    (boost::format("%1%%2%")
+                     % "captcha-"
+                     % Random::Characters(Random::Character::Alphanumeric, 24)).str());
+        boost::filesystem::path fullPath = tempPath / fileName;
+        fullPath.replace_extension(".png");
+        captchaPath += fullPath.string();
     } while (FileSystem::FileExists(captchaPath));
-
 
     img.write(captchaPath);
 

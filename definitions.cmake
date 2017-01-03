@@ -64,6 +64,7 @@ SET ( LIBB64_BUFFERSIZE "16777216" CACHE STRING "" )
 SET ( GEO_LITE_COUNTRY_DB_URL "http://geolite.maxmind.com/download/geoip/database/GeoLiteCountry/GeoIP.dat.gz" CACHE STRING "" )
 SET ( GEO_LITE_CITY_DB_URL "http://geolite.maxmind.com/download/geoip/database/GeoLiteCity.dat.gz" CACHE STRING "" )
 
+SET ( APPLICATION_TEMP_PATH "../tmp" )
 
 SET ( UNKNOWN_ERROR "Unknown error!" CACHE STRING "" )
 
