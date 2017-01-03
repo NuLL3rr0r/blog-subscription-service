@@ -59,6 +59,8 @@ SET ( MYSQL_DATABASE "blog_subscription_service_db" CACHE STRING "" )
 SET ( MYSQL_USER "blog_subscription_service_user" CACHE STRING "" )
 SET ( MYSQL_PASSWORD "BE_SURE_TO_USE_A_STRONG_SECRET_PASSPHRASE_HERE" CACHE STRING "" )
 
+SET ( CEREAL_THREAD_SAFE 1 CACHE STRING "" )
+
 SET ( LIBB64_BUFFERSIZE "16777216" CACHE STRING "" )
 
 SET ( GEO_LITE_COUNTRY_DB_URL "http://geolite.maxmind.com/download/geoip/database/GeoLiteCountry/GeoIP.dat.gz" CACHE STRING "" )
