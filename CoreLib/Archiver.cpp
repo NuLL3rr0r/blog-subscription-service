@@ -98,8 +98,6 @@ bool Archiver::UnZip(const std::string &archive, const std::string &extractionPa
 bool Archiver::UnZip(const std::string &archive, const std::string &extractionPath,
                      std::string &out_error)
 {
-    /// based on https://gist.github.com/mobius/1759816
-
     out_error.clear();
 
     struct zip *za;
@@ -120,53 +118,71 @@ bool Archiver::UnZip(const std::string &archive, const std::string &extractionPa
     zip_uint64_t sum;
 
     for (zip_int64_t i = 0; i < zip_get_num_entries(za, 0); ++i) {
-        if (zip_stat_index(za, static_cast<zip_uint64_t>(i), 0, &sb) == 0) {
-            len = static_cast<zip_int64_t>(strlen(sb.name));
-            if (sb.name[len - 1] == '/') {
-                FileSystem::CreateDir((filesystem::path(extractionPath)
-                                       / sb.name).string());
-            } else {
-                zf = zip_fopen_index(za, static_cast<zip_uint64_t>(i), 0);
-                if (!zf) {
-                    out_error.assign((format("Archiver::UnZip: Corrupted zip archive `%1%'!")
-                                      % archive).str());
-                    return false;
-                }
-
-#if ! defined ( _WIN32 )
-                fd = open((filesystem::path(extractionPath)
-                           / sb.name).string().c_str(),
-                          O_RDWR | O_TRUNC | O_CREAT, 0644);
-#else
-                fd = open((filesystem::path(extractionPath)
-                           / sb.name).string().c_str(),
-                          O_RDWR | O_TRUNC | O_CREAT | O_BINARY, 0644);
-#endif  // ! defined ( _WIN32 )
-
-                if (fd < 0) {
-                    out_error.assign((format("Archiver::UnZip: Cannot open file `%1%' for writing!")
-                                      % sb.name).str());
-                    return false;
-                }
-
-                sum = 0;
-                while (sum != sb.size) {
-                    len = zip_fread(zf, buf, 100);
-                    if (len < 0) {
-                        out_error.assign((format("Archiver::UnZip: Corrupted zip archive `%1%'!")
-                                          % archive).str());
-                        return false;
-                    }
-                    write(fd, buf, static_cast<size_t>(len));
-                    sum += static_cast<zip_uint64_t>(len);
-                }
-                close(fd);
-                zip_fclose(zf);
-            }
-        } else {
+        if (zip_stat_index(za, static_cast<zip_uint64_t>(i), 0, &sb) != 0) {
             out_error.assign((format("Archiver::UnZip: Corrupted zip archive `%1%'!")
                               % archive).str());
+            return false;
         }
+
+        len = static_cast<zip_int64_t>(strlen(sb.name));
+        if (sb.name[len - 1] == '/') {
+            string dir((filesystem::path(extractionPath)
+                        / sb.name).string());
+            if (!FileSystem::CreateDir(dir, true)) {
+                out_error.assign((format("Archiver::UnZip: Failed to create directory `%1%'!")
+                                  % dir).str());
+                return false;
+            }
+            continue;
+        }
+
+        boost::filesystem::path p(sb.name);
+        if (p.parent_path().string() != "") {
+            string dir((filesystem::path(extractionPath)
+                        / p.parent_path()).string());
+            if (!FileSystem::CreateDir(dir, true)) {
+                out_error.assign((format("Archiver::UnZip: Failed to create directory `%1%'!")
+                                  % dir).str());
+                return false;
+            }
+        }
+
+        zf = zip_fopen_index(za, static_cast<zip_uint64_t>(i), 0);
+        if (!zf) {
+            out_error.assign((format("Archiver::UnZip: Corrupted zip archive `%1%'!")
+                              % archive).str());
+            return false;
+        }
+
+#if ! defined ( _WIN32 )
+        fd = open((filesystem::path(extractionPath)
+                   / filesystem::path(sb.name)).string().c_str(),
+                  O_RDWR | O_TRUNC | O_CREAT, 0644);
+#else
+        fd = open((filesystem::path(extractionPath)
+                   / filesystem::path(sb.name)).string().c_str(),
+                  O_RDWR | O_TRUNC | O_CREAT | O_BINARY, 0644);
+#endif  // ! defined ( _WIN32 )
+
+        if (fd < 0) {
+            out_error.assign((format("Archiver::UnZip: Cannot open file `%1%' for writing!")
+                              % sb.name).str());
+            return false;
+        }
+
+        sum = 0;
+        while (sum != sb.size) {
+            len = zip_fread(zf, buf, 100);
+            if (len < 0) {
+                out_error.assign((format("Archiver::UnZip: Corrupted zip archive `%1%'!")
+                                  % archive).str());
+                return false;
+            }
+            write(fd, buf, static_cast<size_t>(len));
+            sum += static_cast<zip_uint64_t>(len);
+        }
+        close(fd);
+        zip_fclose(zf);
     }
 
     if (zip_close(za) == -1) {
