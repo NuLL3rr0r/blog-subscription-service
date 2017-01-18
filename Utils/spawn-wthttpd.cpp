@@ -143,8 +143,8 @@ int main(int argc, char **argv)
         }
     }
 
-    catch (CoreLib::Exception &ex) {
-        LOG_ERROR(ex.what());
+    catch (CoreLib::Exception<std::string> &ex) {
+        LOG_ERROR(ex.What());
     }
 
     catch (boost::exception &ex) {
@@ -253,16 +253,16 @@ void ReSpawn()
                          pids.begin(); it != pids.end(); ++it) {
                         std::string output;
                         std::string cmd = (boost::format("/bin/ps -p %1% | grep '%2%'")
-                                      % *it
-                                      % appNode.second.get<std::string>("app")).str();
+                                           % *it
+                                           % appNode.second.get<std::string>("app")).str();
                         CoreLib::System::Exec(cmd, output);
                         if (output.find(appNode.second.get<std::string>("app")) != std::string::npos) {
                             std::clog << std::endl
-                                 << (boost::format("  * KILLING ==>  %1%"
-                                            "\n\t%2%")
-                                     % *it
-                                     % appNode.second.get<std::string>("app")).str()
-                                 << std::endl;
+                                      << (boost::format("  * KILLING ==>  %1%"
+                                                        "\n\t%2%")
+                                          % *it
+                                          % appNode.second.get<std::string>("app")).str()
+                                      << std::endl;
 
                             cmd = (boost::format("/bin/kill -SIGKILL %1%")
                                    % *it).str();
@@ -271,67 +271,67 @@ void ReSpawn()
                     }
 
                     std::clog << std::endl
-                         << (boost::format("  * RESPAWNING WTHTTPD APP ==>  %1%"
-                                    "\n\tWorking Directory       :  %2%"
-                                    "\n\tThreads                 :  %3%"
-                                    "\n\tServer Name             :  %4%"
-                                    "\n\tDocument Root           :  %5%"
-                                    "\n\tApplication Root        :  %6%"
-                                    "\n\tError Root              :  %7%"
-                                    "\n\tAccess Log              :  %8%"
-                                    "\n\tCompression             :  %9%"
-                                    "\n\tDeploy Path             :  %10%"
-                                    "\n\tSession ID Prefix       :  %11%"
-                                    "\n\tPid File                :  %12%"
-                                    "\n\tConfig File             :  %13%"
-                                    "\n\tMax Memory Request Size :  %14%"
-                                    "\n\tGDB                     :  %15%"
-                                    "\n\tHttp Address            :  %16%"
-                                    "\n\tHttp Port               :  %17%"
-                                    "\n\tHttps Address           :  %18%"
-                                    "\n\tHttps Port              :  %19%"
-                                    "\n\tSSL Certificate         :  %20%"
-                                    "\n\tSSL Private Key         :  %21%"
-                                    "\n\tSSL Temp Diffie Hellman :  %22%"
-                                    "\n\tSSL Enable v3           :  %23%"
-                                    "\n\tSSL Client Verification :  %24%"
-                                    "\n\tSSL Verify Depth        :  %25%"
-                                    "\n\tSSL CA Certificates     :  %26%"
-                                    "\n\tSSL Cipherlist          :  %27%")
-                             % appNode.second.get<std::string>("app")
-                             % appNode.second.get<std::string>("workdir")
-                             % appNode.second.get<std::string>("threads")
-                             % appNode.second.get<std::string>("servername")
-                             % appNode.second.get<std::string>("docroot")
-                             % appNode.second.get<std::string>("approot")
-                             % appNode.second.get<std::string>("errroot")
-                             % appNode.second.get<std::string>("accesslog")
-                             % appNode.second.get<std::string>("compression")
-                             % appNode.second.get<std::string>("deploy-path")
-                             % appNode.second.get<std::string>("session-id-prefix")
-                             % appNode.second.get<std::string>("pid-file")
-                             % appNode.second.get<std::string>("config")
-                             % appNode.second.get<std::string>("max-memory-request-size")
-                             % appNode.second.get<std::string>("gdb")
-                             % appNode.second.get<std::string>("http-address")
-                             % appNode.second.get<std::string>("http-port")
-                             % appNode.second.get<std::string>("https-address")
-                             % appNode.second.get<std::string>("https-port")
-                             % appNode.second.get<std::string>("ssl-certificate")
-                             % appNode.second.get<std::string>("ssl-private-key")
-                             % appNode.second.get<std::string>("ssl-tmp-dh")
-                             % appNode.second.get<std::string>("ssl-enable-v3")
-                             % appNode.second.get<std::string>("ssl-client-verification")
-                             % appNode.second.get<std::string>("ssl-verify-depth")
-                             % appNode.second.get<std::string>("ssl-ca-certificates")
-                             % appNode.second.get<std::string>("ssl-cipherlist")
-                             ).str()
-                         << std::endl << std::endl;
+                              << (boost::format("  * RESPAWNING WTHTTPD APP ==>  %1%"
+                                                "\n\tWorking Directory       :  %2%"
+                                                "\n\tThreads                 :  %3%"
+                                                "\n\tServer Name             :  %4%"
+                                                "\n\tDocument Root           :  %5%"
+                                                "\n\tApplication Root        :  %6%"
+                                                "\n\tError Root              :  %7%"
+                                                "\n\tAccess Log              :  %8%"
+                                                "\n\tCompression             :  %9%"
+                                                "\n\tDeploy Path             :  %10%"
+                                                "\n\tSession ID Prefix       :  %11%"
+                                                "\n\tPid File                :  %12%"
+                                                "\n\tConfig File             :  %13%"
+                                                "\n\tMax Memory Request Size :  %14%"
+                                                "\n\tGDB                     :  %15%"
+                                                "\n\tHttp Address            :  %16%"
+                                                "\n\tHttp Port               :  %17%"
+                                                "\n\tHttps Address           :  %18%"
+                                                "\n\tHttps Port              :  %19%"
+                                                "\n\tSSL Certificate         :  %20%"
+                                                "\n\tSSL Private Key         :  %21%"
+                                                "\n\tSSL Temp Diffie Hellman :  %22%"
+                                                "\n\tSSL Enable v3           :  %23%"
+                                                "\n\tSSL Client Verification :  %24%"
+                                                "\n\tSSL Verify Depth        :  %25%"
+                                                "\n\tSSL CA Certificates     :  %26%"
+                                                "\n\tSSL Cipherlist          :  %27%")
+                                  % appNode.second.get<std::string>("app")
+                                  % appNode.second.get<std::string>("workdir")
+                                  % appNode.second.get<std::string>("threads")
+                                  % appNode.second.get<std::string>("servername")
+                                  % appNode.second.get<std::string>("docroot")
+                                  % appNode.second.get<std::string>("approot")
+                                  % appNode.second.get<std::string>("errroot")
+                                  % appNode.second.get<std::string>("accesslog")
+                                  % appNode.second.get<std::string>("compression")
+                                  % appNode.second.get<std::string>("deploy-path")
+                                  % appNode.second.get<std::string>("session-id-prefix")
+                                  % appNode.second.get<std::string>("pid-file")
+                                  % appNode.second.get<std::string>("config")
+                                  % appNode.second.get<std::string>("max-memory-request-size")
+                                  % appNode.second.get<std::string>("gdb")
+                                  % appNode.second.get<std::string>("http-address")
+                                  % appNode.second.get<std::string>("http-port")
+                                  % appNode.second.get<std::string>("https-address")
+                                  % appNode.second.get<std::string>("https-port")
+                                  % appNode.second.get<std::string>("ssl-certificate")
+                                  % appNode.second.get<std::string>("ssl-private-key")
+                                  % appNode.second.get<std::string>("ssl-tmp-dh")
+                                  % appNode.second.get<std::string>("ssl-enable-v3")
+                                  % appNode.second.get<std::string>("ssl-client-verification")
+                                  % appNode.second.get<std::string>("ssl-verify-depth")
+                                  % appNode.second.get<std::string>("ssl-ca-certificates")
+                                  % appNode.second.get<std::string>("ssl-cipherlist")
+                                  ).str()
+                              << std::endl << std::endl;
 
                     std::string cmd((boost::format("cd %2% && %1%")
-                                % appNode.second.get<std::string>("app")
-                                % appNode.second.get<std::string>("workdir")
-                                ).str());
+                                     % appNode.second.get<std::string>("app")
+                                     % appNode.second.get<std::string>("workdir")
+                                     ).str());
                     if (!appNode.second.get<std::string>("threads").empty()
                             && appNode.second.get<std::string>("threads") != "-1") {
                         cmd += (boost::format(" --threads %1%")
@@ -453,3 +453,4 @@ void ReSpawn()
         LOG_ERROR(UNKNOWN_ERROR);
     }
 }
+

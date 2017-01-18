@@ -142,8 +142,8 @@ int main(int argc, char **argv)
         }
     }
 
-    catch (CoreLib::Exception &ex) {
-        LOG_ERROR(ex.what());
+    catch (CoreLib::Exception<std::string> &ex) {
+        LOG_ERROR(ex.What());
     }
 
     catch (boost::exception &ex) {
@@ -248,11 +248,11 @@ void ReSpawn()
                             CoreLib::System::Exec(cmd, output);
                             if (output.find(appNode.second.get<std::string>("app")) != std::string::npos) {
                                 std::clog << std::endl
-                                     << (boost::format("  * KILLING ==>  %1%"
-                                                "\n\t%2%")
-                                         % *it
-                                         % appNode.second.get<std::string>("app")).str()
-                                     << std::endl;
+                                          << (boost::format("  * KILLING ==>  %1%"
+                                                            "\n\t%2%")
+                                              % *it
+                                              % appNode.second.get<std::string>("app")).str()
+                                          << std::endl;
 
                                 cmd = (boost::format("/bin/kill -SIGKILL %1%")
                                        % *it).str();
@@ -263,16 +263,16 @@ void ReSpawn()
 
                     if (socket) {
                         std::clog << std::endl
-                             << (boost::format("  * RESPAWNING FASTCGI APP ==>  %1%"
-                                        "\n\tConfig File        :  %2%"
-                                        "\n\tUnix domain socket :  %3%"
-                                        "\n\tWorking directory  :  %4%")
-                                 % appNode.second.get<std::string>("app")
-                                 % appNode.second.get<std::string>("config")
-                                 % appNode.second.get<std::string>("socket")
-                                 % appNode.second.get<std::string>("workdir")
-                                 ).str()
-                             << std::endl << std::endl;
+                                  << (boost::format("  * RESPAWNING FASTCGI APP ==>  %1%"
+                                                    "\n\tConfig File        :  %2%"
+                                                    "\n\tUnix domain socket :  %3%"
+                                                    "\n\tWorking directory  :  %4%")
+                                      % appNode.second.get<std::string>("app")
+                                      % appNode.second.get<std::string>("config")
+                                      % appNode.second.get<std::string>("socket")
+                                      % appNode.second.get<std::string>("workdir")
+                                      ).str()
+                                  << std::endl << std::endl;
 
                         cmd = (boost::format("cd %2% && WT_CONFIG_XML=%1% /usr/local/bin/spawn-fcgi -d %2% -s %3% -n -M 0770 -u www -g www -- %4% &")
                                % appNode.second.get<std::string>("config")
@@ -282,16 +282,16 @@ void ReSpawn()
                                ).str();
                     } else {
                         std::clog << std::endl
-                             << (boost::format("  * RESPAWNING FASTCGI APP ==>  %1%"
-                                        "\n\tConfig File        :  %2%"
-                                        "\n\tTCP port           :  %3%"
-                                        "\n\tWorking directory  :  %4%")
-                                 % appNode.second.get<std::string>("app")
-                                 % appNode.second.get<std::string>("config")
-                                 % appNode.second.get<std::string>("port")
-                                 % appNode.second.get<std::string>("workdir")
-                                 ).str()
-                             << std::endl << std::endl;
+                                  << (boost::format("  * RESPAWNING FASTCGI APP ==>  %1%"
+                                                    "\n\tConfig File        :  %2%"
+                                                    "\n\tTCP port           :  %3%"
+                                                    "\n\tWorking directory  :  %4%")
+                                      % appNode.second.get<std::string>("app")
+                                      % appNode.second.get<std::string>("config")
+                                      % appNode.second.get<std::string>("port")
+                                      % appNode.second.get<std::string>("workdir")
+                                      ).str()
+                                  << std::endl << std::endl;
 
                         cmd = (boost::format("cd %2% && WT_CONFIG_XML=%1% /usr/local/bin/spawn-fcgi -d %2% -a 127.0.0.1 -p %3% -n -u www -g www -- %4% &")
                                % appNode.second.get<std::string>("config")
@@ -319,3 +319,4 @@ void ReSpawn()
         LOG_ERROR(UNKNOWN_ERROR);
     }
 }
+

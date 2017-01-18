@@ -53,7 +53,7 @@
 
 [[ noreturn ]] void Terminate(int signo);
 
-void UpdateDatabase(std::string url, std::string file, std::string dbFile);
+void UpdateDatabase(const std::string &url, const std::string &gzFile, const std::string &dbFile);
 
 int main(int argc, char **argv)
 {
@@ -132,8 +132,8 @@ int main(int argc, char **argv)
         UpdateDatabase(GEO_LITE_CITY_DB_URL, cityFile, cityDbFile);
     }
 
-    catch (CoreLib::Exception &ex) {
-        LOG_ERROR(ex.what());
+    catch (CoreLib::Exception<std::string> &ex) {
+        LOG_ERROR(ex.What());
     }
 
     catch (boost::exception &ex) {
@@ -158,7 +158,7 @@ void Terminate(int signo)
     exit(signo);
 }
 
-void UpdateDatabase(std::string url, std::string gzFile, std::string dbFile)
+void UpdateDatabase(const std::string &url, const std::string &gzFile, const std::string &dbFile)
 {
     bool rc;
     std::string error;
@@ -182,3 +182,4 @@ void UpdateDatabase(std::string url, std::string gzFile, std::string dbFile)
 
     CoreLib::FileSystem::Erase(gzFile);
 }
+
