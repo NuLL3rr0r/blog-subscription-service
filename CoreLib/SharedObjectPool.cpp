@@ -30,6 +30,9 @@
  * @section DESCRIPTION
  *
  * A smart thread-safe object pool.
+ *
+ * This file does not contain any code. The only purpose it serves is to make
+ * Qt Creator pickup the header file by the same name.
  */
 
 #include "SharedObjectPool.hpp"
