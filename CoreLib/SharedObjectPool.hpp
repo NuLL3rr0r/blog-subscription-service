@@ -39,6 +39,7 @@
 
 #include <memory>
 #include <stack>
+#include <string>
 #include <boost/thread/lock_guard.hpp>
 #include <boost/thread/mutex.hpp>
 #include "Exception.hpp"
@@ -103,7 +104,7 @@ public:
         (void)lock;
 
         if (m_pool.empty()) {
-            throw CoreLib::Exception("Cannot acquire object from an empty pool.");
+            throw CoreLib::Exception<std::string>("Cannot acquire object from an empty pool.");
         }
 
         ptrType tmp(m_pool.top().release(),
