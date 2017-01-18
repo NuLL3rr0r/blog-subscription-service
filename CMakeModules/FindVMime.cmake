@@ -46,7 +46,7 @@ IF ( VMIME_FOUND )
         MESSAGE ( FATAL_ERROR "grep is required" )
     ENDIF (  )
 
-    
+
     IF ( DEFINED PERL_EXECUTABLE )
         EXEC_PROGRAM ( "echo"
             ARGS "${VMIME_VERSION_DEFINE_STRING} | ${PERL_EXECUTABLE} -pe 'if(($_)=/([0-9]+([.][0-9]+)+)/){}'"
