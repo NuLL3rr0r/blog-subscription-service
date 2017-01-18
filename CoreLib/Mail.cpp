@@ -51,6 +51,7 @@
 #include "make_unique.hpp"
 #include "Log.hpp"
 #include "Mail.hpp"
+#include "Utility.hpp"
 
 #define     WORKER_THREAD_STOP_IDLE_MILLISECONDS        10000.0
 #define     UNKNOWN_ERROR                               "Unknown error!"
@@ -309,7 +310,11 @@ bool Mail::Send(std::string &out_error) const
         vmime::shared_ptr<vmime::message> msg = mb.construct();
 
         vmime::utility::url url("smtp://localhost");
+#if VMIME_API_MODE == VMIME_LEGACY_API
         vmime::shared_ptr<vmime::net::session> sess = vmime::make_shared<vmime::net::session>();
+#else
+        vmime::shared_ptr<vmime::net::session> sess = vmime::net::session::create();
+#endif  // VMIME_API_MODE == VMIME_LEGACY_API
         vmime::shared_ptr<vmime::net::transport> tr = sess->getTransport(url);
 
         tr->connect();
