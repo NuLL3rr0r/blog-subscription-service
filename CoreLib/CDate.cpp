@@ -48,7 +48,7 @@ using namespace CoreLib::CDate;
 struct Now::Impl
 {
     struct tm *TimeInfo;
-    Timezone Timezone;
+    CDate::Timezone Timezone;
     time_t RawTime;
     int DaylightSavingTime;
     int DayOfMonth;
