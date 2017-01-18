@@ -30,16 +30,10 @@
  * @section DESCRIPTION
  *
  * Base class for exceptions thrown by CoreLib.
+ *
+ * This file does not contain any code. The only purpose it serves is to make
+ * Qt Creator pickup the header file by the same name.
  */
 
 
 #include "Exception.hpp"
-
-using namespace std;
-using namespace CoreLib;
-
-Exception::Exception(const std::string &message)
-    : runtime_error(message)
-{
-
-}

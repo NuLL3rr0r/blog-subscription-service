@@ -37,17 +37,31 @@
 #define CORELIB_EXCEPTION_HPP
 
 
-#include <stdexcept>
-#include <string>
-
 namespace CoreLib {
+template <typename _T>
 class Exception;
 }
 
-class CoreLib::Exception : public std::runtime_error
+template <typename _T>
+class CoreLib::Exception
 {
+protected:
+    _T m_message;
+
 public:
-    explicit Exception(const std::string &message);
+    explicit Exception(const _T &message)
+        : m_message(message) { }
+
+    Exception(const Exception<_T> &exception)
+        : m_message(exception.m_message) { }
+
+    virtual ~Exception() = default;
+
+public:
+    virtual const _T &What() const
+    {
+        return m_message;
+    }
 };
 
 
