@@ -37,24 +37,19 @@
 #define SERVICE_EXCEPTION_HPP
 
 
-#include <string>
 #include <CoreLib/Exception.hpp>
 
 namespace Service {
+template <typename _T>
 class Exception;
 }
 
-class Service::Exception : public CoreLib::Exception
+template <typename _T>
+class Service::Exception : public CoreLib::Exception<_T>
 {
-protected:
-    std::wstring m_message;
-
 public:
-    explicit Exception(const std::string &message);
-    explicit Exception(const std::wstring &message);
-
-public:
-    virtual const wchar_t *What() const;
+    explicit Exception(const _T &message)
+        : CoreLib::Exception<_T>(message) { }
 };
 
 
