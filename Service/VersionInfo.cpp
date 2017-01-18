@@ -30,7 +30,8 @@
  * @section DESCRIPTION
  *
  * Provides application information.
- * This file does not contain any code. The only purpuse it serves is to make
+ *
+ * This file does not contain any code. The only purpose it serves is to make
  * Qt Creator pickup the header file by the same name.
  */
 
