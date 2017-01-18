@@ -33,18 +33,29 @@
  */
 
 
+#include <fstream>
+#include <sstream>
 #include <cstdio>
 #include <cstdlib>
 #if defined ( __unix__ )
-#include <err.h>
-#include <fcntl.h>
+#if defined ( __linux )
+#include <dirent.h>
+#endif  // defined ( __linux )
+#if defined ( __FreeBSD__ )
 #include <kvm.h>
+#include <sys/dirent.h>
+#endif  // defined ( __FreeBSD__ )
+#include <sys/fcntl.h>
 #include <sys/param.h>
 #include <sys/sysctl.h>
 #include <sys/time.h>
+#include <sys/unistd.h>
 #include <sys/user.h>
-#include <unistd.h>
 #endif  // defined ( __unix__ )
+#if defined ( _WIN32 )
+#include <tlhelp32.h>
+#include <windows.h>
+#endif  // defined ( _WIN32 )
 #include "Log.hpp"
 #include "make_unique.hpp"
 #include "System.hpp"
@@ -141,41 +152,96 @@ std::string System::GetProcessNameFromPath(const std::string &fullPath)
     return fullPath.substr(fullPath.rfind("/") + 1);
 }
 
-int System::GetPidsOfProcess(const std::string &processName, std::vector<int> &out_pids)
+std::size_t System::GetPidsOfProcess(const std::string &process, std::vector<int> &out_pids)
 {
-    /// Based on code from pidof.c
+    out_pids.clear();
 
-    static kvm_t *kd = NULL;
-    struct kinfo_proc *p;
-    int i;
-    int nProcesses;
-    int processesFound = 0;
+#if defined ( __FreeBSD__ )
+    static kvm_t *kd = nullptr;
 
-    if ((kd = kvm_open("/dev/null", "/dev/null", "/dev/null", O_RDONLY, "kvm_open")) == NULL) {
+    if ((kd = kvm_open("/dev/null", "/dev/null", "/dev/null", O_RDONLY, "kvm_open")) == nullptr) {
         LOG_ERROR(kvm_geterr(kd));
-    } else {
-        p = kvm_getprocs(kd, KERN_PROC_PROC, 0, &nProcesses);
-
-        /// NOTICE: THIS IS A HACK /// START
-        string name;
-        if (processName.size() <= 19) {
-            name = processName;
-        } else {
-            name = processName.substr(0, 19);
-        }
-        /// NOTICE: THIS IS A HACK /// END
-
-        for (i = 0; i < nProcesses; ++i) {
-            if (strncmp(name.c_str(), p[i].ki_comm, COMMLEN + 1) == 0) {
-                out_pids.push_back(static_cast<int>(p[i].ki_pid));
-                processesFound++;
-            }
-        }
-
-        kvm_close(kd);
+        return 0;
     }
 
-    return processesFound;
+    int count;
+#if __FreeBSD__ >= 5
+    struct kinfo_proc *p = kvm_getprocs(kd, KERN_PROC_PROC, 0, &count);
+#else
+    struct kinfo_proc *p = kvm_getprocs(kd, KERN_PROC_ALL, 0, &count);
+#endif  // __FreeBSD__ >= 5
+
+    for (int i = 0; i < count; ++i) {
+#if __FreeBSD__ >= 5
+        if (process.compare(0, COMMLEN, p[i].ki_comm) == 0) {
+            out_pids.push_back(static_cast<int>(p[i].ki_pid));
+#else
+        if (process.compare(0, MAXCOMLEN, p[i].kp_proc.p_comm) == 0) {
+            out_pids.push_back(static_cast<int>(p[i].kp_proc.p_pid));
+#endif  // __FreeBSD__ >= 5
+        }
+    }
+
+    kvm_close(kd);
+#elif defined ( __linux )
+    DIR *dp = opendir("/proc");
+
+    if (dp != nullptr) {
+        struct dirent *dir = readdir(dp);
+
+        while (dir != nullptr) {
+            int pid = atoi(dir->d_name);
+
+            if (pid > 0) {
+                std::stringstream ss;
+                ss << "/proc/";
+                ss << dir->d_name;
+                ss << "/cmdline";
+                std::ifstream cmdFile(ss.str().c_str());
+                std::string cmdLine;
+                getline(cmdFile, cmdLine);
+
+                if (!cmdLine.empty()) {
+                    size_t pos = cmdLine.find('\0');
+
+                    if (pos != std::string::npos) {
+                        cmdLine = cmdLine.substr(0, pos);
+                    }
+
+                    pos = cmdLine.rfind('/');
+
+                    if (pos != std::string::npos) {
+                        cmdLine = cmdLine.substr(pos + 1);
+                    }
+
+                    if (process.compare(cmdLine) == 0) {
+                        out_pids.push_back(pid);
+                    }
+                }
+            }
+
+            dir = readdir(dp);
+        }
+    }
+#elif defined ( _WIN32 )
+    PROCESSENTRY32 pe32;
+    HANDLE hSnapshot = nullptr;
+    pe32.dwSize = sizeof(PROCESSENTRY32);
+    hSnapshot = CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, 0);
+    if (Process32First(hSnapshot, &pe32)) {
+        do {
+            if (process.compare(pe32.szExeFile) == 0) {
+                out_pids.push_back(pe32.th32ProcessID);
+            }
+        } while (Process32Next(hSnapshot, &pe32));
+    }
+
+    if(hSnapshot != INVALID_HANDLE_VALUE) {
+        CloseHandle(hSnapshot);
+    }
+#endif  // defined( __FreeBSD__ )
+
+    return out_pids.size();
 }
 
 long System::RandSeed()

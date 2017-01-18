@@ -69,7 +69,7 @@ public:
 #endif  // defined ( __unix__ )
 
     static std::string GetProcessNameFromPath(const std::string &fullPath);
-    static int GetPidsOfProcess(const std::string &processName, std::vector<int> &out_pids);
+    static std::size_t GetPidsOfProcess(const std::string &processName, std::vector<int> &out_pids);
 
     static long RandSeed();
 };
