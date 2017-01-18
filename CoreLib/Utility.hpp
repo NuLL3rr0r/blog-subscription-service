@@ -68,6 +68,24 @@ public:
         return static_cast<typename std::underlying_type<_E>::type>(e);
     }
 
+    static constexpr bool StringsEqual(const char *s1, const char *s2)
+    {
+#if CXX_COMPILE_MODE == CXX_COMPILE_MODE_0x \
+        || CXX_COMPILE_MODE == CXX_COMPILE_MODE_11
+        return *s1 == *s2 && (*s1 == '\0' || EqualStrings(s1 + 1, s2 + 1));
+#elif CXX_COMPILE_MODE == CXX_COMPILE_MODE_1y \
+        || CXX_COMPILE_MODE == CXX_COMPILE_MODE_14 \
+        || CXX_COMPILE_MODE == CXX_COMPILE_MODE_1z
+        while (*s1 || *s2) {
+            if (*s1++ != *s2++) {
+                return false;
+            }
+        }
+        return true;
+#endif	/* CXX_COMPILE_MODE == CXX_COMPILE_MODE_0x \
+        || CXX_COMPILE_MODE == CXX_COMPILE_MODE_11 */ 
+    }
+
     static std::string CalculateSize(const std::size_t size);
 };
 
