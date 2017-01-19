@@ -21,15 +21,16 @@ More comes when it's ready.
 * cereal (Included)
 * CMake (Ninja, BSD Make and GNU Make are supported)
 * cotire (Included)
-* CppDB
 * Crypto++
 * cURLpp
 * GeoIP
-* Git (Optional, Required by CMake during the build process)
+* Git (Optional, required by CMake during the build process to extract the commit hash as part of the version number)
 * Gulp (Upon finding Gulp automatically installs: autoprefixer, minify-html, imagemin, minify-css, sass, uglify)
 * jQuery (Included)
 * libb64
 * libcurl
+* libpq
+* libpqxx
 * libstatgrab >= 0.90+
 * libzip
 * Magick++ (either ImageMagick or GraphicsMagick)
@@ -44,45 +45,76 @@ More comes when it's ready.
 
 ## Database
 
-Although the core library of the project supports PostgreSQL, MariaDB / MySQL and SQLite 3, for the time being this project only works on PostgreSQL. You may need to get your hands a bit dirty if you need MariaDB / MySQL or SQLite 3 support since the minimum expected supported is there. Pull requests are very welcome due to my limited time.
+Up to version 0.3.1, CppDB was the main database connectivity library which has support for PostgreSQL, MySQL and drivatives (e.g. MariaDB, Percona), and SQLite 3. I dropped support for CppDB due to the lack of an update in years. As a result, this project won't support MySQL and SQLite 3.
+
+Initially, due to many tradeoffs, I decided to use a combination of PostgreSQL and Cassandra since the application design requires both SQL and NoSQL data sachems; and, on top of that the in-memory persistence database Redis for improved performance. After a few benchmarks and many good reasons I decided to go the PostgreSQL only path. Furthermore, in addition to its great performance PostgreSQL supports both SQL (RDBMS) and NoSQL (true documents using JSON and JSONB; and key/value using HStore, JSON, and JSONB) schemes.
+
+Between the database accessibility libraries I chose libpqxx over SOCI, despite the fact that SOCI was the most similar to CppDB. The reasons for this are performance and abundance of the new features.
 
 To initialize the database and grant a user inside PostgreSQL:
 
-    $ sudo -u pgsql psql -d template1
-    template1=# CREATE ROLE blog_subscription_service_db_user LOGIN ENCRYPTED PASSWORD '${SECRET_PASSWORD}' NOINHERIT VALID UNTIL 'infinity';
-    template1=# CREATE DATABASE blog_subscription_service_db WITH ENCODING='UTF8' OWNER blog_subscription_service_db_user;
+    $ sudo -u postgres psql -d template1
+    template1=# CREATE ROLE blog_subscription_service LOGIN ENCRYPTED PASSWORD '${SECRET_PASSWORD}' NOINHERIT VALID UNTIL 'infinity';
+    template1=# CREATE DATABASE blog_subscription_service_production WITH ENCODING='UTF8' OWNER blog_subscription_service;
     template1=# \q
 
 To verify if the database was created successfully or not:
 
-    $ sudo -u pgsql -H psql -d blog_subscription_service_db
-    blog_subscription_service_db=> \q
+    $ sudo -u postgres -H psql -d blog_subscription_service_production
+    blog_subscription_service_production=> \q
 
 Or:
 
-    $ sudo -u pgsql pg_dump blog_subscription_service_db
+    $ sudo -u postgres pg_dump blog_subscription_service_production
 
-After creating the database, you have to modify _${PROJECT_ROOT}/definitions.cmake_:
+After creating the database, you have to modify _${PROJECT_ROOT}/definitions.cmake_ in one of the following ways:
 
+1. By modifying predefined key/values with a limited control over the connection to the database:
+
+    ```
     SET ( PGSQL_HOST "localhost" CACHE STRING "" )
     SET ( PGSQL_PORT "5432" CACHE STRING "" )
-    SET ( PGSQL_DATABASE "blog_subscription_service_db" CACHE STRING "" )
-    SET ( PGSQL_USER "blog_subscription_service_user" CACHE STRING "" )
+    SET ( PGSQL_DATABASE "blog-subscription-service_production" CACHE STRING "" )
+    SET ( PGSQL_USER "blog-subscription-service" CACHE STRING "" )
     SET ( PGSQL_PASSWORD "BE_SURE_TO_USE_A_STRONG_SECRET_PASSPHRASE_HERE" CACHE STRING "" )
+    ```
+
+2. Or, by specifying a connection string with more control over the details:
+
+    ```
+    # Either Keyword/Value Connection Strings or Connection URIs,
+    # to set more values such as:
+    # host, hostaddr, port, dbname, user, password, connect_timeout,
+    # client_encoding, options, application_name, fallback_application_name,
+    # keepalives, keepalives_idle, keepalives_interval, keepalives_count, tty,
+    # sslmode, requiressl, sslcompression, sslcert, sslkey, sslrootcert, sslcrl,
+    # requirepeer, krbsrvname, gsslib, service
+    # https://www.postgresql.org/docs/9.6/static/libpq-connect.html#LIBPQ-CONNSTRING
+    # NOTE: If this parameter is set, the rest of the PGSQL_* variables will be ignored.
+    SET ( PGSQL_CONNECTION_STRING "" CACHE STRING "" )
+    ```
+
+e.g., keyword/value connection strings:
+
+    SET ( PGSQL_CONNECTION_STRING "" CACHE STRING "host=localhost port=5432 dbname=blog-subscription-service_production user=blog-subscription-service passwprd=BE_SURE_TO_USE_A_STRONG_SECRET_PASSPHRASE_HERE connect_timeout=10 application_name=blog-subscription-service" )
+
+or, connection URIs:
+
+    SET ( PGSQL_CONNECTION_STRING "" CACHE STRING "postgresql://blog-subscription-service_production:BE_SURE_TO_USE_A_STRONG_SECRET_PASSPHRASE_HERE@localhost:5432/blog-subscription-service_production?connect_timeout=10&application_name=blog-subscription-service" )
 
 
 ## Supported Platforms
 
-I developed this on a FreeBSD x64 machine and tested it on another FreeBSD x86 VPS successfully. It should work 99.99 percent on most GNU/Linux boxes. Support for Microsoft Windows needs a bit of work, I tried my best for most parts, but did not have the time to make the whole project work on Windows, too.
+I developed this on a x64 FreeBSD 11.0-STABLE machine and tested it on another x64 FreeBSD 11.0-RELEASE VPS successfully. I also ported this to Funtoo Linux (a variant of Gentoo). Support for Microsoft Windows needs a bit of work, I tried my best for the most parts, but did not have the time to make the whole project work on Windows, too.
 
 
 ## Build
 
-You can build either using Ninja or traditional build systems such as BSD Make or GNU Make. It also supports Qt Creator as an IDE. To start building Qt Creator which supports CMake, Ninja and Make simply drag CMakeLists.txt - located in the root directory of the project - to Qt Creator's main window. Alternatively follow the following instructions if you want to build from command line:
+You can build either using Ninja or traditional build systems such as BSD Make or GNU Make. It also supports Qt Creator as an IDE. For building inside Qt Creator which supports CMake, Ninja, and Make, simply drag CMakeLists.txt - located in the root directory of the project - to Qt Creator's main window. Alternatively follow the following instructions if you want to build from command line:
 
 To build using Ninja:
 
-    $ cd blog_subscription_service
+    $ cd blog-subscription-service
     $ mkdir build
     $ cd build
     $ sudo cmake -GNinja -DCMAKE_BUILD_TYPE=ClangNativeMaxSpeedRel -DAPP_ROOT_DIR=/srv/babaei.net/subscribe ../
@@ -109,7 +141,7 @@ __Note__: For other available options please build using CMake GUI.
 
 To build using either BSD Make or GNU Make:
 
-    $ cd blog_subscription_service
+    $ cd blog-subscription-service
     $ mkdir build
     $ cd build
     $ sudo cmake -GNinja -DCMAKE_BUILD_TYPE=ClangNativeMaxSpeedRel -DAPP_ROOT_DIR=/srv/babaei.net/subscribe ../
