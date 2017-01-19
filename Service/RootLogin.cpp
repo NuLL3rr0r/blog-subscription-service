@@ -150,7 +150,7 @@ RootLogin::RootLogin()
                 pqxx::work txn(*conn.get());
 
                 string query((boost::format("SELECT EXTRACT ( EPOCH FROM expiry::TIMESTAMPTZ ) as expiry"
-                                            " FROM \"%1%\" WHERE token=%2%;")
+                                            " FROM \"%1%\" WHERE token = %2%;")
                               % txn.esc(Service::Pool::Database().GetTableName("ROOT_SESSIONS"))
                               % txn.quote(token)).str());
                 LOG_INFO("Running query...", query, cgiEnv->GetInformation().ToJson());
@@ -685,7 +685,7 @@ void RootLogin::Impl::OnPasswordRecoveryFormSubmitted()
         while (true) {
             CoreLib::Random::Uuid(token);
 
-            query.assign((boost::format("SELECT token FROM \"%1%\" WHERE token=%2%;")
+            query.assign((boost::format("SELECT token FROM \"%1%\" WHERE token = %2%;")
                           % txn.esc(Service::Pool::Database().GetTableName("ROOT_CREDENTIALS_RECOVERY"))
                           % txn.quote(token)).str());
             LOG_INFO("Running query...", query, cgiEnv->GetInformation().ToJson());
@@ -864,7 +864,7 @@ void RootLogin::Impl::PreserveSessionData(const CDate::Now &n, const bool saveLo
         while (true) {
             CoreLib::Random::Uuid(token);
 
-            string query((boost::format("SELECT token FROM \"%1%\" WHERE token=%2%;")
+            string query((boost::format("SELECT token FROM \"%1%\" WHERE token = %2%;")
                          % txn.esc(Service::Pool::Database().GetTableName("ROOT_SESSIONS"))
                          % txn.quote(token)).str());
             LOG_INFO("Running query...", query, cgiEnv->GetInformation().ToJson());
