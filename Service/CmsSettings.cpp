@@ -35,7 +35,7 @@
 
 #include <boost/exception/diagnostic_information.hpp>
 #include <boost/format.hpp>
-#include <cppdb/frontend.h>
+#include <pqxx/pqxx>
 #include <Wt/WApplication>
 #include <Wt/WLengthValidator>
 #include <Wt/WLineEdit>
@@ -57,7 +57,7 @@
 
 using namespace std;
 using namespace boost;
-using namespace cppdb;
+using namespace pqxx;
 using namespace Wt;
 using namespace CoreLib;
 using namespace Service;
@@ -97,13 +97,14 @@ WWidget *CmsSettings::Layout()
 {
     Div *container = new Div("CmsSettings", "container-fluid");
 
-    try {
-        CgiRoot *cgiRoot = static_cast<CgiRoot *>(WApplication::instance());
-        CgiEnv *cgiEnv = cgiRoot->GetCgiEnvInstance();
+    CgiRoot *cgiRoot = static_cast<CgiRoot *>(WApplication::instance());
+    CgiEnv *cgiEnv = cgiRoot->GetCgiEnvInstance();
 
+    try {
         string htmlData;
         string file;
-        if (cgiEnv->GetCurrentLanguage() == CgiEnv::Language::Fa) {
+        if (cgiEnv->GetInformation().Client.Language.Code
+                == CgiEnv::InformationRecord::ClientRecord::LanguageCode::Fa) {
             file = "../templates/cms-settings-fa.wtml";
         } else {
             file = "../templates/cms-settings.wtml";
@@ -116,27 +117,27 @@ WWidget *CmsSettings::Layout()
 
             m_pimpl->EnHomePageUrlLineEdit = new WLineEdit();
             m_pimpl->EnHomePageUrlLineEdit->setPlaceholderText(tr("cms-settings-home-page-url-en-placeholder"));
-            WRegExpValidator *enHomePageUrlValidator = new WRegExpValidator(Pool::Storage()->RegexHttpUrl());
+            WRegExpValidator *enHomePageUrlValidator = new WRegExpValidator(Pool::Storage().RegexHttpUrl());
             enHomePageUrlValidator->setMandatory(true);
             m_pimpl->EnHomePageUrlLineEdit->setValidator(enHomePageUrlValidator);
 
             m_pimpl->FaHomePageUrlLineEdit = new WLineEdit();
             m_pimpl->FaHomePageUrlLineEdit->setPlaceholderText(tr("cms-settings-home-page-url-fa-placeholder"));
-            WRegExpValidator *faHomePageUrlValidator = new WRegExpValidator(Pool::Storage()->RegexHttpUrl());
+            WRegExpValidator *faHomePageUrlValidator = new WRegExpValidator(Pool::Storage().RegexHttpUrl());
             faHomePageUrlValidator->setMandatory(true);
             m_pimpl->FaHomePageUrlLineEdit->setValidator(faHomePageUrlValidator);
 
             m_pimpl->EnHomePageTitleLineEdit = new WLineEdit();
             m_pimpl->EnHomePageTitleLineEdit->setPlaceholderText(tr("cms-settings-home-page-title-en-placeholder"));
-            WLengthValidator *enHomePageTitleValidator = new WLengthValidator(Pool::Storage()->MinHomePageTitleLength(),
-                                                                            Pool::Storage()->MaxHomePageTitleLength());
+            WLengthValidator *enHomePageTitleValidator = new WLengthValidator(Pool::Storage().MinHomePageTitleLength(),
+                                                                            Pool::Storage().MaxHomePageTitleLength());
             enHomePageTitleValidator->setMandatory(true);
             m_pimpl->EnHomePageTitleLineEdit->setValidator(enHomePageTitleValidator);
 
             m_pimpl->FaHomePageTitleLineEdit = new WLineEdit();
             m_pimpl->FaHomePageTitleLineEdit->setPlaceholderText(tr("cms-settings-home-page-title-fa-placeholder"));
-            WLengthValidator *faHomePageTitleValidator = new WLengthValidator(Pool::Storage()->MinHomePageTitleLength(),
-                                                                            Pool::Storage()->MaxHomePageTitleLength());
+            WLengthValidator *faHomePageTitleValidator = new WLengthValidator(Pool::Storage().MinHomePageTitleLength(),
+                                                                            Pool::Storage().MaxHomePageTitleLength());
             faHomePageTitleValidator->setMandatory(true);
             m_pimpl->FaHomePageTitleLineEdit->setValidator(faHomePageTitleValidator);
 
@@ -145,19 +146,23 @@ WWidget *CmsSettings::Layout()
 
             m_pimpl->SettingsMessageArea = new WText();
 
-            result r = Pool::Database()->Sql()
-                    << (format("SELECT homepage_url_en, homepage_url_fa, homepage_title_en, homepage_title_fa"
-                               " FROM \"%1%\" WHERE pseudo_id = '0';")
-                        % Pool::Database()->GetTableName("SETTINGS")).str()
-                    << row;
+            auto conn = Pool::Database().Connection();
+            conn->activate();
+            pqxx::work txn(*conn.get());
+
+            string query((format("SELECT homepage_url_en, homepage_url_fa, homepage_title_en, homepage_title_fa"
+                                 " FROM \"%1%\" WHERE pseudo_id = '0';")
+                          % Pool::Database().GetTableName("SETTINGS")).str());
+            LOG_INFO("Running query...", query, cgiEnv->GetInformation().ToJson());
+
+            result r = txn.exec(query);
 
             if (!r.empty()) {
-                string homepage_url_en;
-                string homepage_url_fa;
-                string homepage_title_en;
-                string homepage_title_fa;
-
-                r >> homepage_url_en >> homepage_url_fa >> homepage_title_en >> homepage_title_fa;
+                const result::tuple row(r[0]);
+                const string homepage_url_en(row["homepage_url_en"].c_str());
+                const string homepage_url_fa(row["homepage_url_fa"].c_str());
+                const string homepage_title_en(row["homepage_title_en"].c_str());
+                const string homepage_title_fa(row["homepage_title_fa"].c_str());
 
                 m_pimpl->EnHomePageUrlLineEdit->setText(WString::fromUTF8(homepage_url_en));
                 m_pimpl->FaHomePageUrlLineEdit->setText(WString::fromUTF8(homepage_url_fa));
@@ -194,16 +199,20 @@ WWidget *CmsSettings::Layout()
         }
     }
 
+    catch (const pqxx::sql_error &ex) {
+        LOG_ERROR(ex.what(), ex.query(), cgiEnv->GetInformation().ToJson());
+    }
+
     catch (const boost::exception &ex) {
-        LOG_ERROR(boost::diagnostic_information(ex));
+        LOG_ERROR(boost::diagnostic_information(ex), cgiEnv->GetInformation().ToJson());
     }
 
     catch (const std::exception &ex) {
-        LOG_ERROR(ex.what());
+        LOG_ERROR(ex.what(), cgiEnv->GetInformation().ToJson());
     }
 
     catch (...) {
-        LOG_ERROR(UNKNOWN_ERROR);
+        LOG_ERROR(UNKNOWN_ERROR, cgiEnv->GetInformation().ToJson());
     }
 
     return container;
@@ -226,7 +235,8 @@ void CmsSettings::Impl::OnSaveSettingsFormSubmitted()
         return;
     }
 
-    transaction guard(Service::Pool::Database()->Sql());
+    CgiRoot *cgiRoot = static_cast<CgiRoot *>(WApplication::instance());
+    CgiEnv *cgiEnv = cgiRoot->GetCgiEnvInstance();
 
     try {
         string homepage_url_en(EnHomePageUrlLineEdit->text().toUTF8());
@@ -234,7 +244,7 @@ void CmsSettings::Impl::OnSaveSettingsFormSubmitted()
         string homepage_title_en(EnHomePageTitleLineEdit->text().toUTF8());
         string homepage_title_fa(FaHomePageTitleLineEdit->text().toUTF8());
 
-        Pool::Database()->Update("SETTINGS",
+        Pool::Database().Update("SETTINGS",
                                  "pseudo_id", "0",
                                  "homepage_url_en=?, homepage_url_fa=?, homepage_title_en=?, homepage_title_fa=?",
                                  {
@@ -244,8 +254,6 @@ void CmsSettings::Impl::OnSaveSettingsFormSubmitted()
                                      homepage_title_fa
                                  });
 
-        guard.commit();
-
         EnHomePageUrlLineEdit->setFocus();
 
         m_parent->HtmlInfo(tr("cms-settings-save-settings-success-message"), SettingsMessageArea);
@@ -253,17 +261,19 @@ void CmsSettings::Impl::OnSaveSettingsFormSubmitted()
         return;
     }
 
+    catch (const pqxx::sql_error &ex) {
+        LOG_ERROR(ex.what(), ex.query(), cgiEnv->GetInformation().ToJson());
+    }
+
     catch (const boost::exception &ex) {
-        LOG_ERROR(boost::diagnostic_information(ex));
+        LOG_ERROR(boost::diagnostic_information(ex), cgiEnv->GetInformation().ToJson());
     }
 
     catch (const std::exception &ex) {
-        LOG_ERROR(ex.what());
+        LOG_ERROR(ex.what(), cgiEnv->GetInformation().ToJson());
     }
 
     catch (...) {
-        LOG_ERROR(UNKNOWN_ERROR);
+        LOG_ERROR(UNKNOWN_ERROR, cgiEnv->GetInformation().ToJson());
     }
-
-    guard.rollback();
 }
