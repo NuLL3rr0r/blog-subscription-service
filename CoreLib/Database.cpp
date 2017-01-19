@@ -29,29 +29,31 @@
  *
  * @section DESCRIPTION
  *
- * Database object with support for PostgreSQL, MariaDB / MySQL and SQLite3.
+ * Database accessibility wrapper on top of libpqxx and libpq with support
+ * for PostgreSQL.
  */
 
 
+#include <sstream>
 #include <unordered_map>
 #include <vector>
-#include <cassert>
-#include <cstdarg>
+#include <cstring>
+#include <boost/algorithm/string.hpp>
 #include <boost/format.hpp>
-#if defined ( HAS_SQLITE3 )
-#include <sqlite3.h>
-#endif  // defined ( HAS_SQLITE3 )
-#include <cppdb/backend.h>
-#include <cppdb/driver_manager.h>
+#include <boost/thread/lock_guard.hpp>
+#include <boost/thread/mutex.hpp>
+#include <libpq-fe.h>
+#include <pqxx/pqxx>
 #include "make_unique.hpp"
 #include "Database.hpp"
 #include "Log.hpp"
+#include "SharedObjectPool.hpp"
 
-#define     UNKNOWN_ERROR       "Unknow database error!"
+#define     MAX_DATABASE_CONNECTIONS    16
+#define     UNKNOWN_ERROR               "Unknow database error!"
 
 using namespace std;
 using namespace boost;
-using namespace cppdb;
 using namespace CoreLib;
 
 struct Database::Impl
@@ -62,19 +64,8 @@ struct Database::Impl
     typedef std::unordered_map<std::string, std::string> TableNamesHashTable;
     typedef std::unordered_map<std::string, std::string> TableFieldsHashTable;
 
-#if defined ( CORELIB_STATIC )
-#if defined ( HAS_CPPDB_SQLITE3_DRIVER )
-    static bool IsSqlite3DriverLoaded;
-#endif  // defined ( HAS_CPPDB_SQLITE3_DRIVER )
-#if defined ( HAS_CPPDB_PGSQL_DRIVER )
-    static bool IsPgSqlDriverLoaded;
-#endif  // defined ( HAS_CPPDB_PGSQL_DRIVER )
-#if defined ( HAS_CPPDB_MYSQL_DRIVER )
-    static bool IsMySqlDriverLoaded;
-#endif  // defined ( HAS_CPPDB_MYSQL_DRIVER )
-#endif  // defined ( CORELIB_STATIC )
-
-    cppdb::session Sql;
+    SharedObjectPool<pqxx::connection> Connections;
+    boost::mutex ConnectionsMutex;
 
     EnumNamesHashTable EnumNames;
     EnumeratorsHashTable Enumerators;
@@ -83,105 +74,33 @@ struct Database::Impl
     TableFieldsHashTable TableFields;
 };
 
-#if defined ( CORELIB_STATIC )
-#if defined ( HAS_CPPDB_SQLITE3_DRIVER )
-bool Database::Impl::IsSqlite3DriverLoaded = false;
-#endif  // defined ( HAS_CPPDB_SQLITE3_DRIVER )
-#if defined ( HAS_CPPDB_PGSQL_DRIVER )
-bool Database::Impl::IsPgSqlDriverLoaded = false;
-#endif  // defined ( HAS_CPPDB_PGSQL_DRIVER )
-#if defined ( HAS_CPPDB_MYSQL_DRIVER )
-bool Database::Impl::IsMySqlDriverLoaded = false;
-#endif  // defined ( HAS_CPPDB_MYSQL_DRIVER )
-#endif  // defined ( CORELIB_STATIC )
-
-#if defined ( CORELIB_STATIC )
-extern "C" {
-#if defined ( HAS_CPPDB_SQLITE3_DRIVER )
-cppdb::backend::connection *cppdb_sqlite3_get_connection(cppdb::connection_info const &);
-#endif  // defined ( HAS_CPPDB_SQLITE3_DRIVER )
-#if defined ( HAS_CPPDB_PGSQL_DRIVER )
-cppdb::backend::connection *cppdb_postgresql_get_connection(cppdb::connection_info const &);
-#endif  // defined ( HAS_CPPDB_PGSQL_DRIVER )
-#if defined ( HAS_CPPDB_MYSQL_DRIVER )
-cppdb::backend::connection *cppdb_mysql_get_connection(cppdb::connection_info const &);
-#endif  // defined ( HAS_CPPDB_MYSQL_DRIVER )
-}
-#endif  // defined ( CORELIB_STATIC )
-
-#if defined ( CORELIB_STATIC )
-#if defined ( HAS_CPPDB_SQLITE3_DRIVER )
-bool Database::IsSqlite3DriverLoaded()
+std::string Database::Escape(const char *begin, const char *end)
 {
-    return Impl::IsSqlite3DriverLoaded;
-}
-#endif  // defined ( HAS_CPPDB_SQLITE3_DRIVER )
+    std::string result;
+    result.reserve(static_cast<size_t>(end - begin));
 
-#if defined ( HAS_CPPDB_PGSQL_DRIVER )
-bool Database::IsPgSqlDriverLoaded()
-{
-    return Impl::IsPgSqlDriverLoaded;
-}
-#endif  // defined ( HAS_CPPDB_PGSQL_DRIVER )
+    for(; begin != end; ++begin) {
+        char c = *begin;
 
-#if defined ( HAS_CPPDB_MYSQL_DRIVER )
-bool Database::IsMySqlDriverLoaded()
-{
-    return Impl::IsMySqlDriverLoaded;
-}
-#endif  // defined ( HAS_CPPDB_MYSQL_DRIVER )
-
-#if defined ( HAS_CPPDB_SQLITE3_DRIVER )
-void Database::LoadSqlite3Driver()
-{
-    if (!Impl::IsSQLite3DriverLoaded) {
-        Impl::IsSQLite3DriverLoaded = true;
-        driver_manager::instance()
-                .install_driver("sqlite3",
-                                new backend::static_driver(cppdb_sqlite3_get_connection));
-    }
-}
-#endif  // defined ( HAS_CPPDB_SQLITE3_DRIVER )
-
-#if defined ( HAS_CPPDB_PGSQL_DRIVER )
-void Database::LoadPgSqlDriver()
-{
-    if (!Impl::IsSQLite3DriverLoaded) {
-        Impl::IsSQLite3DriverLoaded = true;
-        driver_manager::instance()
-                .install_driver("postgresql",
-                                new backend::static_driver(cppdb_postgresql_get_connection));
-    }
-}
-#endif  // defined ( HAS_CPPDB_PGSQL_DRIVER )
-
-#if defined ( HAS_CPPDB_MYSQL_DRIVER )
-void Database::LoadMySqlDriver()
-{
-    if (!Impl::IsSQLite3DriverLoaded) {
-        Impl::IsSQLite3DriverLoaded = true;
-        driver_manager::instance()
-                .install_driver("mysql",
-                                new backend::static_driver(cppdb_mysql_get_connection));
-    }
-}
-#endif  // defined ( HAS_CPPDB_MYSQL_DRIVER )
-#endif  // defined ( CORELIB_STATIC )
-
-#if defined ( HAS_SQLITE3 )
-bool Database::Sqlite3Vacuum(const std::string &databaseFile)
-{
-    sqlite3 *db;
-
-    int rc = sqlite3_open(databaseFile.c_str(), &db);
-    if (!rc) {
-        sqlite3_exec(db, "VACUUM;", 0, 0, 0);
-        return true;
+        if(c == '\'') {
+            result += "''";
+        } else {
+            result += c;
+        }
     }
 
-    return false;
+    return result;
 }
-#endif  // defined ( HAS_SQLITE3 )
+
+std::string Database::Escape(const char *str)
+{
+    return Escape(str, str + strlen(str));
+}
+
+std::string Database::Escape(const std::string &str)
+{
+    return Escape(str.c_str(), str.c_str() + str.size());
+}
 
 bool Database::IsTrue(const std::string &value)
 {
@@ -192,7 +111,7 @@ bool Database::IsTrue(const std::string &value)
             || value == "yes"
             || value == "on"
             || value == "1") {
-       return true;
+        return true;
     }
 
     return false;
@@ -201,59 +120,125 @@ bool Database::IsTrue(const std::string &value)
 Database::Database(const std::string &connectionString) :
     m_pimpl(make_unique<Database::Impl>())
 {
-    if (!m_pimpl->Sql.is_open()) {
-        bool isDatabaseOpenedSuccessfully = true;
+    boost::lock_guard<boost::mutex> lock(m_pimpl->ConnectionsMutex);
+    (void)lock;
+
+    LOG_INFO("Setting up database connections...");
+
+    for (int i = 0; i < MAX_DATABASE_CONNECTIONS; ++i) {
         try {
-            m_pimpl->Sql.open(connectionString);
+            std::unique_ptr<pqxx::connection> c(
+                        std::make_unique<pqxx::connection>(connectionString));
+            c->inhibit_reactivation(false);
+            c->activate();
+
+            LOG_INFO((format("Database connection #%1% successed!") % i).str(), (boost::format("Backend PID: %1%") % c->backendpid()).str(), (boost::format("Socket: %1%") % c->sock()).str(), (boost::format("Host Name: %1%") % c->hostname()).str(), (boost::format("Port Number: %1%") % c->port()).str(), (boost::format("Database Name: %1%") % c->dbname()).str(), (boost::format("User Name: %1%") % c->username()).str());
+
+            m_pimpl->Connections.Add(c);
+        } catch (const pqxx::sql_error &ex) {
+            LOG_FATAL((format("Database connection #%1% failed!") % i).str(), ex.what());
         } catch (const std::exception &ex) {
-            LOG_FATAL("Database connection failed!", ex.what());
-            isDatabaseOpenedSuccessfully = false;
+            LOG_FATAL((format("Database connection #%1% failed!") % i).str(), ex.what());
         } catch (...) {
-            LOG_FATAL("Database connection failed!");
-            isDatabaseOpenedSuccessfully = false;
+            LOG_FATAL((format("Database connection #%1% failed!") % i).str(), UNKNOWN_ERROR);
         }
-        assert(isDatabaseOpenedSuccessfully);
     }
+
+    LOG_INFO("Database connections setup successfully!");
 }
 
 Database::~Database()
 {
-    if (m_pimpl->Sql.is_open())
-        m_pimpl->Sql.close();
+    boost::lock_guard<boost::mutex> lock(m_pimpl->ConnectionsMutex);
+    (void)lock;
+
+    size_t i = 0;
+    while (!m_pimpl->Connections.Empty()) {
+        try {
+            auto c(m_pimpl->Connections.Pool().top().release());
+            c->disconnect();
+
+            LOG_INFO((format("Database connection #%1% disconnected successfully!") % i).str(), (boost::format("Backend PID: %1%") % c->backendpid()).str(), (boost::format("Socket: %1%") % c->sock()).str(), (boost::format("Host Name: %1%") % c->hostname()).str(), (boost::format("Port Number: %1%") % c->port()).str(), (boost::format("Database Name: %1%") % c->dbname()).str(), (boost::format("User Name: %1%") % c->username()).str());
+
+            m_pimpl->Connections.Pool().pop();
+            ++i;
+        } catch (const pqxx::sql_error &ex) {
+            LOG_ERROR((format("Failed to disconnect from connection #%1%!") % i).str(), ex.what());
+        } catch (const std::exception &ex) {
+            LOG_ERROR((format("Failed to disconnect from connection #%1%!") % i).str(), ex.what());
+        } catch (...) {
+            LOG_ERROR((format("Failed to disconnect from connection #%1%!") % i).str(), UNKNOWN_ERROR);
+        }
+    }
 }
 
-cppdb::session &Database::Sql()
+SharedObjectPool<pqxx::connection>::ptrType Database::Connection()
 {
-    return m_pimpl->Sql;
+    for (;;) {
+        size_t connectionNumber = MAX_DATABASE_CONNECTIONS - m_pimpl->Connections.Size();
+
+        try {
+            if (!m_pimpl->Connections.Empty()) {
+                auto c(m_pimpl->Connections.Acquire());
+                c->activate();
+
+                LOG_INFO((format("Acquired connection #%1% successfully!") % connectionNumber).str(), (boost::format("Backend PID: %1%") % c->backendpid()).str(), (boost::format("Socket: %1%") % c->sock()).str(), (boost::format("Host Name: %1%") % c->hostname()).str(), (boost::format("Port Number: %1%") % c->port()).str(), (boost::format("Database Name: %1%") % c->dbname()).str(), (boost::format("User Name: %1%") % c->username()).str());
+
+                return c;
+            } else {
+                LOG_INFO((format("No free connection is available! Retrying...") % connectionNumber).str());
+            }
+        } catch (const pqxx::sql_error &ex) {
+            LOG_ERROR((format("Connection #%1% acquisition failed!") % connectionNumber).str(), ex.what());
+        } catch (const std::exception &ex) {
+            LOG_ERROR((format("Connection #%1% acquisition failed!") % connectionNumber).str(), ex.what());
+        } catch (const char &ex) {
+            /// To make Clang stop spitting out warnings about the unreached code below
+            (void)ex;
+            break;
+        } catch (...) {
+            LOG_ERROR((format("Connection #%1% acquisition failed!") % connectionNumber).str(), UNKNOWN_ERROR);
+        }
+    }
+
+    /// The execution should never reach here
+    /// Return an empty connection
+    SharedObjectPool<pqxx::connection>::ptrType c;
+    return c;
 }
 
 bool Database::CreateEnum(const std::string &id)
 {
     try {
-        result r = m_pimpl->Sql << (format("SELECT EXISTS ( SELECT 1 FROM pg_type WHERE typname = '%1%' );")
-                                    % (m_pimpl->EnumNames[id])).str()
-                                << row;
+        auto c = this->Connection();
+        c->activate();
+        pqxx::work txn(*c.get());
+
+        pqxx::result r = txn.exec((format("SELECT EXISTS ( SELECT 1 FROM pg_type WHERE typname = %1% );")
+                                   % txn.quote(m_pimpl->EnumNames[id])).str());
 
         if (!r.empty()) {
-            std::string exists;
-            r >> exists;
+            std::string exists(r[0][0].as<string>());
 
             if (exists == "f") {
                 std::string ph;
                 for (size_t i = 0; i < m_pimpl->Enumerators[id].size(); ++i) {
                     if (i != 0)
                         ph += ", ";
-                    ph += (format("'%1%'") % m_pimpl->Enumerators[id][i]).str();
+                    ph += txn.quote(m_pimpl->Enumerators[id][i]);
                 }
 
-                m_pimpl->Sql << (format("CREATE TYPE \"%1%\" AS ENUM ( %2% );")
-                                 % m_pimpl->EnumNames[id]
-                                 % ph).str()
-                             << exec;
+                txn.exec((format("CREATE TYPE \"%1%\" AS ENUM ( %2% );")
+                          % txn.esc(m_pimpl->EnumNames[id])
+                          % txn.esc(ph)).str());
+
+                txn.commit();
             }
         }
 
         return true;
+    } catch (const pqxx::sql_error &ex) {
+        LOG_ERROR(ex.what(), ex.query());
     } catch (const std::exception &ex) {
         LOG_ERROR(ex.what());
     } catch (...) {
@@ -266,12 +251,19 @@ bool Database::CreateEnum(const std::string &id)
 bool Database::CreateTable(const std::string &id)
 {
     try {
-        m_pimpl->Sql << (format("CREATE TABLE IF NOT EXISTS \"%1%\" ( %2% );")
-                         % m_pimpl->TableNames[id]
-                         % m_pimpl->TableFields[id]).str()
-                     << exec;
+        auto c = this->Connection();
+        c->activate();
+        pqxx::work txn(*c.get());
+
+        txn.exec((format("CREATE TABLE IF NOT EXISTS \"%1%\" ( %2% );")
+                  % txn.esc(m_pimpl->TableNames[id])
+                  % txn.esc(m_pimpl->TableFields[id])).str());
+
+        txn.commit();
 
         return true;
+    } catch (const pqxx::sql_error &ex) {
+        LOG_ERROR(ex.what(), ex.query());
     } catch (const std::exception &ex) {
         LOG_ERROR(ex.what());
     } catch (...) {
@@ -284,11 +276,18 @@ bool Database::CreateTable(const std::string &id)
 bool Database::DropTable(const std::string &id)
 {
     try {
-        m_pimpl->Sql << (format("DROP TABLE IF EXISTS \"%1%\";")
-                         % m_pimpl->TableNames[id]).str()
-                     << exec;
+        auto c = this->Connection();
+        c->activate();
+        pqxx::work txn(*c.get());
+
+        txn.exec((format("DROP TABLE IF EXISTS \"%1%\";")
+                  % txn.esc(m_pimpl->TableNames[id])).str());
+
+        txn.commit();
 
         return true;
+    } catch (const pqxx::sql_error &ex) {
+        LOG_ERROR(ex.what(), ex.query());
     } catch (const std::exception &ex) {
         LOG_ERROR(ex.what());
     } catch (...) {
@@ -303,11 +302,22 @@ bool Database::RenameTable(const std::string &id, const std::string &newName)
     try {
         auto it = m_pimpl->TableNames.find(id);
         if (it != m_pimpl->TableNames.end()) {
-            m_pimpl->Sql << "ALTER TABLE [" + m_pimpl->TableNames[id] + "] RENAME TO [" +  newName + "];"
-                         << exec;
+            auto c = this->Connection();
+            c->activate();
+            pqxx::work txn(*c.get());
+
+            txn.exec((format("ALTER TABLE \"%1%\" RENAME TO \"%2%\";")
+                      % txn.esc(m_pimpl->TableNames[id])
+                      % txn.esc(newName)).str());
+
+            txn.commit();
+
             it->second = newName;
+
             return true;
         }
+    } catch (const pqxx::sql_error &ex) {
+        LOG_ERROR(ex.what(), ex.query());
     } catch (const std::exception &ex) {
         LOG_ERROR(ex.what());
     } catch (...) {
@@ -322,25 +332,33 @@ bool Database::Insert(const std::string &id,
                       const std::initializer_list<std::string> &args)
 {
     try {
-        string ph;
-        for (size_t i = 0; i < args.size(); ++i) {
-            if (i != 0)
-                ph += ", ";
-            ph += "?";
-        }
+        auto c = this->Connection();
+        c->activate();
+        pqxx::work txn(*c.get());
 
-        statement stat = m_pimpl->Sql << (format("INSERT INTO \"%1%\" ( %2% ) VALUES ( %3% );")
-                                          % m_pimpl->TableNames[id]
-                                          % fields
-                                          % ph).str();
+        stringstream ss;
+        ss << (format("INSERT INTO \"%1%\" ( %2% ) VALUES ( ")
+               % txn.esc(m_pimpl->TableNames[id])
+               % txn.esc(fields)).str();
 
+        size_t i = 0;
         for(const auto &arg : args) {
-            stat.bind(arg);
+            if (i != 0) {
+                ss << ", ";
+            }
+            ss << txn.quote(arg);
+            ++i;
         }
 
-        stat.exec();
+        ss << ");";
+
+        txn.exec(ss.str());
+
+        txn.commit();
 
         return true;
+    } catch (const pqxx::sql_error &ex) {
+        LOG_ERROR(ex.what(), ex.query());
     } catch (const std::exception &ex) {
         LOG_ERROR(ex.what());
     } catch (...) {
@@ -357,20 +375,26 @@ bool Database::Update(const std::string &id,
                       const std::initializer_list<std::string> &args)
 {
     try {
-        statement stat = m_pimpl->Sql << (format("UPDATE ONLY \"%1%\" SET %2% WHERE %3%=?;")
-                                          % m_pimpl->TableNames[id]
-                                          % set
-                                          % where).str();
+        auto c = this->Connection();
+        c->activate();
+        pqxx::work txn(*c.get());
 
+        string processedSet;
         for(const auto &arg : args) {
-            stat.bind(arg);
+            processedSet = boost::replace_nth_copy(set, "?", 0, txn.quote(arg));
         }
 
-        stat.bind(value);
+        txn.exec((format("UPDATE ONLY \"%1%\" SET %2% WHERE \"%3%\" = %4%;")
+                  % txn.esc(m_pimpl->TableNames[id])
+                  % processedSet
+                  % txn.esc(where)
+                  % txn.quote(value)).str());
 
-        stat.exec();
+        txn.commit();
 
         return true;
+    } catch (const pqxx::sql_error &ex) {
+        LOG_ERROR(ex.what(), ex.query());
     } catch (const std::exception &ex) {
         LOG_ERROR(ex.what());
     } catch (...) {
@@ -385,13 +409,20 @@ bool Database::Delete(const std::string &id,
                       const std::string &value)
 {
     try {
-        m_pimpl->Sql << (format("DELETE FROM ONLY \"%1%\" WHERE %2%=?;")
-                         % m_pimpl->TableNames[id]
-                         % where).str()
-                     << value
-                     << exec;
+        auto c = this->Connection();
+        c->activate();
+        pqxx::work txn(*c.get());
+
+        txn.exec((format("DELETE FROM ONLY \"%1%\" WHERE \"%2%\"=%3%;")
+                  % txn.esc(m_pimpl->TableNames[id])
+                  % txn.esc(where)
+                  % txn.quote(value)).str());
+
+        txn.commit();
 
         return true;
+    } catch (const pqxx::sql_error &ex) {
+        LOG_ERROR(ex.what(), ex.query());
     } catch (const std::exception &ex) {
         LOG_ERROR(ex.what());
     } catch (...) {
@@ -459,9 +490,9 @@ bool Database::SetTableFields(const std::string &id, const std::string &fields)
 
 bool Database::Initialize()
 {
-    try {
-        transaction guard(m_pimpl->Sql);
+    LOG_INFO("Initializing CoreLib::Database...");
 
+    try {
         for (const auto &e : m_pimpl->EnumNames) {
             CreateEnum(e.first);
         }
@@ -470,9 +501,11 @@ bool Database::Initialize()
             CreateTable(t.first);
         }
 
-        guard.commit();
+        LOG_INFO("CoreLib::Crypto initialized successfully!");
 
         return true;
+    } catch (const pqxx::sql_error &ex) {
+        LOG_ERROR(ex.what(), ex.query());
     } catch (const std::exception &ex) {
         LOG_ERROR(ex.what());
     } catch (...) {

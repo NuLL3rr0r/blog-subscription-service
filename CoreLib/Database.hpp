@@ -29,7 +29,8 @@
  *
  * @section DESCRIPTION
  *
- * Database object with support for PostgreSQL, MariaDB / MySQL and SQLite3.
+ * Database accessibility wrapper on top of libpqxx and libpq with support
+ * for PostgreSQL.
  */
 
 
@@ -37,10 +38,10 @@
 #define CORELIB_DATABASE_HPP
 
 
-#include <initializer_list>
 #include <memory>
 #include <string>
-#include <cppdb/frontend.h>
+#include <pqxx/connection>
+#include "SharedObjectPool.hpp"
 
 namespace CoreLib {
 class Database;
@@ -53,31 +54,9 @@ private:
     std::unique_ptr<Impl> m_pimpl;
 
 public:
-#if defined ( CORELIB_STATIC )
-#if defined ( HAS_CPPDB_SQLITE3_DRIVER )
-    static bool IsSqlite3DriverLoaded();
-#endif  // defined ( HAS_CPPDB_SQLITE3_DRIVER )
-#if defined ( HAS_CPPDB_PGSQL_DRIVER )
-    static bool IsPgSqlDriverLoaded();
-#endif  // defined ( HAS_CPPDB_PGSQL_DRIVER )
-#if defined ( HAS_CPPDB_MYSQL_DRIVER )
-    static bool IsMySqlDriverLoaded();
-#endif  // defined ( HAS_CPPDB_MYSQL_DRIVER )
-
-#if defined ( HAS_CPPDB_SQLITE3_DRIVER )
-    static void LoadSqlite3Driver();
-#endif  // defined ( HAS_CPPDB_SQLITE3_DRIVER )
-#if defined ( HAS_CPPDB_PGSQL_DRIVER )
-    static void LoadPgSqlDriver();
-#endif  // defined ( HAS_CPPDB_PGSQL_DRIVER )
-#if defined ( HAS_CPPDB_MYSQL_DRIVER )
-    static void LoadMySqlDriver();
-#endif  // defined ( HAS_CPPDB_MYSQL_DRIVER )
-#endif  // defined ( CORELIB_STATIC )
-
-#if defined ( HAS_SQLITE3 )
-    static bool Sqlite3Vacuum(const std::string &databaseFile);
-#endif  // defined ( HAS_SQLITE3 )
+    static std::string Escape(const char *begin, const char *end);
+    static std::string Escape(const char *str);
+    static std::string Escape(const std::string &str);
 
     static bool IsTrue(const std::string &value);
 
@@ -85,7 +64,7 @@ public:
     explicit Database(const std::string &connectionString);
     virtual ~Database();
 
-    cppdb::session &Sql();
+    SharedObjectPool<pqxx::connection>::ptrType Connection();
 
     bool CreateEnum(const std::string &id);
 
