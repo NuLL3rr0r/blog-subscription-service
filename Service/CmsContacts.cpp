@@ -36,7 +36,7 @@
 #include <boost/algorithm/string.hpp>
 #include <boost/exception/diagnostic_information.hpp>
 #include <boost/format.hpp>
-#include <cppdb/frontend.h>
+#include <pqxx/pqxx>
 #include <Wt/WApplication>
 #include <Wt/WCheckBox>
 #include <Wt/WInPlaceEdit>
@@ -65,7 +65,7 @@
 using namespace std;
 using namespace boost;
 using namespace Wt;
-using namespace cppdb;
+using namespace pqxx;
 using namespace CoreLib;
 using namespace Service;
 
@@ -126,7 +126,8 @@ WWidget *CmsContacts::Layout()
 
         string htmlData;
         string file;
-        if (cgiEnv->GetCurrentLanguage() == CgiEnv::Language::Fa) {
+        if (cgiEnv->GetInformation().Client.Language.Code
+                == CgiEnv::InformationRecord::ClientRecord::LanguageCode::Fa) {
             file = "../templates/cms-contacts-fa.wtml";
         } else {
             file = "../templates/cms-contacts.wtml";
@@ -139,21 +140,21 @@ WWidget *CmsContacts::Layout()
 
             m_pimpl->RecipientEnLineEdit = new WLineEdit();
             m_pimpl->RecipientEnLineEdit->setPlaceholderText(tr("cms-contacts-recipient-name-en-placeholder"));
-            WLengthValidator *recipientEnValidator = new WLengthValidator(Pool::Storage()->MinEmailRecipientNameLength(),
-                                                                          Pool::Storage()->MaxEmailRecipientNameLength());
+            WLengthValidator *recipientEnValidator = new WLengthValidator(Pool::Storage().MinEmailRecipientNameLength(),
+                                                                          Pool::Storage().MaxEmailRecipientNameLength());
             recipientEnValidator->setMandatory(true);
             m_pimpl->RecipientEnLineEdit->setValidator(recipientEnValidator);
 
             m_pimpl->RecipientFaLineEdit = new WLineEdit();
             m_pimpl->RecipientFaLineEdit->setPlaceholderText(tr("cms-contacts-recipient-name-fa-placeholder"));
-            WLengthValidator *recipientFaValidator = new WLengthValidator(Pool::Storage()->MinEmailRecipientNameLength(),
-                                                                          Pool::Storage()->MaxEmailRecipientNameLength());
+            WLengthValidator *recipientFaValidator = new WLengthValidator(Pool::Storage().MinEmailRecipientNameLength(),
+                                                                          Pool::Storage().MaxEmailRecipientNameLength());
             recipientFaValidator->setMandatory(true);
             m_pimpl->RecipientFaLineEdit->setValidator(recipientFaValidator);
 
             m_pimpl->EmailLineEdit = new WLineEdit();
             m_pimpl->EmailLineEdit->setPlaceholderText(tr("cms-contacts-email-address-placeholder"));
-            WRegExpValidator *emailValidator = new WRegExpValidator(Pool::Storage()->RegexEmail());
+            WRegExpValidator *emailValidator = new WRegExpValidator(Pool::Storage().RegexEmail());
             emailValidator->setMandatory(true);
             m_pimpl->EmailLineEdit->setValidator(emailValidator);
 
@@ -233,20 +234,25 @@ void CmsContacts::Impl::OnAddContactFormSubmitted()
 
     m_parent->HtmlInfo(L"", EditContactsMessageArea);
 
-    transaction guard(Service::Pool::Database()->Sql());
+    CgiRoot *cgiRoot = static_cast<CgiRoot *>(WApplication::instance());
+    CgiEnv *cgiEnv = cgiRoot->GetCgiEnvInstance();
 
     try {
         string recipient(RecipientEnLineEdit->text().trim().toUTF8());
 
-        result r = Pool::Database()->Sql()
-                << (format("SELECT recipient FROM \"%1%\""
-                           " WHERE recipient=?;")
-                    % Pool::Database()->GetTableName("CONTACTS")).str()
-                << recipient
-                << row;
+        auto conn = Pool::Database().Connection();
+        conn->activate();
+        pqxx::work txn(*conn.get());
+
+        string query((format("SELECT recipient FROM \"%1%\""
+                             " WHERE recipient = %2%;")
+                      % Pool::Database().GetTableName("CONTACTS")
+                      % txn.quote(recipient)).str());
+        LOG_INFO("Running query...", query, cgiEnv->GetInformation().ToJson());
+
+        result r = txn.exec(query);
 
         if (!r.empty()) {
-            guard.rollback();
             m_parent->HtmlError(tr("cms-contacts-duplicate-error"), EditContactsMessageArea);
             RecipientEnLineEdit->setFocus();
             return;
@@ -256,19 +262,17 @@ void CmsContacts::Impl::OnAddContactFormSubmitted()
         string email(EmailLineEdit->text().trim().toUTF8());
 
         if (IsDefaultRecipientCheckBox->isChecked()) {
-            Pool::Database()->Update("CONTACTS",
+            Pool::Database().Update("CONTACTS",
                                      "1",
                                      "1",
                                      "is_default=?",
                                      { "FALSE" });
         }
 
-        Pool::Database()->Insert("CONTACTS",
+        Pool::Database().Insert("CONTACTS",
                                  "recipient, recipient_fa, address, is_default",
                                  { recipient, recipient_fa, email,
                                    lexical_cast<string>(IsDefaultRecipientCheckBox->isChecked()) });
-
-        guard.commit();
 
         RecipientEnLineEdit->setText("");
         RecipientFaLineEdit->setText("");
@@ -276,23 +280,23 @@ void CmsContacts::Impl::OnAddContactFormSubmitted()
         RecipientEnLineEdit->setFocus();
 
         FillContactsDataTable();
+    }
 
-        return;
+    catch (const pqxx::sql_error &ex) {
+        LOG_ERROR(ex.what(), ex.query(), cgiEnv->GetInformation().ToJson());
     }
 
     catch (const boost::exception &ex) {
-        LOG_ERROR(boost::diagnostic_information(ex));
+        LOG_ERROR(boost::diagnostic_information(ex), cgiEnv->GetInformation().ToJson());
     }
 
     catch (const std::exception &ex) {
-        LOG_ERROR(ex.what());
+        LOG_ERROR(ex.what(), cgiEnv->GetInformation().ToJson());
     }
 
     catch (...) {
-        LOG_ERROR(UNKNOWN_ERROR);
+        LOG_ERROR(UNKNOWN_ERROR, cgiEnv->GetInformation().ToJson());
     }
-
-    guard.rollback();
 }
 
 void CmsContacts::Impl::OnCellSaveButtonPressed(Wt::WInPlaceEdit *inPlaceEdit)
@@ -302,20 +306,25 @@ void CmsContacts::Impl::OnCellSaveButtonPressed(Wt::WInPlaceEdit *inPlaceEdit)
         return;
     }
 
-    transaction guard(Service::Pool::Database()->Sql());
+    CgiRoot *cgiRoot = static_cast<CgiRoot *>(WApplication::instance());
+    CgiEnv *cgiEnv = cgiRoot->GetCgiEnvInstance();
 
     try {
         string recipient(inPlaceEdit->attributeValue("db-key").toUTF8());
 
-        result r = Pool::Database()->Sql()
-                << (format("SELECT recipient FROM \"%1%\""
-                           " WHERE recipient=?;")
-                    % Pool::Database()->GetTableName("CONTACTS")).str()
-                << recipient
-                << row;
+        auto conn = Pool::Database().Connection();
+        conn->activate();
+        pqxx::work txn(*conn.get());
+
+        string query((format("SELECT recipient FROM \"%1%\""
+                             " WHERE recipient = %2%;")
+                      % Pool::Database().GetTableName("CONTACTS")
+                      % txn.quote(recipient)).str());
+        LOG_INFO("Running query...", query, cgiEnv->GetInformation().ToJson());
+
+        result r = txn.exec(query);
 
         if (r.empty()) {
-            guard.rollback();
             m_parent->HtmlError(tr("cms-contacts-not-found-error"), EditContactsMessageArea);
             return;
         }
@@ -324,15 +333,15 @@ void CmsContacts::Impl::OnCellSaveButtonPressed(Wt::WInPlaceEdit *inPlaceEdit)
         string value(inPlaceEdit->text().trim().toUTF8());
 
         if (field == "recipient" && recipient != value) {
-            r = Pool::Database()->Sql()
-                            << (format("SELECT recipient FROM \"%1%\""
-                                       " WHERE recipient=?;")
-                                % Pool::Database()->GetTableName("CONTACTS")).str()
-                            << value
-                            << row;
+            query.assign((format("SELECT recipient FROM \"%1%\""
+                                 " WHERE recipient = %2%;")
+                          % Pool::Database().GetTableName("CONTACTS")
+                          % txn.quote(value)).str());
+            LOG_INFO("Running query...", query, cgiEnv->GetInformation().ToJson());
+
+            r = txn.exec(query);
 
             if (!r.empty()) {
-                guard.rollback();
                 m_parent->HtmlError(tr("cms-contacts-duplicate-error"), EditContactsMessageArea);
                 FillContactsDataTable();
                 return;
@@ -340,19 +349,19 @@ void CmsContacts::Impl::OnCellSaveButtonPressed(Wt::WInPlaceEdit *inPlaceEdit)
         }
 
         if (field == "recipient_fa") {
-            r = Pool::Database()->Sql()
-                            << (format("SELECT recipient FROM \"%1%\""
-                                       " WHERE recipient_fa=?;")
-                                % Pool::Database()->GetTableName("CONTACTS")).str()
-                            << value
-                            << row;
+            query.assign((format("SELECT recipient FROM \"%1%\""
+                                 " WHERE recipient_fa = %2%;")
+                          % Pool::Database().GetTableName("CONTACTS")
+                          % txn.quote(value)).str());
+            LOG_INFO("Running query...", query, cgiEnv->GetInformation().ToJson());
+
+            r = txn.exec(query);
 
             if (!r.empty()) {
-                string recipient_key;
-                r >> recipient_key;
+                const result::tuple row(r[0]);
+                const string recipientKey(row["recipient"].c_str());
 
-                if (recipient != recipient_key) {
-                    guard.rollback();
+                if (recipient != recipientKey) {
                     m_parent->HtmlError(tr("cms-contacts-duplicate-error"), EditContactsMessageArea);
                     FillContactsDataTable();
                     return;
@@ -360,106 +369,118 @@ void CmsContacts::Impl::OnCellSaveButtonPressed(Wt::WInPlaceEdit *inPlaceEdit)
             }
         }
 
-        Pool::Database()->Update("CONTACTS",
+        Pool::Database().Update("CONTACTS",
                                  "recipient",
                                  recipient,
                                  (format("%1%=?") % field ).str(),
                                  { value });
 
-        guard.commit();
-
         m_parent->HtmlInfo(L"", EditContactsMessageArea);
 
         FillContactsDataTable();
+    }
 
-        return;
+    catch (const pqxx::sql_error &ex) {
+        LOG_ERROR(ex.what(), ex.query(), cgiEnv->GetInformation().ToJson());
     }
 
     catch (const boost::exception &ex) {
-        LOG_ERROR(boost::diagnostic_information(ex));
+        LOG_ERROR(boost::diagnostic_information(ex), cgiEnv->GetInformation().ToJson());
     }
 
     catch (const std::exception &ex) {
-        LOG_ERROR(ex.what());
+        LOG_ERROR(ex.what(), cgiEnv->GetInformation().ToJson());
     }
 
     catch (...) {
-        LOG_ERROR(UNKNOWN_ERROR);
+        LOG_ERROR(UNKNOWN_ERROR, cgiEnv->GetInformation().ToJson());
     }
-
-    guard.rollback();
 }
 
 void CmsContacts::Impl::OnSetDefaultCheckBoxStateChanged(Wt::WCheckBox *checkbox)
 {
+    CgiRoot *cgiRoot = static_cast<CgiRoot *>(WApplication::instance());
+    CgiEnv *cgiEnv = cgiRoot->GetCgiEnvInstance();
+
     try {
         string recipient(checkbox->attributeValue("db-key").toUTF8());
 
-        transaction guard(Service::Pool::Database()->Sql());
+        auto conn = Pool::Database().Connection();
+        conn->activate();
+        pqxx::work txn(*conn.get());
 
-        result r = Pool::Database()->Sql()
-                << (format("SELECT recipient FROM \"%1%\""
-                           " WHERE recipient=?;")
-                    % Pool::Database()->GetTableName("CONTACTS")).str()
-                << recipient
-                << row;
+        string query((format("SELECT recipient FROM \"%1%\""
+                             " WHERE recipient = %2%;")
+                      % Pool::Database().GetTableName("CONTACTS")
+                      % txn.quote(recipient)).str());
+        LOG_INFO("Running query...", query, cgiEnv->GetInformation().ToJson());
+
+        result r = txn.exec(query);
 
         if (!r.empty()) {
             if (checkbox->isChecked()) {
-                Pool::Database()->Update("CONTACTS",
+                Pool::Database().Update("CONTACTS",
                                          "1",
                                          "1",
                                          "is_default=?",
                                          { "FALSE" });
             }
 
-            Pool::Database()->Update("CONTACTS",
+            Pool::Database().Update("CONTACTS",
                                      "recipient",
                                      recipient,
                                      "is_default=?",
                                      { boost::lexical_cast<string>(checkbox->isChecked()) });
-            guard.commit();
-        } else {
-            guard.rollback();
         }
 
         FillContactsDataTable();
     }
 
+    catch (const pqxx::sql_error &ex) {
+        LOG_ERROR(ex.what(), ex.query(), cgiEnv->GetInformation().ToJson());
+    }
+
     catch (const boost::exception &ex) {
-        LOG_ERROR(boost::diagnostic_information(ex));
+        LOG_ERROR(boost::diagnostic_information(ex), cgiEnv->GetInformation().ToJson());
     }
 
     catch (const std::exception &ex) {
-        LOG_ERROR(ex.what());
+        LOG_ERROR(ex.what(), cgiEnv->GetInformation().ToJson());
     }
 
     catch (...) {
-        LOG_ERROR(UNKNOWN_ERROR);
+        LOG_ERROR(UNKNOWN_ERROR, cgiEnv->GetInformation().ToJson());
     }
 }
 
 void CmsContacts::Impl::OnEraseButtonPressed(Wt::WPushButton *button)
 {
+    CgiRoot *cgiRoot = static_cast<CgiRoot *>(WApplication::instance());
+    CgiEnv *cgiEnv = cgiRoot->GetCgiEnvInstance();
+
     try {
         WString dbKey(button->attributeValue("db-key"));
 
-        CgiRoot *cgiRoot = static_cast<CgiRoot *>(WApplication::instance());
-        CgiEnv *cgiEnv = cgiRoot->GetCgiEnvInstance();
-
         WString question;
-        if (cgiEnv->GetCurrentLanguage() == CgiEnv::Language::Fa) {
-            transaction guard(Service::Pool::Database()->Sql());
-            result r = Pool::Database()->Sql()
-                    << (format("SELECT recipient_fa FROM \"%1%\""
-                               " WHERE recipient=?;")
-                        % Pool::Database()->GetTableName("CONTACTS")).str()
-                    << dbKey.toUTF8()
-                    << row;
-            string recipient_fa;
-            r >> recipient_fa;
-            question = tr("cms-contacts-erase-confirm-question").arg(WString::fromUTF8(recipient_fa));
-            guard.rollback();
+        if (cgiEnv->GetInformation().Client.Language.Code
+                == CgiEnv::InformationRecord::ClientRecord::LanguageCode::Fa) {
+            auto conn = Pool::Database().Connection();
+            conn->activate();
+            pqxx::work txn(*conn.get());
+
+            string query((format("SELECT recipient_fa FROM \"%1%\""
+                                 " WHERE recipient = %2%;")
+                          % Pool::Database().GetTableName("CONTACTS")
+                          % txn.quote(dbKey.toUTF8())).str());
+            LOG_INFO("Running query...", query, cgiEnv->GetInformation().ToJson());
+
+            result r = txn.exec(query);
+
+            if (!r.empty()) {
+                const result::tuple row(r[0]);
+                const string recipient_fa(row["recipient_fa"].c_str());
+                question = tr("cms-contacts-erase-confirm-question").arg(WString::fromUTF8(recipient_fa));
+            }
         } else {
             question = tr("cms-contacts-erase-confirm-question").arg(dbKey);
         }
@@ -476,60 +497,65 @@ void CmsContacts::Impl::OnEraseButtonPressed(Wt::WPushButton *button)
         EraseMessageBox->show();
     }
 
+    catch (const pqxx::sql_error &ex) {
+        LOG_ERROR(ex.what(), ex.query(), cgiEnv->GetInformation().ToJson());
+    }
+
     catch (const boost::exception &ex) {
-        LOG_ERROR(boost::diagnostic_information(ex));
+        LOG_ERROR(boost::diagnostic_information(ex), cgiEnv->GetInformation().ToJson());
     }
 
     catch (const std::exception &ex) {
-        LOG_ERROR(ex.what());
+        LOG_ERROR(ex.what(), cgiEnv->GetInformation().ToJson());
     }
 
     catch (...) {
-        LOG_ERROR(UNKNOWN_ERROR);
+        LOG_ERROR(UNKNOWN_ERROR, cgiEnv->GetInformation().ToJson());
     }
 }
 
 void CmsContacts::Impl::OnEraseDialogClosed(Wt::StandardButton button)
 {
-    transaction guard(Service::Pool::Database()->Sql());
+    CgiRoot *cgiRoot = static_cast<CgiRoot *>(WApplication::instance());
+    CgiEnv *cgiEnv = cgiRoot->GetCgiEnvInstance();
 
     try {
         if (button == Ok) {
             string recipient(EraseMessageBox->attributeValue("db-key").toUTF8());
 
-            result r = Pool::Database()->Sql()
-                    << (format("SELECT recipient FROM \"%1%\""
-                               " WHERE recipient=?;")
-                        % Pool::Database()->GetTableName("CONTACTS")).str()
-                    << recipient
-                    << row;
+            auto conn = Pool::Database().Connection();
+            conn->activate();
+            pqxx::work txn(*conn.get());
+
+            string query((format("SELECT recipient FROM \"%1%\""
+                                 " WHERE recipient = %2%;")
+                          % Pool::Database().GetTableName("CONTACTS")
+                          % txn.quote(recipient)).str());
+            LOG_INFO("Running query...", query, cgiEnv->GetInformation().ToJson());
+
+            result r = txn.exec(query);
 
             if (!r.empty()) {
-                Pool::Database()->Delete("CONTACTS", "recipient", recipient);
-                guard.commit();
-            } else {
-                guard.rollback();
+                Pool::Database().Delete("CONTACTS", "recipient", recipient);
             }
-
             FillContactsDataTable();
-        } else {
-            guard.rollback();
         }
     }
 
+    catch (const pqxx::sql_error &ex) {
+        LOG_ERROR(ex.what(), ex.query(), cgiEnv->GetInformation().ToJson());
+    }
+
     catch (const boost::exception &ex) {
-        guard.rollback();
-        LOG_ERROR(boost::diagnostic_information(ex));
+        LOG_ERROR(boost::diagnostic_information(ex), cgiEnv->GetInformation().ToJson());
     }
 
     catch (const std::exception &ex) {
-        guard.rollback();
-        LOG_ERROR(ex.what());
+        LOG_ERROR(ex.what(), cgiEnv->GetInformation().ToJson());
     }
 
     catch (...) {
-        guard.rollback();
-        LOG_ERROR(UNKNOWN_ERROR);
+        LOG_ERROR(UNKNOWN_ERROR, cgiEnv->GetInformation().ToJson());
     }
 
     EraseMessageBox.reset();
@@ -549,23 +575,29 @@ void CmsContacts::Impl::FillContactsDataTable()
     table->elementAt(0, 3)->addWidget(new WText(tr("cms-contacts-is-default-recipient")));
     table->elementAt(0, 4)->addWidget(new WText(tr("cms-contacts-erase")));
 
-    transaction guard(Service::Pool::Database()->Sql());
+    CgiRoot *cgiRoot = static_cast<CgiRoot *>(WApplication::instance());
+    CgiEnv *cgiEnv = cgiRoot->GetCgiEnvInstance();
 
     try {
-        result r = Pool::Database()->Sql()
-                << (format("SELECT recipient, recipient_fa, address, is_default"
-                           " FROM \"%1%\" ORDER BY recipient COLLATE \"en_US.UTF-8\" ASC;")
-                    % Pool::Database()->GetTableName("CONTACTS")).str();
+        auto conn = Pool::Database().Connection();
+        conn->activate();
+        pqxx::work txn(*conn.get());
+
+        string query((format("SELECT recipient, recipient_fa, address, is_default"
+                             " FROM \"%1%\" ORDER BY recipient COLLATE \"en_US.UTF-8\" ASC;")
+                      % Pool::Database().GetTableName("CONTACTS")).str());
+        LOG_INFO("Running query...", query, cgiEnv->GetInformation().ToJson());
+
+        result r = txn.exec(query);
 
         int i = 0;
-        while(r.next()) {
+        for (const auto & row : r) {
             ++i;
-            string recipient;
-            string recipient_fa;
-            string address;
-            string is_default;
 
-            r >> recipient >> recipient_fa >> address >> is_default;
+            string recipient(row["recipient"].c_str());
+            string recipient_fa(row["recipient_fa"].c_str());
+            string address(row["address"].c_str());
+            string is_default(row["is_default"].c_str());
 
             WSignalMapper<WInPlaceEdit *> *cellSignalMapper = new WSignalMapper<WInPlaceEdit *>(this);
             cellSignalMapper->mapped().connect(this, &CmsContacts::Impl::OnCellSaveButtonPressed);
@@ -600,19 +632,21 @@ void CmsContacts::Impl::FillContactsDataTable()
         }
     }
 
+    catch (const pqxx::sql_error &ex) {
+        LOG_ERROR(ex.what(), ex.query(), cgiEnv->GetInformation().ToJson());
+    }
+
     catch (const boost::exception &ex) {
-        LOG_ERROR(boost::diagnostic_information(ex));
+        LOG_ERROR(boost::diagnostic_information(ex), cgiEnv->GetInformation().ToJson());
     }
 
     catch (const std::exception &ex) {
-        LOG_ERROR(ex.what());
+        LOG_ERROR(ex.what(), cgiEnv->GetInformation().ToJson());
     }
 
     catch (...) {
-        LOG_ERROR(UNKNOWN_ERROR);
+        LOG_ERROR(UNKNOWN_ERROR, cgiEnv->GetInformation().ToJson());
     }
-
-    guard.rollback();
 }
 
 Wt::WInPlaceEdit *CmsContacts::Impl::GetContactsCell(const std::string &cellValue,
@@ -631,12 +665,12 @@ Wt::WInPlaceEdit *CmsContacts::Impl::GetContactsCell(const std::string &cellValu
     signalMapper->mapConnect(edit->valueChanged(), edit);
 
     if (dbField == "recipient" || dbField == "recipient_fa") {
-        WLengthValidator *validator = new WLengthValidator(Pool::Storage()->MinEmailRecipientNameLength(),
-                                                           Pool::Storage()->MaxEmailRecipientNameLength());
+        WLengthValidator *validator = new WLengthValidator(Pool::Storage().MinEmailRecipientNameLength(),
+                                                           Pool::Storage().MaxEmailRecipientNameLength());
         validator->setMandatory(true);
         edit->lineEdit()->setValidator(validator);
     } else {
-        WRegExpValidator *validator = new WRegExpValidator(Pool::Storage()->RegexEmail());
+        WRegExpValidator *validator = new WRegExpValidator(Pool::Storage().RegexEmail());
         validator->setFlags(MatchCaseInsensitive);
         validator->setMandatory(true);
         edit->lineEdit()->setValidator(validator);
