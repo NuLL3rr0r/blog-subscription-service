@@ -103,7 +103,8 @@ WWidget *CmsChangeEmail::Layout()
     try {
         string htmlData;
         string file;
-        if (cgiEnv->GetCurrentLanguage() == CgiEnv::Language::Fa) {
+        if (cgiEnv->GetInformation().Client.Language.Code
+                == CgiEnv::InformationRecord::ClientRecord::LanguageCode::Fa) {
             file = "../templates/cms-change-email-fa.wtml";
         } else {
 
