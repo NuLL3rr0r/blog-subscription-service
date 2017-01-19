@@ -37,7 +37,7 @@
 #include <boost/algorithm/string.hpp>
 #include <boost/exception/diagnostic_information.hpp>
 #include <boost/format.hpp>
-#include <cppdb/frontend.h>
+#include <pqxx/pqxx>
 #include <Wt/WApplication>
 #include <Wt/WComboBox>
 #include <Wt/WLengthValidator>
@@ -64,7 +64,7 @@
 
 using namespace std;
 using namespace boost;
-using namespace cppdb;
+using namespace pqxx;
 using namespace Wt;
 using namespace Service;
 
@@ -122,7 +122,8 @@ WWidget *CmsNewsletter::Layout()
 
         string htmlData;
         string file;
-        if (cgiEnv->GetCurrentLanguage() == CgiEnv::Language::Fa) {
+        if (cgiEnv->GetInformation().Client.Language.Code
+                == CgiEnv::InformationRecord::ClientRecord::LanguageCode::Fa) {
             file = "../templates/cms-newsletter-fa.wtml";
         } else {
             file = "../templates/cms-newsletter.wtml";
@@ -142,8 +143,8 @@ WWidget *CmsNewsletter::Layout()
 
             m_pimpl->SubjectLineEdit = new WLineEdit();
             m_pimpl->SubjectLineEdit->setPlaceholderText(tr("cms-newsletter-subject-placeholder"));
-            WLengthValidator *subjectValidator = new WLengthValidator(Pool::Storage()->MinEmailSubjectLength(),
-                                                                      Pool::Storage()->MaxEmailSubjectLength_RFC());
+            WLengthValidator *subjectValidator = new WLengthValidator(Pool::Storage().MinEmailSubjectLength(),
+                                                                      Pool::Storage().MaxEmailSubjectLength_RFC());
             subjectValidator->setMandatory(true);
             m_pimpl->SubjectLineEdit->setValidator(subjectValidator);
 
@@ -156,13 +157,13 @@ WWidget *CmsNewsletter::Layout()
             /// http://tinymce.moxiecode.com/wiki.php/Configuration
             m_pimpl->BodyTextEdit->setConfigurationSetting("valid_elements", std::string("*[*]"));
 
-            switch (cgiEnv->GetCurrentLanguage()) {
-            case CgiEnv::Language::Fa:
+            switch (cgiEnv->GetInformation().Client.Language.Code) {
+            case CgiEnv::InformationRecord::ClientRecord::LanguageCode::Fa:
                 m_pimpl->BodyTextEdit->setConfigurationSetting("language", string("fa_IR"));
                 break;
-            case CgiEnv::Language::En:
-            case CgiEnv::Language::Invalid:
-            case CgiEnv::Language::None:
+            case CgiEnv::InformationRecord::ClientRecord::LanguageCode::En:
+            case CgiEnv::InformationRecord::ClientRecord::LanguageCode::Invalid:
+            case CgiEnv::InformationRecord::ClientRecord::LanguageCode::None:
                 break;
             }
 
@@ -312,10 +313,10 @@ void CmsNewsletter::Impl::OnSendConfirmDialogClosed(Wt::StandardButton button)
             return;
         }
 
-        try {
-            CgiRoot *cgiRoot = static_cast<CgiRoot *>(WApplication::instance());
-            CgiEnv *cgiEnv = cgiRoot->GetCgiEnvInstance();
+        CgiRoot *cgiRoot = static_cast<CgiRoot *>(WApplication::instance());
+        CgiEnv *cgiEnv = cgiRoot->GetCgiEnvInstance();
 
+        try {
             string htmlData;
             string file;
             if (recipients == tr("cms-newsletter-all-recipients")) {
@@ -346,49 +347,53 @@ void CmsNewsletter::Impl::OnSendConfirmDialogClosed(Wt::StandardButton button)
                     return;
                 }
 
-                result r = Pool::Database()->Sql()
-                        << (format("SELECT %1%"
-                                   " FROM \"%2%\" WHERE pseudo_id = '0';")
-                            % homePageFields
-                            % Pool::Database()->GetTableName("SETTINGS")).str()
-                        << row;
+                auto conn = Pool::Database().Connection();
+                conn->activate();
+                pqxx::work txn(*conn.get());
+
+                string query((format("SELECT %1% FROM \"%2%\""
+                                     " WHERE pseudo_id = '0';")
+                              % homePageFields
+                              % Pool::Database().GetTableName("SETTINGS")).str());
+                LOG_INFO("Running query...", query, cgiEnv->GetInformation().ToJson());
+
+                result r = txn.exec(query);
 
                 string homePageUrl;
                 string homePageTitle;
                 if (!r.empty()) {
-                    r >> homePageUrl >> homePageTitle;
+                    const result::tuple row(r[0]);
+                    homePageUrl.assign(row[0].c_str());
+                    homePageTitle.assign(row[1].c_str());
                 }
 
                 replace_all(htmlData, "${home-page-url}", homePageUrl);
                 replace_all(htmlData, "${home-page-title}", homePageTitle);
 
-                string unsubscribeLink(cgiEnv->GetServerInfo(CgiEnv::ServerInfo::URL));
+                string unsubscribeLink(cgiEnv->GetInformation().Server.Url);
                 if (!ends_with(unsubscribeLink, "/"))
                     unsubscribeLink += "/";
 
                 if (recipients == tr("cms-newsletter-all-recipients")) {
                     unsubscribeLink += "?subscribe=-1&recipient=${uuid}&subscription=en,fa";
 
-                    r = Pool::Database()->Sql()
-                            << (format("SELECT inbox, uuid FROM \"%1%\""
-                                       " WHERE subscription <> 'none';")
-                                % Pool::Database()->GetTableName("SUBSCRIBERS")).str();
+                    query.assign((format("SELECT inbox, uuid FROM \"%1%\""
+                                         " WHERE subscription <> 'none';")
+                                  % Pool::Database().GetTableName("SUBSCRIBERS")).str());
                 } else if (recipients == tr("cms-newsletter-english-recipients")) {
                     unsubscribeLink += "?lang=${lang}&subscribe=-1&recipient=${uuid}&subscription=en";
 
-                    r = Pool::Database()->Sql()
-                            << (format("SELECT inbox, uuid FROM \"%1%\""
-                                       " WHERE subscription = 'en_fa' OR subscription = 'en';")
-                                % Pool::Database()->GetTableName("SUBSCRIBERS")).str();
+                    query.assign((format("SELECT inbox, uuid FROM \"%1%\""
+                                         " WHERE subscription = 'en_fa' OR subscription = 'en';")
+                                  % Pool::Database().GetTableName("SUBSCRIBERS")).str());
                 } else if (recipients == tr("cms-newsletter-farsi-recipients")) {
                     unsubscribeLink += "?lang=${lang}&subscribe=-1&recipient=${uuid}&subscription=fa";
 
-                    r = Pool::Database()->Sql()
-                            << (format("SELECT inbox, uuid FROM \"%1%\""
-                                       " WHERE subscription = 'en_fa' OR subscription = 'fa';")
-                                % Pool::Database()->GetTableName("SUBSCRIBERS")).str();
+                    query.assign((format("SELECT inbox, uuid FROM \"%1%\""
+                                         " WHERE subscription = 'en_fa' OR subscription = 'fa';")
+                                  % Pool::Database().GetTableName("SUBSCRIBERS")).str());
                 } else {
-                    LOG_DEBUG("Ops");
+                    LOG_DEBUG("Ops!");
                     return;
                 }
 
@@ -399,15 +404,20 @@ void CmsNewsletter::Impl::OnSendConfirmDialogClosed(Wt::StandardButton button)
                 string inbox;
                 string uuid;
 
-                while(r.next()) {
-                    r >> inbox >> uuid;
+                LOG_INFO("Running query...", query, cgiEnv->GetInformation().ToJson());
+
+                r = txn.exec(query);
+
+                for (const auto & row : r) {
+                    inbox.assign(row["inbox"].c_str());
+                    uuid.assign(row["uuid"].c_str());
 
                     message.assign(htmlData);
                     replace_all(message, "${unsubscribe-link-en}", replace_all_copy(enUnsubscribeLink, "${uuid}", uuid));
                     replace_all(message, "${unsubscribe-link-fa}", replace_all_copy(faUnsubscribeLink, "${uuid}", uuid));
 
                     CoreLib::Mail *mail = new CoreLib::Mail(
-                                cgiEnv->GetServerInfo(CgiEnv::ServerInfo::NoReplyAddr), inbox,
+                                cgiEnv->GetInformation().Server.NoReplyAddress, inbox,
                                 subject, message);
                     mail->SetDeleteLater(true);
                     mail->SendAsync();
@@ -418,8 +428,8 @@ void CmsNewsletter::Impl::OnSendConfirmDialogClosed(Wt::StandardButton button)
                 replace_all(message, "${unsubscribe-link-fa}", "javascript:;");
 
                 CoreLib::Mail *mail = new CoreLib::Mail(
-                            cgiEnv->GetServerInfo(CgiEnv::ServerInfo::NoReplyAddr),
-                            cgiEnv->SignedInUser.Email,
+                            cgiEnv->GetInformation().Server.NoReplyAddress,
+                            cgiEnv->GetInformation().Client.Session.Email,
                             subject, message);
                 mail->SetDeleteLater(true);
                 mail->SendAsync();
@@ -439,16 +449,20 @@ void CmsNewsletter::Impl::OnSendConfirmDialogClosed(Wt::StandardButton button)
             }
         }
 
+        catch (const pqxx::sql_error &ex) {
+            LOG_ERROR(ex.what(), ex.query(), cgiEnv->GetInformation().ToJson());
+        }
+
         catch (const boost::exception &ex) {
-            LOG_ERROR(boost::diagnostic_information(ex));
+            LOG_ERROR(boost::diagnostic_information(ex), cgiEnv->GetInformation().ToJson());
         }
 
         catch (const std::exception &ex) {
-            LOG_ERROR(ex.what());
+            LOG_ERROR(ex.what(), cgiEnv->GetInformation().ToJson());
         }
 
         catch (...) {
-            LOG_ERROR(UNKNOWN_ERROR);
+            LOG_ERROR(UNKNOWN_ERROR, cgiEnv->GetInformation().ToJson());
         }
     }
 
@@ -494,7 +508,8 @@ void CmsNewsletter::Impl::ResetTheForm()
     RecipientsComboBox->setCurrentIndex(0);
     SubjectLineEdit->setText("");
 
-    if (cgiEnv->GetCurrentLanguage() == CgiEnv::Language::Fa) {
+    if (cgiEnv->GetInformation().Client.Language.Code
+            == CgiEnv::InformationRecord::ClientRecord::LanguageCode::Fa) {
         BodyTextEdit->setText("<div style=\"direction: rtl;\"></div>");
     } else {
         BodyTextEdit->setText("<div style=\"direction: ltr;\"></div>");
