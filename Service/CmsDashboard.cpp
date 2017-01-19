@@ -99,7 +99,9 @@ WWidget *CmsDashboard::Layout()
         string htmlData;
         string file;
         if (cgiEnv->GetInformation().Client.Language.Code
-                == CgiEnv::InformationRecord::ClientRecord::LanguageCode::En) {
+                == CgiEnv::InformationRecord::ClientRecord::LanguageCode::Fa) {
+            file = "../templates/cms-dashboard-fa.wtml";
+        } else {
             file = "../templates/cms-dashboard.wtml";
         }
 
