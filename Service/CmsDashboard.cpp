@@ -35,6 +35,7 @@
 
 #include <boost/exception/diagnostic_information.hpp>
 #include <boost/format.hpp>
+#include <pqxx/pqxx>
 #include <Wt/WApplication>
 #include <Wt/WMessageBox>
 #include <Wt/WPushButton>
@@ -42,8 +43,9 @@
 #include <Wt/WTemplate>
 #include <Wt/WText>
 #include <Wt/WWidget>
-#include <CoreLib/FileSystem.hpp>
+#include <CoreLib/CDate.hpp>
 #include <CoreLib/Database.hpp>
+#include <CoreLib/FileSystem.hpp>
 #include <CoreLib/Log.hpp>
 #include "CgiEnv.hpp"
 #include "CgiRoot.hpp"
@@ -53,9 +55,10 @@
 
 using namespace std;
 using namespace boost;
-using namespace cppdb;
+using namespace pqxx;
 using namespace Wt;
 using namespace CoreLib;
+using namespace CoreLib::CDate;
 using namespace Service;
 
 struct CmsDashboard::Impl : public Wt::WObject
@@ -89,15 +92,14 @@ WWidget *CmsDashboard::Layout()
 {
     Div *container = new Div("CmsDashboard", "container-fluid");
 
-    try {
-        CgiRoot *cgiRoot = static_cast<CgiRoot *>(WApplication::instance());
-        CgiEnv *cgiEnv = cgiRoot->GetCgiEnvInstance();
+    CgiRoot *cgiRoot = static_cast<CgiRoot *>(WApplication::instance());
+    CgiEnv *cgiEnv = cgiRoot->GetCgiEnvInstance();
 
+    try {
         string htmlData;
         string file;
-        if (cgiEnv->GetCurrentLanguage() == CgiEnv::Language::Fa) {
-            file = "../templates/cms-dashboard-fa.wtml";
-        } else {
+        if (cgiEnv->GetInformation().Client.Language.Code
+                == CgiEnv::InformationRecord::ClientRecord::LanguageCode::En) {
             file = "../templates/cms-dashboard.wtml";
         }
 
@@ -114,18 +116,59 @@ WWidget *CmsDashboard::Layout()
 
             tmpl->bindWidget("last-login-title", new WText(tr("cms-dashboard-last-login-info-title")));
             tmpl->bindWidget("last-login-ip-label", new WText(tr("cms-dashboard-last-login-info-ip")));
-            tmpl->bindWidget("last-login-location-label", new WText(tr("cms-dashboard-last-login-info-location")));
             tmpl->bindWidget("last-login-user-agent-label", new WText(tr("cms-dashboard-last-login-info-user-agent")));
             tmpl->bindWidget("last-login-referer-label", new WText(tr("cms-dashboard-last-login-info-referer")));
             tmpl->bindWidget("last-login-time-label", new WText(tr("cms-dashboard-last-login-info-time")));
+            tmpl->bindWidget("last-login-location-label", new WText(tr("cms-dashboard-last-login-info-location")));
+            tmpl->bindWidget("last-login-location-country-code-label", new WText(tr("cms-dashboard-last-login-info-location-country-code")));
+            tmpl->bindWidget("last-login-location-country-code3-label", new WText(tr("cms-dashboard-last-login-info-location-country-code3")));
+            tmpl->bindWidget("last-login-location-country-name-label", new WText(tr("cms-dashboard-last-login-info-location-country-name")));
+            tmpl->bindWidget("last-login-location-region-label", new WText(tr("cms-dashboard-last-login-info-location-region")));
+            tmpl->bindWidget("last-login-location-city-label", new WText(tr("cms-dashboard-last-login-info-location-city")));
+            tmpl->bindWidget("last-login-location-postal-code-label", new WText(tr("cms-dashboard-last-login-info-location-postal-code")));
+            tmpl->bindWidget("last-login-location-latitude-label", new WText(tr("cms-dashboard-last-login-info-location-latitude")));
+            tmpl->bindWidget("last-login-location-longitude-label", new WText(tr("cms-dashboard-last-login-info-location-longitude")));
+            tmpl->bindWidget("last-login-location-metro-code-label", new WText(tr("cms-dashboard-last-login-info-location-metro-code")));
+            tmpl->bindWidget("last-login-location-dma-code-label", new WText(tr("cms-dashboard-last-login-info-location-dma-code")));
+            tmpl->bindWidget("last-login-location-area-code-label", new WText(tr("cms-dashboard-last-login-info-location-area-code")));
+            tmpl->bindWidget("last-login-location-charset-label", new WText(tr("cms-dashboard-last-login-info-location-charset")));
+            tmpl->bindWidget("last-login-location-continent-code-label", new WText(tr("cms-dashboard-last-login-info-location-continent-code")));
+            tmpl->bindWidget("last-login-location-netmask-label", new WText(tr("cms-dashboard-last-login-info-location-netmask")));
 
-            tmpl->bindWidget("last-login-ip", new WText(WString::fromUTF8(cgiEnv->SignedInUser.LastLogin.IP)));
-            tmpl->bindWidget("last-login-location", new WText(WString::fromUTF8(cgiEnv->SignedInUser.LastLogin.Location)));
-            tmpl->bindWidget("last-login-user-agent", new WText(WString::fromUTF8(cgiEnv->SignedInUser.LastLogin.UserAgent)));
-            tmpl->bindWidget("last-login-referer", new WText(WString::fromUTF8(cgiEnv->SignedInUser.LastLogin.Referer)));
-            tmpl->bindWidget("last-login-time-gdate", new WText(WString::fromUTF8(cgiEnv->SignedInUser.LastLogin.LoginGDate)));
-            tmpl->bindWidget("last-login-time-jdate", new WText(WString::fromUTF8(cgiEnv->SignedInUser.LastLogin.LoginJDate)));
-            tmpl->bindWidget("last-login-time", new WText(WString::fromUTF8(cgiEnv->SignedInUser.LastLogin.LoginTime)));
+            tmpl->bindWidget("last-login-ip", new WText(WString::fromUTF8(cgiEnv->GetInformation().Client.Session.LastLogin.IPAddress)));
+            tmpl->bindWidget("last-login-user-agent", new WText(WString::fromUTF8(cgiEnv->GetInformation().Client.Session.LastLogin.UserAgent)));
+            tmpl->bindWidget("last-login-referer", new WText(WString::fromUTF8(cgiEnv->GetInformation().Client.Session.LastLogin.Referer)));
+            tmpl->bindWidget("last-login-time",new WText(
+                                 WString::fromUTF8(DateConv::DateTimeString(cgiEnv->GetInformation().Client.Session.LastLogin.Time,
+                                                                            CDate::Timezone::UTC))));
+            tmpl->bindWidget("last-login-location-country-code", new WText(
+                                 WString::fromUTF8(cgiEnv->GetInformation().Client.Session.LastLogin.GeoLocation.CountryCode)));
+            tmpl->bindWidget("last-login-location-country-code3", new WText(
+                                 WString::fromUTF8(cgiEnv->GetInformation().Client.Session.LastLogin.GeoLocation.CountryCode3)));
+            tmpl->bindWidget("last-login-location-country-name", new WText(
+                                 WString::fromUTF8(cgiEnv->GetInformation().Client.Session.LastLogin.GeoLocation.CountryName)));
+            tmpl->bindWidget("last-login-location-region", new WText(
+                                 WString::fromUTF8(cgiEnv->GetInformation().Client.Session.LastLogin.GeoLocation.Region)));
+            tmpl->bindWidget("last-login-location-city", new WText(
+                                 WString::fromUTF8(cgiEnv->GetInformation().Client.Session.LastLogin.GeoLocation.City)));
+            tmpl->bindWidget("last-login-location-postal-code", new WText(
+                                 WString::fromUTF8(cgiEnv->GetInformation().Client.Session.LastLogin.GeoLocation.PostalCode)));
+            tmpl->bindWidget("last-login-location-latitude", new WText(
+                                 WString::fromUTF8(lexical_cast<string>(cgiEnv->GetInformation().Client.Session.LastLogin.GeoLocation.Latitude))));
+            tmpl->bindWidget("last-login-location-longitude", new WText(
+                                 WString::fromUTF8(lexical_cast<string>(cgiEnv->GetInformation().Client.Session.LastLogin.GeoLocation.Longitude))));
+            tmpl->bindWidget("last-login-location-metro-code", new WText(
+                                 WString::fromUTF8(lexical_cast<string>(cgiEnv->GetInformation().Client.Session.LastLogin.GeoLocation.MetroCode))));
+            tmpl->bindWidget("last-login-location-dma-code", new WText(
+                                 WString::fromUTF8(lexical_cast<string>(cgiEnv->GetInformation().Client.Session.LastLogin.GeoLocation.DmaCode))));
+            tmpl->bindWidget("last-login-location-area-code", new WText(
+                                 WString::fromUTF8(lexical_cast<string>(cgiEnv->GetInformation().Client.Session.LastLogin.GeoLocation.AreaCode))));
+            tmpl->bindWidget("last-login-location-charset", new WText(
+                                 WString::fromUTF8(lexical_cast<string>(cgiEnv->GetInformation().Client.Session.LastLogin.GeoLocation.Charset))));
+            tmpl->bindWidget("last-login-location-continent-code", new WText(
+                                 WString::fromUTF8(cgiEnv->GetInformation().Client.Session.LastLogin.GeoLocation.ContinentCode)));
+            tmpl->bindWidget("last-login-location-netmask", new WText(
+                                 WString::fromUTF8(lexical_cast<string>(cgiEnv->GetInformation().Client.Session.LastLogin.GeoLocation.Netmask))));
 
             tmpl->bindWidget("force-terminate-all-sessions", forceTerminateAllSessionsPushButton);
 
@@ -134,15 +177,15 @@ WWidget *CmsDashboard::Layout()
     }
 
     catch (const boost::exception &ex) {
-        LOG_ERROR(boost::diagnostic_information(ex));
+        LOG_ERROR(boost::diagnostic_information(ex), cgiEnv->GetInformation().ToJson());
     }
 
     catch (const std::exception &ex) {
-        LOG_ERROR(ex.what());
+        LOG_ERROR(ex.what(), cgiEnv->GetInformation().ToJson());
     }
 
     catch (...) {
-        LOG_ERROR(UNKNOWN_ERROR);
+        LOG_ERROR(UNKNOWN_ERROR, cgiEnv->GetInformation().ToJson());
     }
 
     return container;
@@ -171,18 +214,26 @@ void CmsDashboard::Impl::OnForceTerminateAllSessionsPushButtonPressed()
 
 void CmsDashboard::Impl::OnForceTerminateAllSessionsDialogClosed(Wt::StandardButton button)
 {
+    CgiRoot *cgiRoot = static_cast<CgiRoot *>(WApplication::instance());
+    CgiEnv *cgiEnv = cgiRoot->GetCgiEnvInstance();
+
     try {
         if (button == Ok) {
 
-            transaction guard(Service::Pool::Database()->Sql());
+            auto conn = Pool::Database().Connection();
+            conn->activate();
+            pqxx::work txn(*conn.get());
 
-            Pool::Database()->Sql()
-                        << (format("UPDATE \"%1%\""
-                                   " SET expiry='0';")
-                           % Pool::Database()->GetTableName("ROOT_SESSIONS")).str()
-                        << exec;
+            string query((boost::format("UPDATE ONLY \"%1%\""
+                                        " SET expiry = '19700101'::TIMESTAMPTZ"
+                                        " WHERE user_id = %2% AND expiry > '19700101'::TIMESTAMPTZ;")
+                          % txn.esc(Service::Pool::Database().GetTableName("ROOT_SESSIONS"))
+                          % txn.quote(cgiEnv->GetInformation().Client.Session.UserId)).str());
+            LOG_INFO("Running query...", query, cgiEnv->GetInformation().ToJson());
 
-            guard.commit();
+            txn.exec(query);
+
+            txn.commit();
 
             ForceTerminateAllSessionsMessageBox.reset();
 
@@ -201,16 +252,20 @@ void CmsDashboard::Impl::OnForceTerminateAllSessionsDialogClosed(Wt::StandardBut
         }
     }
 
+    catch (const pqxx::sql_error &ex) {
+        LOG_ERROR(ex.what(), ex.query(), cgiEnv->GetInformation().ToJson());
+    }
+
     catch (const boost::exception &ex) {
-        LOG_ERROR(boost::diagnostic_information(ex));
+        LOG_ERROR(boost::diagnostic_information(ex), cgiEnv->GetInformation().ToJson());
     }
 
     catch (const std::exception &ex) {
-        LOG_ERROR(ex.what());
+        LOG_ERROR(ex.what(), cgiEnv->GetInformation().ToJson());
     }
 
     catch (...) {
-        LOG_ERROR(UNKNOWN_ERROR);
+        LOG_ERROR(UNKNOWN_ERROR, cgiEnv->GetInformation().ToJson());
     }
 
     ForceTerminateAllSessionsMessageBox.reset();
