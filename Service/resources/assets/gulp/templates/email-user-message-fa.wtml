@@ -72,16 +72,6 @@
 
             <tr valign="top">
                 <td>
-                    محل
-                </td>
-                <td width="16"></td>
-                <td>
-                    ${client-location}
-                </td>
-            </tr>
-
-            <tr valign="top">
-                <td>
                     مرورگر
                 </td>
                 <td width="16"></td>
@@ -102,11 +92,134 @@
 
             <tr valign="top">
                 <td>
-                    زمان
+                    زمان (گرینویچ)
                 </td>
                 <td width="16"></td>
                 <td>
                     ${time}
+                </td>
+            </tr>
+
+            <tr valign="top">
+                <td>
+                    محل
+                </td>
+                <td width="16"></td>
+                <td>
+                    <table>
+                        <tr valign="top">
+                            <td>
+                                کد کشور
+                            </td>
+                            <td>
+                                ${client-location-country-code}
+                            </td>
+                        <tr>
+                        <tr valign="top">
+                            <td>
+                                کد کشور ۳ رقمی
+                            </td>
+                            <td>
+                                ${client-location-country-code3}
+                            </td>
+                        <tr>
+                        <tr valign="top">
+                            <td>
+                                کشور
+                            </td>
+                            <td>
+                                ${client-location-country-name}
+                            </td>
+                        <tr>
+                        <tr valign="top">
+                            <td>
+                                منطقه
+                            </td>
+                            <td>
+                                ${client-location-region}
+                            </td>
+                        <tr>
+                        <tr valign="top">
+                            <td>
+                                شهر
+                            </td>
+                            <td>
+                                ${client-location-city}
+                            </td>
+                        <tr>
+                        <tr valign="top">
+                            <td>
+                                کد پستی
+                            </td>
+                            <td>
+                                ${client-location-postal-code}
+                            </td>
+                        <tr>
+                        <tr valign="top">
+                            <td>
+                                عرض جغرافیایی
+                            </td>
+                            <td>
+                                ${client-location-latitude}
+                            </td>
+                        <tr>
+                        <tr valign="top">
+                            <td>
+                                طول جغرافیایی
+                            </td>
+                            <td>
+                                ${client-location-longitude}
+                            </td>
+                        <tr>
+                        <tr valign="top">
+                            <td>
+                                کد مترو
+                            </td>
+                            <td>
+                                ${client-location-metro-code}
+                            </td>
+                        <tr>
+                        <tr valign="top">
+                            <td>
+                                کد DMA
+                            </td>
+                            <td>
+                                ${client-location-dma-code}
+                            </td>
+                        <tr>
+                        <tr valign="top">
+                            <td>
+                                کد منطقه
+                            </td>
+                            <td>
+                                ${client-location-area-code}
+                            </td>
+                        <tr>
+                        <tr valign="top">
+                            <td>
+                                مجموعه کاراکتر
+                            </td>
+                            <td>
+                                ${client-location-charset}
+                            </td>
+                        <tr>
+                        <tr valign="top">
+                            <td>
+                                قاره
+                            </td>
+                            <td>
+                                ${client-location-continent-code}
+                            </td>
+                        <tr>
+                        <tr valign="top">
+                            <td>
+                                پوشش شبکه
+                            </td>
+                            <td>
+                                ${client-location-netmask}
+                            </td>
+                        <tr>
+                    </table>
                 </td>
             </tr>
         </table>
