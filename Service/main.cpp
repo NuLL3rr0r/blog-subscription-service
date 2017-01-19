@@ -334,27 +334,27 @@ void InitializeDatabase()
                                                 " user_agent TEXT, "
                                                 " referer TEXT ");
 
-        Service::Pool::Database()->RegisterTable("SETTINGS", "settings",
-                                                 " pseudo_id TEXT NOT NULL PRIMARY KEY, "
-                                                 " homepage_url_en TEXT NOT NULL, "
-                                                 " homepage_url_fa TEXT NOT NULL, "
-                                                 " homepage_title_en TEXT NOT NULL, "
-                                                 " homepage_title_fa TEXT NOT NULL ");
+        Service::Pool::Database().RegisterTable("SETTINGS", "settings",
+                                                " pseudo_id TEXT NOT NULL PRIMARY KEY, "
+                                                " homepage_url_en TEXT NOT NULL, "
+                                                " homepage_url_fa TEXT NOT NULL, "
+                                                " homepage_title_en TEXT NOT NULL, "
+                                                " homepage_title_fa TEXT NOT NULL ");
 
-        Service::Pool::Database()->RegisterTable("CONTACTS", "contacts",
-                                                 " recipient TEXT NOT NULL PRIMARY KEY, "
-                                                 " recipient_fa TEXT NOT NULL UNIQUE, "
-                                                 " address TEXT NOT NULL, "
-                                                 " is_default BOOLEAN NOT NULL DEFAULT FALSE ");
+        Service::Pool::Database().RegisterTable("CONTACTS", "contacts",
+                                                " recipient TEXT NOT NULL PRIMARY KEY, "
+                                                " recipient_fa TEXT NOT NULL UNIQUE, "
+                                                " address TEXT NOT NULL, "
+                                                " is_default BOOLEAN NOT NULL DEFAULT FALSE ");
 
-        Service::Pool::Database()->RegisterTable("SUBSCRIBERS", "subscribers",
-                                                 " inbox TEXT NOT NULL PRIMARY KEY, "
-                                                 " uuid UUID NOT NULL UNIQUE, "
-                                                 " subscription SUBSCRIPTION NOT NULL DEFAULT 'none', "
-                                                 " pending_confirm SUBSCRIPTION NOT NULL DEFAULT 'none', "
-                                                 " pending_cancel SUBSCRIPTION NOT NULL DEFAULT 'none', "
-                                                 " join_date TEXT NOT NULL, "
-                                                 " update_date TEXT NOT NULL ");
+        Service::Pool::Database().RegisterTable("SUBSCRIBERS", "subscribers",
+                                                " inbox TEXT NOT NULL PRIMARY KEY, "
+                                                " uuid UUID NOT NULL UNIQUE, "
+                                                " subscription SUBSCRIPTION NOT NULL DEFAULT 'none', "
+                                                " pending_confirm SUBSCRIPTION NOT NULL DEFAULT 'none', "
+                                                " pending_cancel SUBSCRIPTION NOT NULL DEFAULT 'none', "
+                                                " join_date TEXT NOT NULL, "
+                                                " update_date TEXT NOT NULL ");
 
         LOG_INFO("main: Registered all database tables!");
 
@@ -418,7 +418,7 @@ void InitializeDatabase()
                       % txn.esc(boost::lexical_cast<std::string>(n.RawTime()))).str());
             Service::Pool::Database().Insert("ROOT_CREDENTIALS",
                                              "user_id, pwd",
-                                             {
+            {
                                                  uuid,
                                                  Service::Pool::Storage().RootInitialPassword()
                                              });
