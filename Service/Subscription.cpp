@@ -727,10 +727,10 @@ Wt::WWidget *Subscription::Impl::GetConfirmationPage()
                           % txn.esc(Service::Pool::Database().GetTableName("SETTINGS"))).str());
             LOG_INFO("Running query...", query, cgiEnv->GetInformation().ToJson());
 
-            pqxx::result r = txn.exec(query);
+            r = txn.exec(query);
 
             if (!r.empty()) {
-                const result::tuple row(r[0]);
+                row = r[0];
                 const string homePageUrl(row[0].c_str());
                 const string homePageTitle(row[1].c_str());
 
@@ -1121,7 +1121,7 @@ Wt::WWidget *Subscription::Impl::GetCancellationPage()
             r = txn.exec(query);
 
             if (!r.empty()) {
-                const result::tuple row(r[0]);
+                row = r[0];
                 const string homePageUrl(row[0].c_str());
                 const string homePageTitle(row[1].c_str());
 
