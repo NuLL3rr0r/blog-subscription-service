@@ -583,13 +583,13 @@ void SysMon::Impl::RefreshResourceUsage()
         SwapUsageModel->setHeaderData(
                     1, WString::fromUTF8("{1} ({2}%) {3}")
                     .arg((Utility::CalculateSize(swapStats->used)))
-                    .arg((wformat(L"%.1f") % (!isnan(swapInstant[Swap::Used]) ? swapInstant[Swap::Used] : 0.0)).str())
+                    .arg((wformat(L"%.1f") % (!std::isnan(swapInstant[Swap::Used]) ? swapInstant[Swap::Used] : 0.0)).str())
                 .arg(tr("system-monitor-swap-stats-used"))
                 );
         SwapUsageModel->setHeaderData(
                     2, WString::fromUTF8("{1} ({2}%) {3}")
                     .arg(Utility::CalculateSize(swapStats->free))
-                    .arg((wformat(L"%.1f") % (!isnan(swapInstant[Swap::Free]) ? swapInstant[Swap::Free] : 0.0)).str())
+                    .arg((wformat(L"%.1f") % (!std::isnan(swapInstant[Swap::Free]) ? swapInstant[Swap::Free] : 0.0)).str())
                 .arg(tr("system-monitor-swap-stats-free"))
                 );
 
@@ -612,17 +612,17 @@ void SysMon::Impl::RefreshResourceUsage()
         unsigned long long used;
         unsigned long long free;
 
-        if (!isnan(100.0 * swapStats->total / swapStats->total))
+        if (!std::isnan(100.0 * swapStats->total / swapStats->total))
             total = memStats->total + swapStats->total;
         else
             total = memStats->total;
 
-        if (!isnan(100.0 * swapStats->used / swapStats->total))
+        if (!std::isnan(100.0 * swapStats->used / swapStats->total))
             used = memStats->used + swapStats->used;
         else
             used = memStats->used;
 
-        if (!isnan(100.0 * swapStats->free / swapStats->total))
+        if (!std::isnan(100.0 * swapStats->free / swapStats->total))
             free = memStats->free + swapStats->free;
         else
             free = memStats->free;
