@@ -200,7 +200,7 @@ void CmsChangeEmail::Impl::OnEmailChangeFormSubmitted()
         string query((format("SELECT pwd FROM \"%1%\""
                              " WHERE user_id = %2%;")
                       % Pool::Database().GetTableName("ROOT_CREDENTIALS")
-                      %  txn.quote(cgiEnv->GetInformation().Client.Session.UserId)).str());
+                      % txn.quote(cgiEnv->GetInformation().Client.Session.UserId)).str());
         LOG_INFO("Running query...", query, cgiEnv->GetInformation().ToJson());
 
         result r = txn.exec(query);
