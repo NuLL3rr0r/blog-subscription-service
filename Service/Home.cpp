@@ -81,7 +81,7 @@ WWidget *Home::Layout()
     CgiRoot *cgiRoot = static_cast<CgiRoot *>(WApplication::instance());
     CgiEnv *cgiEnv = cgiRoot->GetCgiEnvInstance();
 
-    if (cgiEnv->IsContactFormRequested()) {
+    if (cgiEnv->GetInformation().Client.Request.ContactForm) {
         container->addWidget(new ContactForm());
         return container;
     }
