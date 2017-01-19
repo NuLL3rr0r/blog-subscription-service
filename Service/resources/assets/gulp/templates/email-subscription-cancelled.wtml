@@ -27,16 +27,6 @@
 
             <tr valign="top">
                 <td>
-                    Location
-                </td>
-                <td width="16"></td>
-                <td>
-                    ${client-location}
-                </td>
-            </tr>
-
-            <tr valign="top">
-                <td>
                     User Agent
                 </td>
                 <td width="16"></td>
@@ -57,11 +47,148 @@
 
             <tr valign="top">
                 <td>
-                    Time
+                    Time (UTC)
                 </td>
                 <td width="16"></td>
                 <td>
                     ${time}
+                </td>
+            </tr>
+
+            <tr valign="top">
+                <td>
+                    Location
+                </td>
+                <td width="16"></td>
+                <td>
+                    <table>
+                        <tr valign="top">
+                            <td>
+                                Country Code
+                            </td>
+                            <td width="16"></td>
+                            <td>
+                                ${client-location-country-code}
+                            </td>
+                        <tr>
+                        <tr valign="top">
+                            <td>
+                                Country Code 3
+                            </td>
+                            <td width="16"></td>
+                            <td>
+                                ${client-location-country-code3}
+                            </td>
+                        <tr>
+                        <tr valign="top">
+                            <td>
+                                Country Name
+                            </td>
+                            <td width="16"></td>
+                            <td>
+                                ${client-location-country-name}
+                            </td>
+                        <tr>
+                        <tr valign="top">
+                            <td>
+                                Region
+                            </td>
+                            <td width="16"></td>
+                            <td>
+                                ${client-location-region}
+                            </td>
+                        <tr>
+                        <tr valign="top">
+                            <td>
+                                City
+                            </td>
+                            <td width="16"></td>
+                            <td>
+                                ${client-location-city}
+                            </td>
+                        <tr>
+                        <tr valign="top">
+                            <td>
+                                Postal Code
+                            </td>
+                            <td width="16"></td>
+                            <td>
+                                ${client-location-postal-code}
+                            </td>
+                        <tr>
+                        <tr valign="top">
+                            <td>
+                                Latitude
+                            </td>
+                            <td width="16"></td>
+                            <td>
+                                ${client-location-latitude}
+                            </td>
+                        <tr>
+                        <tr valign="top">
+                            <td>
+                                Longitude
+                            </td>
+                            <td width="16"></td>
+                            <td>
+                                ${client-location-longitude}
+                            </td>
+                        <tr>
+                        <tr valign="top">
+                            <td>
+                                Metro Code
+                            </td>
+                            <td width="16"></td>
+                            <td>
+                                ${client-location-metro-code}
+                            </td>
+                        <tr>
+                        <tr valign="top">
+                            <td>
+                                DMA Code
+                            </td>
+                            <td width="16"></td>
+                            <td>
+                                ${client-location-dma-code}
+                            </td>
+                        <tr>
+                        <tr valign="top">
+                            <td>
+                                Area Code
+                            </td>
+                            <td width="16"></td>
+                            <td>
+                                ${client-location-area-code}
+                            </td>
+                        <tr>
+                        <tr valign="top">
+                            <td>
+                                Charset
+                            </td>
+                            <td width="16"></td>
+                            <td>
+                                ${client-location-charset}
+                            </td>
+                        <tr>
+                        <tr valign="top">
+                            <td>
+                                Continent
+                            </td>
+                            <td width="16"></td>
+                            <td>
+                                ${client-location-continent-code}
+                            </td>
+                        <tr>
+                        <tr valign="top">
+                            <td>
+                                Netmask
+                            </td>
+                            <td width="16"></td>
+                            <td>
+                                ${client-location-netmask}
+                            </td>
+                        <tr>
+                    </table>
                 </td>
             </tr>
         </table>
