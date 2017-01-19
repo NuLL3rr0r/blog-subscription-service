@@ -33,16 +33,22 @@
  */
 
 
+#include <sstream>
 #include <unordered_map>
 #include <boost/algorithm/string.hpp>
 #include <boost/bimap.hpp>
 #include <boost/bimap/unordered_set_of.hpp>
+#include <boost/exception/diagnostic_information.hpp>
 #include <boost/format.hpp>
 #include <boost/lexical_cast.hpp>
+#include <boost/property_tree/json_parser.hpp>
+#include <boost/property_tree/ptree.hpp>
 #include <boost/regex.hpp>
 #include <boost/thread/once.hpp>
 #include <Wt/WApplication>
 #include <Wt/WEnvironment>
+#include <cereal/archives/json.hpp>
+#include <cereal/types/common.hpp>
 #include <GeoIP.h>
 #include <GeoIPCity.h>
 #include <CoreLib/Crypto.hpp>
@@ -53,6 +59,9 @@
 #include "CgiEnv.hpp"
 #include "Pool.hpp"
 
+#define     UNKNOWN_ERROR                   "Unknown error!"
+#define     GEO_LOCATION_INITIALIZE_ERROR   "Failed to initialize GeoIP record!"
+
 using namespace std;
 using namespace Wt;
 using namespace boost;
@@ -62,103 +71,300 @@ using namespace Service;
 struct CgiEnv::Impl
 {
 public:
-    typedef boost::bimap<boost::bimaps::unordered_set_of<CgiEnv::Language>,
-        boost::bimaps::unordered_set_of<std::string>> LanguageBiMap;
-    typedef std::unordered_map<CgiEnv::Language, CgiEnv::LanguageDirection,
-        CoreLib::Utility::Hasher<CgiEnv::Language>> LanguageDirectionHashTable;
+    typedef boost::bimap<boost::bimaps::unordered_set_of<Service::CgiEnv::InformationRecord::ClientRecord::LanguageCode>,
+    boost::bimaps::unordered_set_of<std::string>> LanguageStringBiMap;
+    typedef std::unordered_map<Service::CgiEnv::InformationRecord::ClientRecord::LanguageCode,
+    Service::CgiEnv::InformationRecord::ClientRecord::PageDirection,
+    CoreLib::Utility::Hasher<Service::CgiEnv::InformationRecord::ClientRecord::LanguageCode>> LanguageDirectionHashTable;
 
 public:
-    std::string ClientInfoIP;
-    std::string ClientInfoBrowser;
-    std::string ClientInfoReferer;
-    std::string ClientInfoLocation;
-
-    std::string ServerInfoHost;
-    std::string ServerInfoURL;
-    std::string ServerInfoRootLoginUrl;
-    std::string ServerInfoNoReplyAddr;
-
-    CgiEnv::Language CurrentLanguage;
-    LanguageBiMap LanguageMapper;
+    LanguageStringBiMap LanguageStringMapper;
     LanguageDirectionHashTable LanguageDirectionMapper;
 
-    bool FoundXSS;
-    bool IsRootLoginRequested;
-    bool IsRootLogoutRequested;
-    bool IsContactFormRequested;
-
-private:
-    CgiEnv *m_parent;
+public:
+    CgiEnv::InformationRecord Information;
 
 public:
-    explicit Impl(CgiEnv *cgiEnv);
-    ~Impl();
-
     static std::string CStrToStr(const char *cstr);
 
-    void ExtractClientInfoDetail();
+    template <typename _T>
+    static std::string RecordToJson(const _T instance, bool pretty = false)
+    {
+        try {
+            std::stringstream ss;
+
+            /// The curly braces are mandatory!
+            /// http://uscilab.github.io/cereal/quickstart.html
+            /// "Archives are designed to be used in an RAII manner and are guaranteed to flush their contents only on destruction..."
+            {
+                cereal::JSONOutputArchive archive(ss);
+                archive(*instance);
+            }
+
+            using boost::property_tree::ptree;
+
+            ptree pt;
+            read_json(ss, pt);
+
+            if (pt.get_child_optional("value0")) {
+                pt.add_child("Information", pt.get_child("value0"));
+                pt.erase("value0");
+            }
+
+            /// Clear the stringstream
+            ss.str(std::string());
+            ss.clear();
+
+            write_json(ss, pt, pretty);
+
+            return ss.str();
+        }
+
+        catch (const boost::exception &ex) {
+            LOG_ERROR(boost::diagnostic_information(ex));
+        }
+
+        catch (const std::exception &ex) {
+            LOG_ERROR(ex.what());
+        }
+
+        catch(...) {
+            LOG_ERROR(UNKNOWN_ERROR);
+        }
+
+        return "";
+    }
+
+
+public:
+    explicit Impl();
+    ~Impl();
+
+    void Initialize();
+
+    void FillGeoLocationRecord();
 };
 
+void CgiEnv::InformationRecord::ToJson(std::string &out_string) const
+{
+    out_string.assign(Service::CgiEnv::Impl::RecordToJson(this));
+}
+
+std::string CgiEnv::InformationRecord::ToJson() const
+{
+    string json;
+    ToJson(json);
+    return json;
+}
+
+void CgiEnv::InformationRecord::ClientRecord::ToJson(std::string &out_string) const
+{
+    out_string.assign(Service::CgiEnv::Impl::RecordToJson(this));
+}
+
+std::string CgiEnv::InformationRecord::ClientRecord::ToJson() const
+{
+    string json;
+    ToJson(json);
+    return json;
+}
+
+void CgiEnv::InformationRecord::ClientRecord::LanguageRecord::ToJson(std::string &out_string) const
+{
+    out_string.assign(Service::CgiEnv::Impl::RecordToJson(this));
+}
+
+std::string CgiEnv::InformationRecord::ClientRecord::LanguageRecord::ToJson() const
+{
+    string json;
+    ToJson(json);
+    return json;
+}
+
+void CgiEnv::InformationRecord::ClientRecord::GeoLocationRecord::ToJson(std::string &out_string) const
+{
+    out_string.assign(Service::CgiEnv::Impl::RecordToJson(this));
+}
+
+std::string CgiEnv::InformationRecord::ClientRecord::GeoLocationRecord::ToJson() const
+{
+    string json;
+    ToJson(json);
+    return json;
+}
+
+void CgiEnv::InformationRecord::ClientRecord::RequestRecord::ToJson(std::string &out_string) const
+{
+    out_string.assign(Service::CgiEnv::Impl::RecordToJson(this));
+}
+
+std::string CgiEnv::InformationRecord::ClientRecord::RequestRecord::ToJson() const
+{
+    string json;
+    ToJson(json);
+    return json;
+}
+
+void CgiEnv::InformationRecord::ClientRecord::RequestRecord::RootRecord::ToJson(std::string &out_string) const
+{
+    out_string.assign(Service::CgiEnv::Impl::RecordToJson(this));
+}
+
+std::string CgiEnv::InformationRecord::ClientRecord::RequestRecord::RootRecord::ToJson() const
+{
+    string json;
+    ToJson(json);
+    return json;
+}
+
+void CgiEnv::InformationRecord::ClientRecord::SecurityRecord::ToJson(std::string &out_string) const
+{
+    out_string.assign(Service::CgiEnv::Impl::RecordToJson(this));
+}
+
+std::string CgiEnv::InformationRecord::ClientRecord::SecurityRecord::ToJson() const
+{
+    string json;
+    ToJson(json);
+    return json;
+}
+
+void CgiEnv::InformationRecord::ClientRecord::SessionRecord::ToJson(std::string &out_string) const
+{
+    out_string.assign(Service::CgiEnv::Impl::RecordToJson(this));
+}
+
+std::string CgiEnv::InformationRecord::ClientRecord::SessionRecord::ToJson() const
+{
+    string json;
+    ToJson(json);
+    return json;
+}
+
+void CgiEnv::InformationRecord::ServerRecord::ToJson(std::string &out_string) const
+{
+    out_string.assign(Service::CgiEnv::Impl::RecordToJson(this));
+}
+
+std::string CgiEnv::InformationRecord::ServerRecord::ToJson() const
+{
+    string json;
+    ToJson(json);
+    return json;
+}
+
+void CgiEnv::InformationRecord::SubscriptionRecord::ToJson(std::string &out_string) const
+{
+    out_string.assign(Service::CgiEnv::Impl::RecordToJson(this));
+}
+
+std::string CgiEnv::InformationRecord::SubscriptionRecord::ToJson() const
+{
+    string json;
+    ToJson(json);
+    return json;
+}
+
 CgiEnv::CgiEnv()
-    : m_pimpl(make_unique<CgiEnv::Impl>(this))
+    : m_pimpl(make_unique<CgiEnv::Impl>())
+{
+    m_pimpl->Initialize();
+}
+
+CgiEnv::~CgiEnv() = default;
+
+const CgiEnv::InformationRecord &CgiEnv::GetInformation() const
+{
+    return m_pimpl->Information;
+}
+
+void CgiEnv::SetSessionRecord(const Service::CgiEnv::InformationRecord::ClientRecord::SessionRecord &record)
+{
+    m_pimpl->Information.Client.Session = record;
+}
+
+void CgiEnv::SetSessionToken(const std::string &token)
+{
+    m_pimpl->Information.Client.Session.Token = token;
+}
+
+void CgiEnv::SetSessionEmail(const std::string &email)
+{
+    m_pimpl->Information.Client.Session.Email = email;
+}
+
+string CgiEnv::Impl::CStrToStr(const char *cstr)
+{
+    return cstr != NULL ? cstr : "";
+}
+
+CgiEnv::Impl::Impl()
+    : LanguageDirectionMapper {
+{ Service::CgiEnv::InformationRecord::ClientRecord::LanguageCode::None, Service::CgiEnv::InformationRecord::ClientRecord::PageDirection::None },
+{ Service::CgiEnv::InformationRecord::ClientRecord::LanguageCode::Invalid, Service::CgiEnv::InformationRecord::ClientRecord::PageDirection::None },
+{ Service::CgiEnv::InformationRecord::ClientRecord::LanguageCode::En, Service::CgiEnv::InformationRecord::ClientRecord::PageDirection::LeftToRight },
+{ Service::CgiEnv::InformationRecord::ClientRecord::LanguageCode::Fa, Service::CgiEnv::InformationRecord::ClientRecord::PageDirection::RightToLeft }
+          }
+{
+    LanguageStringMapper.insert({ Service::CgiEnv::InformationRecord::ClientRecord::LanguageCode::None, "none" });
+    LanguageStringMapper.insert({ Service::CgiEnv::InformationRecord::ClientRecord::LanguageCode::Invalid, "invalid" });
+    LanguageStringMapper.insert({ Service::CgiEnv::InformationRecord::ClientRecord::LanguageCode::En, "en" });
+    LanguageStringMapper.insert({ Service::CgiEnv::InformationRecord::ClientRecord::LanguageCode::Fa, "fa" });
+
+    this->Information.Client.Language.Code = Service::CgiEnv::InformationRecord::ClientRecord::LanguageCode::None;
+    this->Information.Client.Language.CodeAsString = LanguageStringMapper.left.find(Service::CgiEnv::InformationRecord::ClientRecord::LanguageCode::None)
+            ->second;
+    this->Information.Client.Language.PageDirection = Service::CgiEnv::InformationRecord::ClientRecord::PageDirection::None;
+    this->Information.Client.Request.Root.Login = false;
+    this->Information.Client.Request.Root.Logout = false;
+    this->Information.Client.Security.XssAttackDetected = false;
+}
+
+CgiEnv::Impl::~Impl() = default;
+
+void CgiEnv::Impl::Initialize()
 {
     WApplication *app = WApplication::instance();
 
-    m_pimpl->ClientInfoIP = app->environment().clientAddress();
-    m_pimpl->ClientInfoBrowser = app->environment().userAgent();
-    m_pimpl->ClientInfoReferer = app->environment().referer();
-
-    m_pimpl->ExtractClientInfoDetail();
-
-    m_pimpl->ClientInfoLocation =
-            (format("%1% %2% %3% %4% %5% %6%")
-             % ClientInfoRecord.city
-             % ClientInfoRecord.region
-             % ClientInfoRecord.country_code
-             % ClientInfoRecord.country_code3
-             % ClientInfoRecord.country_name
-             % ClientInfoRecord.continent_code).str();
-    if (ClientInfoRecord.latitude != "" && ClientInfoRecord.longitude != "") {
-        m_pimpl->ClientInfoLocation +=
-                (format(" %1%,%2%")
-                 % ClientInfoRecord.latitude
-                 % ClientInfoRecord.longitude).str();
-    }
-    algorithm::trim(m_pimpl->ClientInfoLocation);
-
-    m_pimpl->ServerInfoHost = app->environment().hostName();
-    m_pimpl->ServerInfoURL = app->environment().urlScheme() + "://" + m_pimpl->ServerInfoHost;
-    m_pimpl->ServerInfoRootLoginUrl = m_pimpl->ServerInfoURL
-            + (algorithm::ends_with(m_pimpl->ServerInfoURL, "/") ? "" : "/")
+    this->Information.Server.Hostname = app->environment().hostName();
+    this->Information.Server.Url = app->environment().urlScheme() + "://" + this->Information.Server.Hostname;
+    this->Information.Server.RootLoginUrl = this->Information.Server.Url
+            + (algorithm::ends_with(this->Information.Server.Url, "/") ? "" : "/")
             + "?root";
-    m_pimpl->ServerInfoNoReplyAddr = "no-reply@" + m_pimpl->ServerInfoHost;
+    this->Information.Server.NoReplyAddress = "no-reply@" + this->Information.Server.Hostname;
+
+    this->Information.Client.IPAddress = app->environment().clientAddress();
+    this->Information.Client.UserAgent = app->environment().userAgent();
+    this->Information.Client.Referer = app->environment().referer();
 
     string queryStr = app->environment().getCgiValue("QUERY_STRING");
-    m_pimpl->FoundXSS = (queryStr.find("<") != string::npos ||
-            queryStr.find(">") != string::npos ||
-            queryStr.find("%3C") != string::npos ||
-            queryStr.find("%3E") != string::npos ||
-            queryStr.find("%3c") != string::npos ||
-            queryStr.find("%3e") != string::npos)
+    this->Information.Client.Security.XssAttackDetected =
+            (queryStr.find("<") != string::npos
+            || queryStr.find(">") != string::npos
+            || queryStr.find("%3C") != string::npos
+            || queryStr.find("%3E") != string::npos
+            || queryStr.find("%3c") != string::npos
+            || queryStr.find("%3e") != string::npos)
             ? true : false;
 
     bool logout = false;
 
-    SubscriptionData.Subscribe = Subscription::Action::None;
-
     Http::ParameterMap map = app->environment().getParameterMap();
     for (std::map<string, Http::ParameterValues>::const_iterator it = map.begin(); it != map.end(); ++it) {
         if (it->first == "lang") {
-            auto itLang = m_pimpl->LanguageMapper.right.find(it->second[0]);
-            if (itLang != m_pimpl->LanguageMapper.right.end()) {
-                m_pimpl->CurrentLanguage = itLang->second;
+            auto itLang = this->LanguageStringMapper.right.find(it->second[0]);
+            if (itLang != this->LanguageStringMapper.right.end()) {
+                this->Information.Client.Language.Code = itLang->second;
             } else {
-                m_pimpl->CurrentLanguage = Language::Invalid;
+                this->Information.Client.Language.Code = Service::CgiEnv::InformationRecord::ClientRecord::LanguageCode::Invalid;
             }
+            this->Information.Client.Language.CodeAsString = LanguageStringMapper.left.find(this->Information.Client.Language.Code)
+                    ->second;
+            this->Information.Client.Language.PageDirection = this->LanguageDirectionMapper[this->Information.Client.Language.Code];
         }
 
         if (it->first == "root") {
-            m_pimpl->IsRootLoginRequested = true;
+            this->Information.Client.Request.Root.Login = true;
         }
 
         if (it->first == "logout") {
@@ -170,10 +376,10 @@ CgiEnv::CgiEnv()
                 if (it->second[0] == "1" || it->second[0] == "2"
                         || it->second[0] == "-1" || it->second[0] == "-2") {
                     auto action = lexical_cast<short>(it->second[0]);
-                    SubscriptionData.Subscribe = static_cast<Subscription::Action>(action);
+                    this->Information.Subscription.Subscribe = static_cast<InformationRecord::SubscriptionRecord::Action>(action);
                 }
             } catch (...) {
-                SubscriptionData.Subscribe = Subscription::Action::Subscribe;
+                this->Information.Subscription.Subscribe = InformationRecord::SubscriptionRecord::Action::Subscribe;
             }
         }
 
@@ -181,7 +387,7 @@ CgiEnv::CgiEnv()
             static const regex REGEX(Pool::Storage()->RegexEmail());
             smatch result;
             if (regex_search(it->second[0], result, REGEX)) {
-                SubscriptionData.Inbox.assign(it->second[0]);
+                this->Information.Subscription.Inbox.assign(it->second[0]);
             }
         }
 
@@ -191,15 +397,15 @@ CgiEnv::CgiEnv()
             if (regex_search(it->second[0], result, REGEX)) {
                 vector<string> vec;
                 split(vec, it->second[0], boost::is_any_of(","));
-                vector<Subscription::Language> langs;
+                vector<InformationRecord::SubscriptionRecord::Language> langs;
                 for (const auto &s : vec) {
                     if (s == "en") {
-                        langs.push_back(Subscription::Language::En);
+                        langs.push_back(InformationRecord::SubscriptionRecord::Language::En);
                     } else if (s == "fa") {
-                        langs.push_back(Subscription::Language::Fa);
+                        langs.push_back(InformationRecord::SubscriptionRecord::Language::Fa);
                     }
                 }
-                SubscriptionData.Languages = std::move(langs);
+                this->Information.Subscription.Languages = std::move(langs);
             }
         }
 
@@ -207,7 +413,7 @@ CgiEnv::CgiEnv()
             static const regex REGEX(Pool::Storage()->RegexUuid());
             smatch result;
             if (regex_search(it->second[0], result, REGEX)) {
-                SubscriptionData.Uuid.assign(it->second[0]);
+                this->Information.Subscription.Uuid.assign(it->second[0]);
             }
         }
 
@@ -215,131 +421,25 @@ CgiEnv::CgiEnv()
             try {
                 string token;
                 Pool::Crypto()->Decrypt(it->second[0], token);
-                SubscriptionData.Timestamp = lexical_cast<time_t>(token);
+                this->Information.Subscription.Timestamp = lexical_cast<time_t>(token);
             } catch (...) {
             }
         }
 
         if (it->first == "contact-form") {
-            m_pimpl->IsContactFormRequested = true;
+            this->Information.Client.Request.ContactForm = true;
         }
     }
 
-    if (m_pimpl->IsRootLoginRequested && logout) {
-        m_pimpl->IsRootLogoutRequested = true;
+    if (this->Information.Client.Request.Root.Login && logout) {
+        this->Information.Client.Request.Root.Logout = true;
     }
+
+    // Set IP before calling this
+    this->FillGeoLocationRecord();
 }
 
-CgiEnv::~CgiEnv() = default;
-
-string CgiEnv::GetClientInfo(const CgiEnv::ClientInfo &key) const
-{
-    switch(key) {
-
-    case ClientInfo::IP:
-        return m_pimpl->ClientInfoIP;
-
-    case ClientInfo::Browser:
-        return m_pimpl->ClientInfoBrowser;
-
-    case ClientInfo::Referer:
-        return m_pimpl->ClientInfoReferer;
-
-    case ClientInfo::Location:
-        return m_pimpl->ClientInfoLocation;
-
-    }
-}
-
-string CgiEnv::GetServerInfo(const CgiEnv::ServerInfo &key) const
-{
-    switch(key) {
-
-    case ServerInfo::Host:
-        return m_pimpl->ServerInfoHost;
-
-    case ServerInfo::URL:
-        return m_pimpl->ServerInfoURL;
-
-    case ServerInfo::RootLoginUrl:
-        return m_pimpl->ServerInfoRootLoginUrl;
-
-    case ServerInfo::NoReplyAddr:
-        return m_pimpl->ServerInfoNoReplyAddr;
-
-    }
-}
-
-const CgiEnv::Language &CgiEnv::GetCurrentLanguage() const
-{
-    return m_pimpl->CurrentLanguage;
-}
-
-std::string CgiEnv::GetCurrentLanguageString() const
-{
-    auto it = m_pimpl->LanguageMapper.left.find(m_pimpl->CurrentLanguage);
-    return it->second;
-}
-
-const CgiEnv::LanguageDirection &CgiEnv::GetLanguageDirection(
-        const CgiEnv::Language &language) const
-{
-    return m_pimpl->LanguageDirectionMapper[language];
-}
-
-const CgiEnv::LanguageDirection &CgiEnv::GetCurrentLanguageDirection() const
-{
-    return m_pimpl->LanguageDirectionMapper[m_pimpl->CurrentLanguage];
-}
-
-bool CgiEnv::FoundXSS() const
-{
-    return m_pimpl->FoundXSS;
-}
-
-bool CgiEnv::IsRootLoginRequested() const
-{
-    return m_pimpl->IsRootLoginRequested;
-}
-
-bool CgiEnv::IsRootLogoutRequested() const
-{
-    return m_pimpl->IsRootLogoutRequested;
-}
-
-bool CgiEnv::IsContactFormRequested() const
-{
-    return m_pimpl->IsContactFormRequested;
-}
-
-CgiEnv::Impl::Impl(CgiEnv *cgiEnv)
-    : CurrentLanguage(Language::None),
-      LanguageDirectionMapper {
-          { Language::None, LanguageDirection::None },
-          { Language::Invalid, LanguageDirection::None },
-          { Language::En, LanguageDirection::LeftToRight },
-          { Language::Fa, LanguageDirection::RightToLeft }
-      },
-      FoundXSS(false),
-      IsRootLoginRequested(false),
-      IsRootLogoutRequested(false),
-      IsContactFormRequested(false),
-      m_parent(cgiEnv)
-{
-    LanguageMapper.insert({ Language::None, "none" });
-    LanguageMapper.insert({ Language::Invalid, "invalid" });
-    LanguageMapper.insert({ Language::En, "en" });
-    LanguageMapper.insert({ Language::Fa, "fa" });
-}
-
-CgiEnv::Impl::~Impl() = default;
-
-string CgiEnv::Impl::CStrToStr(const char *cstr)
-{
-    return cstr != NULL ? cstr : "";
-}
-
-void CgiEnv::Impl::ExtractClientInfoDetail()
+void CgiEnv::Impl::FillGeoLocationRecord()
 {
     try {
         GeoIP *geoLiteCity;
@@ -354,29 +454,41 @@ void CgiEnv::Impl::ExtractClientInfoDetail()
             geoLiteCity = GeoIP_open("/usr/local/share/GeoIP/GeoLiteCity.dat", GEOIP_STANDARD);
         } else if (FileSystem::FileExists("/usr/share/GeoIP/GeoLiteCity.dat")) {
             geoLiteCity = GeoIP_open("/usr/share/GeoIP/GeoLiteCity.dat", GEOIP_STANDARD);
-#endif
+#endif  // defined ( __FreeBSD__ )
         } else {
+            LOG_ERROR(GEO_LOCATION_INITIALIZE_ERROR, "");
             return;
         }
 
-        GeoIPRecordTag *record = GeoIP_record_by_name(geoLiteCity, ClientInfoIP.c_str());
+        GeoIPRecordTag *record = GeoIP_record_by_name(geoLiteCity, this->Information.Client.IPAddress.c_str());
 
         if (record != NULL) {
-            m_parent->ClientInfoRecord.country_code = CStrToStr(record->country_code);
-            m_parent->ClientInfoRecord.country_code3 = CStrToStr(record->country_code3);
-            m_parent->ClientInfoRecord.country_name = CStrToStr(record->country_name);
-            m_parent->ClientInfoRecord.region = CStrToStr(record->region);
-            m_parent->ClientInfoRecord.city = CStrToStr(record->city);
-            m_parent->ClientInfoRecord.postal_code = CStrToStr(record->postal_code);
-            m_parent->ClientInfoRecord.latitude = lexical_cast<string>(record->latitude);
-            m_parent->ClientInfoRecord.longitude = lexical_cast<string>(record->longitude);
-            m_parent->ClientInfoRecord.metro_code = lexical_cast<string>(record->metro_code);
-            m_parent->ClientInfoRecord.dma_code = lexical_cast<string>(record->dma_code);
-            m_parent->ClientInfoRecord.area_code = lexical_cast<string>(record->area_code);
-            m_parent->ClientInfoRecord.charset = lexical_cast<string>(record->charset);
-            m_parent->ClientInfoRecord.continent_code = CStrToStr(record->continent_code);
-            m_parent->ClientInfoRecord.netmask = lexical_cast<string>(record->netmask);
+            this->Information.Client.GeoLocation.CountryCode = CStrToStr(record->country_code);
+            this->Information.Client.GeoLocation.CountryCode3 = CStrToStr(record->country_code3);
+            this->Information.Client.GeoLocation.CountryName = CStrToStr(record->country_name);
+            this->Information.Client.GeoLocation.Region = CStrToStr(record->region);
+            this->Information.Client.GeoLocation.City = CStrToStr(record->city);
+            this->Information.Client.GeoLocation.PostalCode = CStrToStr(record->postal_code);
+            this->Information.Client.GeoLocation.Latitude = record->latitude;
+            this->Information.Client.GeoLocation.Longitude = record->longitude;
+            this->Information.Client.GeoLocation.MetroCode = record->metro_code;
+            this->Information.Client.GeoLocation.DmaCode = record->dma_code;
+            this->Information.Client.GeoLocation.AreaCode = record->area_code;
+            this->Information.Client.GeoLocation.Charset = record->charset;
+            this->Information.Client.GeoLocation.ContinentCode = record->continent_code;
+            this->Information.Client.GeoLocation.Netmask = record->netmask;
         }
-    } catch(...) {
+    }
+
+    catch (const boost::exception &ex) {
+        LOG_ERROR(GEO_LOCATION_INITIALIZE_ERROR, boost::diagnostic_information(ex));
+    }
+
+    catch (const std::exception &ex) {
+        LOG_ERROR(GEO_LOCATION_INITIALIZE_ERROR, ex.what());
+    }
+
+    catch(...) {
+        LOG_ERROR(GEO_LOCATION_INITIALIZE_ERROR, UNKNOWN_ERROR);
     }
 }

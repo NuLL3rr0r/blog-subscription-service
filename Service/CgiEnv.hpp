@@ -41,6 +41,8 @@
 #include <string>
 #include <vector>
 #include <ctime>
+#include <cereal/cereal.hpp>
+#include <cereal/types/vector.hpp>
 
 namespace Wt {
 class WEnvironment;
@@ -53,88 +55,255 @@ class CgiEnv;
 class Service::CgiEnv
 {
 public:
-    struct ClientInfoTag {
-        std::string country_code;
-        std::string country_code3;
-        std::string country_name;
-        std::string region;
-        std::string city;
-        std::string postal_code;
-        std::string latitude;
-        std::string longitude;
-        std::string metro_code;
-        std::string dma_code;
-        std::string area_code;
-        std::string charset;
-        std::string continent_code;
-        std::string netmask;
-    } ClientInfoRecord;
+    struct InformationRecord {
+        struct ClientRecord {
+            enum class LanguageCode : unsigned char {
+                None,
+                Invalid,
+                En,
+                Fa
+            };
 
-    enum class ClientInfo : unsigned char {
-        IP,
-        Browser,
-        Referer,
-        Location
-    };
+            enum class PageDirection : unsigned char {
+                None,
+                LeftToRight,
+                RightToLeft
+            };
 
-    enum class ServerInfo : unsigned char {
-        Host,
-        URL,
-        RootLoginUrl,
-        NoReplyAddr
-    };
+            struct LanguageRecord {
+                Service::CgiEnv::InformationRecord::ClientRecord::LanguageCode Code;
+                std::string CodeAsString;
+                Service::CgiEnv::InformationRecord::ClientRecord::PageDirection PageDirection;
 
-    enum class Language : unsigned char {
-        None,
-        Invalid,
-        En,
-        Fa
-    };
+            public:
+                void ToJson(std::string &out_string) const;
+                std::string ToJson() const;
 
-    enum class LanguageDirection : unsigned char {
-        None,
-        LeftToRight,
-        RightToLeft
-    };
+            private:
+                friend class cereal::access;
+                template<class Archive>
+                void serialize(Archive & archive)
+                {
+                    archive(CEREAL_NVP(Code), CEREAL_NVP(CodeAsString), CEREAL_NVP(PageDirection));
+                }
+            };
 
-public:
-    struct SignedIn {
-        std::string SessionToken;
-        std::string Username;
-        std::string Email;
-        struct LastLoginData {
-            std::string IP;
-            std::string Location;
-            std::string LoginRawTime;
-            std::string LoginGDate;
-            std::string LoginJDate;
-            std::string LoginTime;
-            std::string UserAgent;
+            struct GeoLocationRecord {
+                std::string CountryCode;
+                std::string CountryCode3;
+                std::string CountryName;
+                std::string Region;
+                std::string City;
+                std::string PostalCode;
+                float Latitude;
+                float Longitude;
+                int MetroCode;
+                int DmaCode;
+                int AreaCode;
+                int Charset;
+                std::string ContinentCode;
+                int Netmask;
+
+            public:
+                void ToJson(std::string &out_string) const;
+                std::string ToJson() const;
+
+            private:
+                friend class cereal::access;
+                template<class Archive>
+                void serialize(Archive & archive)
+                {
+                    archive(CEREAL_NVP(CountryCode), CEREAL_NVP(CountryCode3), CEREAL_NVP(CountryName),
+                            CEREAL_NVP(Region), CEREAL_NVP(City), CEREAL_NVP(PostalCode),
+                            CEREAL_NVP(Latitude), CEREAL_NVP(Longitude), CEREAL_NVP(MetroCode), CEREAL_NVP(DmaCode),
+                            CEREAL_NVP(AreaCode), CEREAL_NVP(Charset), CEREAL_NVP(ContinentCode), CEREAL_NVP(Netmask));
+                }
+            };
+
+            struct RequestRecord {
+                struct RootRecord {
+                    bool Login;
+                    bool Logout;
+
+                public:
+                    void ToJson(std::string &out_string) const;
+                    std::string ToJson() const;
+
+                private:
+                    friend class cereal::access;
+                    template<class Archive>
+                    void serialize(Archive & archive)
+                    {
+                        archive(CEREAL_NVP(Login), CEREAL_NVP(Logout));
+                    }
+                };
+
+                RootRecord Root;
+                bool ContactForm;
+
+            public:
+                void ToJson(std::string &out_string) const;
+                std::string ToJson() const;
+
+            private:
+                friend class cereal::access;
+                template<class Archive>
+                void serialize(Archive & archive)
+                {
+                    archive(CEREAL_NVP(Root), CEREAL_NVP(ContactForm));
+                }
+            };
+
+            struct SecurityRecord {
+                bool XssAttackDetected;
+
+            public:
+                void ToJson(std::string &out_string) const;
+                std::string ToJson() const;
+
+            private:
+                friend class cereal::access;
+                template<class Archive>
+                void serialize(Archive & archive)
+                {
+                    archive(CEREAL_NVP(XssAttackDetected));
+                }
+            };
+
+            struct SessionRecord {
+                struct LastLoginRecord {
+                    GeoLocationRecord GeoLocation;
+                    std::string IPAddress;
+                    std::string Referer;
+                    std::time_t Time;
+                    std::string UserAgent;
+
+                public:
+                    void ToJson(std::string &out_string) const;
+                    std::string ToJson() const;
+
+                private:
+                    friend class cereal::access;
+                    template<class Archive>
+                    void serialize(Archive & archive)
+                    {
+                        archive(CEREAL_NVP(GeoLocation), CEREAL_NVP(IPAddress), CEREAL_NVP(Referer), CEREAL_NVP(Time),
+                                CEREAL_NVP(UserAgent));
+                    }
+                };
+
+                std::string Email;
+                LastLoginRecord LastLogin;
+                std::string Token;
+                std::string UserId;
+                std::string Username;
+
+            public:
+                void ToJson(std::string &out_string) const;
+                std::string ToJson() const;
+
+            private:
+                friend class cereal::access;
+                template<class Archive>
+                void serialize(Archive & archive)
+                {
+                    archive(CEREAL_NVP(Email), CEREAL_NVP(LastLogin), CEREAL_NVP(Token), CEREAL_NVP(UserId), CEREAL_NVP(Username));
+                }
+            };
+
+            GeoLocationRecord GeoLocation;
+            std::string IPAddress;
+            LanguageRecord Language;
             std::string Referer;
-        } LastLogin;
-    } SignedInUser;
+            RequestRecord Request;
+            SecurityRecord Security;
+            SessionRecord Session;
+            std::string UserAgent;
 
-public:
-    struct Subscription {
-        enum class Action : char {
-            Subscribe = 1,
-            Confirm = 2,
-            None = 0,
-            Unsubscribe = -1,
-            Cancel = -2,
+        public:
+            void ToJson(std::string &out_string) const;
+            std::string ToJson() const;
+
+        private:
+            friend class cereal::access;
+            template<class Archive>
+            void serialize(Archive & archive)
+            {
+                archive(CEREAL_NVP(GeoLocation), CEREAL_NVP(IPAddress), CEREAL_NVP(Language), CEREAL_NVP(Referer),
+                        CEREAL_NVP(Request), CEREAL_NVP(Security), CEREAL_NVP(Session), CEREAL_NVP(UserAgent));
+            }
         };
 
-        enum class Language : unsigned char {
-            En,
-            Fa
+        struct ServerRecord {
+            std::string Hostname;
+            std::string NoReplyAddress;
+            std::string RootLoginUrl;
+            std::string Url;
+
+        public:
+            void ToJson(std::string &out_string) const;
+            std::string ToJson() const;
+
+        private:
+            friend class cereal::access;
+            template<class Archive>
+            void serialize(Archive & archive)
+            {
+                archive(CEREAL_NVP(Hostname), CEREAL_NVP(NoReplyAddress), CEREAL_NVP(RootLoginUrl), CEREAL_NVP(Url));
+            }
         };
 
-        Action Subscribe;
-        std::string Inbox;
-        std::vector<Language> Languages;
-        std::string Uuid;
-        std::time_t Timestamp;
-    } SubscriptionData;
+        struct SubscriptionRecord {
+        public:
+            enum class Action : char {
+                Subscribe = 1,
+                Confirm = 2,
+                None = 0,
+                Unsubscribe = -1,
+                Cancel = -2,
+            };
+
+            enum class Language : unsigned char {
+                En,
+                Fa
+            };
+
+        public:
+            Action Subscribe;
+            std::string Inbox;
+            std::vector<Language> Languages;
+            std::string Uuid;
+            std::time_t Timestamp;
+
+        public:
+            void ToJson(std::string &out_string) const;
+            std::string ToJson() const;
+
+        private:
+            friend class cereal::access;
+            template<class Archive>
+            void serialize(Archive & archive)
+            {
+                archive(CEREAL_NVP(Subscribe), CEREAL_NVP(Inbox), CEREAL_NVP(Languages), CEREAL_NVP(Uuid), CEREAL_NVP(Timestamp));
+            }
+        };
+
+        ClientRecord Client;
+        ServerRecord Server;
+        SubscriptionRecord Subscription;
+
+    public:
+        void ToJson(std::string &out_string) const;
+        std::string ToJson() const;
+
+    private:
+        friend class cereal::access;
+        template<class Archive>
+        void serialize(Archive & archive)
+        {
+            archive(CEREAL_NVP(Client), CEREAL_NVP(Server), CEREAL_NVP(Subscription));
+        }
+    };
 
 private:
     struct Impl;
@@ -146,19 +315,11 @@ public:
     virtual ~CgiEnv();
 
 public:
-    std::string GetClientInfo(const ClientInfo &key) const;
-    std::string GetServerInfo(const ServerInfo &key) const;
+    const InformationRecord &GetInformation() const;
 
-    const Language &GetCurrentLanguage() const;
-    std::string GetCurrentLanguageString() const;
-
-    const LanguageDirection &GetLanguageDirection(const Language &language) const;
-    const LanguageDirection &GetCurrentLanguageDirection() const;
-
-    bool FoundXSS() const;
-    bool IsRootLoginRequested() const;
-    bool IsRootLogoutRequested() const;
-    bool IsContactFormRequested() const;
+    void SetSessionRecord(const Service::CgiEnv::InformationRecord::ClientRecord::SessionRecord &record);
+    void SetSessionToken(const std::string &token);
+    void SetSessionEmail(const std::string &email);
 };
 
 
