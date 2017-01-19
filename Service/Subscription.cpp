@@ -37,6 +37,7 @@
 #include <boost/exception/diagnostic_information.hpp>
 #include <boost/format.hpp>
 #include <boost/regex.hpp>
+#include <pqxx/pqxx>
 #include <Wt/WApplication>
 #include <Wt/WCheckBox>
 #include <Wt/WContainerWidget>
@@ -68,7 +69,7 @@
 
 using namespace std;
 using namespace boost;
-using namespace cppdb;
+using namespace pqxx;
 using namespace Wt;
 using namespace CoreLib;
 using namespace CoreLib::CDate;
@@ -128,20 +129,20 @@ Subscription::Subscription() :
     CgiRoot *cgiRoot = static_cast<CgiRoot *>(WApplication::instance());
     CgiEnv *cgiEnv = cgiRoot->GetCgiEnvInstance();
 
-    switch (cgiEnv->SubscriptionData.Subscribe) {
-    case CgiEnv::Subscription::Action::Subscribe:
+    switch (cgiEnv->GetInformation().Subscription.Subscribe) {
+    case CgiEnv::InformationRecord::SubscriptionRecord::Action::Subscribe:
         cgiRoot->setTitle(tr("home-subscription-subscribe-page-title"));
         break;
-    case CgiEnv::Subscription::Action::Confirm:
+    case CgiEnv::InformationRecord::SubscriptionRecord::Action::Confirm:
         cgiRoot->setTitle(tr("home-subscription-confirmation-page-title"));
         break;
-    case CgiEnv::Subscription::Action::Unsubscribe:
+    case CgiEnv::InformationRecord::SubscriptionRecord::Action::Unsubscribe:
         cgiRoot->setTitle(tr("home-subscription-unsubscribe-page-title"));
         break;
-    case CgiEnv::Subscription::Action::Cancel:
+    case CgiEnv::InformationRecord::SubscriptionRecord::Action::Cancel:
         cgiRoot->setTitle(tr("home-subscription-cancellation-page-title"));
         break;
-    case CgiEnv::Subscription::Action::None:
+    case CgiEnv::InformationRecord::SubscriptionRecord::Action::None:
         cgiRoot->setTitle(tr("home-subscription-subscribe-page-title"));
         break;
     }
@@ -161,20 +162,20 @@ WWidget *Subscription::Layout()
     CgiRoot *cgiRoot = static_cast<CgiRoot *>(WApplication::instance());
     CgiEnv *cgiEnv = cgiRoot->GetCgiEnvInstance();
 
-    switch (cgiEnv->SubscriptionData.Subscribe) {
-    case CgiEnv::Subscription::Action::Subscribe:
+    switch (cgiEnv->GetInformation().Subscription.Subscribe) {
+    case CgiEnv::InformationRecord::SubscriptionRecord::Action::Subscribe:
         container->addWidget(m_pimpl->GetSubscribeForm());
         break;
-    case CgiEnv::Subscription::Action::Confirm:
+    case CgiEnv::InformationRecord::SubscriptionRecord::Action::Confirm:
         container->addWidget(m_pimpl->GetConfirmationPage());
         break;
-    case CgiEnv::Subscription::Action::Unsubscribe:
+    case CgiEnv::InformationRecord::SubscriptionRecord::Action::Unsubscribe:
         container->addWidget(m_pimpl->GetUnsubscribeForm());
         break;
-    case CgiEnv::Subscription::Action::Cancel:
+    case CgiEnv::InformationRecord::SubscriptionRecord::Action::Cancel:
         container->addWidget(m_pimpl->GetCancellationPage());
         break;
-    case CgiEnv::Subscription::Action::None:
+    case CgiEnv::InformationRecord::SubscriptionRecord::Action::None:
         container->addWidget(m_pimpl->GetSubscribeForm());
         break;
     }
@@ -210,7 +211,8 @@ void Subscription::Impl::OnContentsCheckBoxStateChanged(Wt::WCheckBox *checkbox)
                     checkbox->setChecked(true);
                 }
             }
-        } catch (...) {  }
+        } catch (...) {
+        }
     }
 }
 
@@ -225,39 +227,44 @@ void Subscription::Impl::OnSubscribeFormSubmitted()
     CgiRoot *cgiRoot = static_cast<CgiRoot *>(WApplication::instance());
     CgiEnv *cgiEnv = cgiRoot->GetCgiEnvInstance();
 
-    if (!EnContentsCheckBox->isChecked() && !FaContentsCheckBox->isChecked()) {
-        if (cgiEnv->GetCurrentLanguage() == CgiEnv::Language::Fa) {
-            FaContentsCheckBox->setFocus();
-            return;
-        } else {
-            EnContentsCheckBox->setFocus();
-            return;
-        }
-    }
-
     try {
+        if (!EnContentsCheckBox->isChecked() && !FaContentsCheckBox->isChecked()) {
+            if (cgiEnv->GetInformation().Client.Language.Code
+                    == CgiEnv::InformationRecord::ClientRecord::LanguageCode::Fa) {
+                FaContentsCheckBox->setFocus();
+                return;
+            } else {
+                EnContentsCheckBox->setFocus();
+                return;
+            }
+        }
+
         CDate::Now n(CDate::Timezone::UTC);
         string date(lexical_cast<std::string>(n.RawTime()));
         string inbox(EmailLineEdit->text().trim().toUTF8());
 
-        string pending_confirm;
+        string pendingConfirm;
         if (EnContentsCheckBox->isChecked() && FaContentsCheckBox->isChecked()) {
-            pending_confirm = "en_fa";
+            pendingConfirm = "en_fa";
         } else if (EnContentsCheckBox->isChecked()) {
-            pending_confirm = "en";
+            pendingConfirm = "en";
         } else if (FaContentsCheckBox->isChecked()) {
-            pending_confirm = "fa";
+            pendingConfirm = "fa";
         } else {
-            pending_confirm = "none";
+            pendingConfirm = "none";
         }
 
-        transaction guard(Service::Pool::Database()->Sql());
+        auto conn = Pool::Database().Connection();
+        conn->activate();
+        pqxx::work txn(*conn.get());
 
-        result r = Pool::Database()->Sql()
-                << (format("SELECT uuid FROM \"%1%\""
-                           " WHERE inbox=?;")
-                    % Pool::Database()->GetTableName("SUBSCRIBERS")).str()
-                << inbox << row;
+        string query((boost::format("SELECT uuid FROM \"%1%\""
+                                    " WHERE inbox = %2%;")
+                      % txn.esc(Service::Pool::Database().GetTableName("SUBSCRIBERS"))
+                      % txn.quote(inbox)).str());
+        LOG_INFO("Running query...", query, cgiEnv->GetInformation().ToJson());
+
+        result r = txn.exec(query);
 
         string uuid;
 
@@ -265,31 +272,32 @@ void Subscription::Impl::OnSubscribeFormSubmitted()
             while (true) {
                 CoreLib::Random::Uuid(uuid);
 
-                r = Pool::Database()->Sql()
-                        << (format("SELECT inbox FROM \"%1%\""
-                                   " WHERE uuid=?;")
-                            % Pool::Database()->GetTableName("SUBSCRIBERS")).str()
-                        << uuid << row;
+                query.assign((boost::format("SELECT inbox FROM \"%1%\""
+                                            " WHERE uuid = %2%;")
+                              % txn.esc(Service::Pool::Database().GetTableName("SUBSCRIBERS"))
+                              % txn.quote(uuid)).str());
+                LOG_INFO("Running query...", query, cgiEnv->GetInformation().ToJson());
+
+                r = txn.exec(query);
 
                 if (r.empty()) {
                     break;
                 }
             }
 
-            Pool::Database()->Insert("SUBSCRIBERS",
-                                     "inbox, uuid, subscription, pending_confirm, pending_cancel, join_date, update_date",
-                                     { inbox, uuid, "none", pending_confirm, "none", date, date });
+            Pool::Database().Insert("SUBSCRIBERS",
+                                    "inbox, uuid, subscription, pending_confirm, pending_cancel, join_date, update_date",
+            { inbox, uuid, "none", pendingConfirm, "none", date, date });
         } else {
-            r >> uuid;
+            const result::tuple row(r[0]);
+            uuid.assign(row["uuid"].c_str());
 
-            Pool::Database()->Update("SUBSCRIBERS",
-                                     "inbox",
-                                     inbox,
-                                     "pending_confirm=?, pending_cancel=?",
-                                     { pending_confirm, "none" });
+            Pool::Database().Update("SUBSCRIBERS",
+                                    "inbox",
+                                    inbox,
+                                    "pending_confirm=?, pending_cancel=?",
+            { pendingConfirm, "none" });
         }
-
-        guard.commit();
 
         SendMessage(Message::Confirm, uuid, inbox);
 
@@ -301,20 +309,22 @@ void Subscription::Impl::OnSubscribeFormSubmitted()
         MessageBox->show();
 
         this->GenerateCaptcha();
+    }
 
-        return;
+    catch (const pqxx::sql_error &ex) {
+        LOG_ERROR(ex.what(), ex.query(), cgiEnv->GetInformation().ToJson());
     }
 
     catch (const boost::exception &ex) {
-        LOG_ERROR(boost::diagnostic_information(ex));
+        LOG_ERROR(boost::diagnostic_information(ex), cgiEnv->GetInformation().ToJson());
     }
 
     catch (const std::exception &ex) {
-        LOG_ERROR(ex.what());
+        LOG_ERROR(ex.what(), cgiEnv->GetInformation().ToJson());
     }
 
     catch (...) {
-        LOG_ERROR(UNKNOWN_ERROR);
+        LOG_ERROR(UNKNOWN_ERROR, cgiEnv->GetInformation().ToJson());
     }
 }
 
@@ -329,17 +339,18 @@ void Subscription::Impl::OnUnsubscribeFormSubmitted()
     CgiRoot *cgiRoot = static_cast<CgiRoot *>(WApplication::instance());
     CgiEnv *cgiEnv = cgiRoot->GetCgiEnvInstance();
 
-    if (!EnContentsCheckBox->isChecked() && !FaContentsCheckBox->isChecked()) {
-        if (cgiEnv->GetCurrentLanguage() == CgiEnv::Language::Fa) {
-            FaContentsCheckBox->setFocus();
-            return;
-        } else {
-            EnContentsCheckBox->setFocus();
-            return;
-        }
-    }
-
     try {
+        if (!EnContentsCheckBox->isChecked() && !FaContentsCheckBox->isChecked()) {
+            if (cgiEnv->GetInformation().Client.Language.Code
+                    == CgiEnv::InformationRecord::ClientRecord::LanguageCode::Fa) {
+                FaContentsCheckBox->setFocus();
+                return;
+            } else {
+                EnContentsCheckBox->setFocus();
+                return;
+            }
+        }
+
         string inbox(EmailLineEdit->text().trim().toUTF8());
 
         string pending_cancel;
@@ -354,17 +365,19 @@ void Subscription::Impl::OnUnsubscribeFormSubmitted()
             pending_cancel = "none";
         }
 
-        transaction guard(Service::Pool::Database()->Sql());
+        auto conn = Pool::Database().Connection();
+        conn->activate();
+        pqxx::work txn(*conn.get());
 
-        result r = Pool::Database()->Sql()
-                << (format("SELECT inbox FROM \"%1%\""
-                           " WHERE inbox=?;")
-                    % Pool::Database()->GetTableName("SUBSCRIBERS")).str()
-                << inbox << row;
+        string query((boost::format("SELECT inbox FROM \"%1%\""
+                                    " WHERE inbox = %2%;")
+                      % txn.esc(Service::Pool::Database().GetTableName("SUBSCRIBERS"))
+                      % txn.quote(inbox)).str());
+        LOG_INFO("Running query...", query, cgiEnv->GetInformation().ToJson());
+
+        result r = txn.exec(query);
 
         if (r.empty()) {
-            guard.rollback();
-
             MessageBox = std::make_unique<WMessageBox>(tr("home-subscription-invalid-recipient-id-title"),
                                                        tr("home-subscription-invalid-recipient-id-message"),
                                                        Information, NoButton);
@@ -377,15 +390,13 @@ void Subscription::Impl::OnUnsubscribeFormSubmitted()
             return;
         }
 
-        Pool::Database()->Update("SUBSCRIBERS",
-                                 "inbox",
-                                 inbox,
-                                 "pending_cancel=?",
-                                 { pending_cancel });
+        Pool::Database().Update("SUBSCRIBERS",
+                                "inbox",
+                                inbox,
+                                "pending_cancel=?",
+        { pending_cancel });
 
-        guard.commit();
-
-        SendMessage(Message::Cancel, cgiEnv->SubscriptionData.Uuid, inbox);
+        SendMessage(Message::Cancel, cgiEnv->GetInformation().Subscription.Uuid, inbox);
 
         MessageBox = std::make_unique<WMessageBox>(tr("home-subscription-unsubscribe-success-dialog-title"),
                                                    tr("home-subscription-unsubscribe-success-dialog-message"),
@@ -395,20 +406,22 @@ void Subscription::Impl::OnUnsubscribeFormSubmitted()
         MessageBox->show();
 
         this->GenerateCaptcha();
+    }
 
-        return;
+    catch (const pqxx::sql_error &ex) {
+        LOG_ERROR(ex.what(), ex.query(), cgiEnv->GetInformation().ToJson());
     }
 
     catch (const boost::exception &ex) {
-        LOG_ERROR(boost::diagnostic_information(ex));
+        LOG_ERROR(boost::diagnostic_information(ex), cgiEnv->GetInformation().ToJson());
     }
 
     catch (const std::exception &ex) {
-        LOG_ERROR(ex.what());
+        LOG_ERROR(ex.what(), cgiEnv->GetInformation().ToJson());
     }
 
     catch (...) {
-        LOG_ERROR(UNKNOWN_ERROR);
+        LOG_ERROR(UNKNOWN_ERROR, cgiEnv->GetInformation().ToJson());
     }
 }
 
@@ -424,8 +437,10 @@ Wt::WWidget *Subscription::Impl::GetSubscribeForm()
     CgiRoot *cgiRoot = static_cast<CgiRoot *>(WApplication::instance());
     CgiEnv *cgiEnv = cgiRoot->GetCgiEnvInstance();
 
-    if (cgiEnv->SubscriptionData.Subscribe != CgiEnv::Subscription::Action::Subscribe
-            && cgiEnv->SubscriptionData.Subscribe != CgiEnv::Subscription::Action::None) {
+    if (cgiEnv->GetInformation().Subscription.Subscribe
+            != CgiEnv::InformationRecord::SubscriptionRecord::Action::Subscribe
+            && cgiEnv->GetInformation().Subscription.Subscribe
+            != CgiEnv::InformationRecord::SubscriptionRecord::Action::None) {
         return new WText(L"Oops!");
     }
 
@@ -433,31 +448,33 @@ Wt::WWidget *Subscription::Impl::GetSubscribeForm()
     tmpl->setId("Subscribe");
     tmpl->setStyleClass("container-table");
 
-    string htmlData;
-    string file;
-    if (cgiEnv->GetCurrentLanguage() == CgiEnv::Language::Fa) {
-        file = "../templates/home-subscription-subscribe-fa.wtml";
-    } else {
-        file = "../templates/home-subscription-subscribe.wtml";
-    }
-
     try {
+        string htmlData;
+        string file;
+        if (cgiEnv->GetInformation().Client.Language.Code
+                == CgiEnv::InformationRecord::ClientRecord::LanguageCode::Fa) {
+            file = "../templates/home-subscription-subscribe-fa.wtml";
+        } else {
+            file = "../templates/home-subscription-subscribe.wtml";
+        }
+
         if (CoreLib::FileSystem::Read(file, htmlData)) {
             /// Fill the template
             tmpl->setTemplateText(WString::fromUTF8(htmlData), TextFormat::XHTMLUnsafeText);
 
             EmailLineEdit = new WLineEdit();
             EmailLineEdit->setPlaceholderText(tr("home-subscription-subscribe-email-placeholder"));
-            WRegExpValidator *emailValidator = new WRegExpValidator(Pool::Storage()->RegexEmail());
+            WRegExpValidator *emailValidator = new WRegExpValidator(Pool::Storage().RegexEmail());
             emailValidator->setFlags(MatchCaseInsensitive);
             emailValidator->setMandatory(true);
             EmailLineEdit->setValidator(emailValidator);
 
-            if (cgiEnv->SubscriptionData.Subscribe == CgiEnv::Subscription::Action::Subscribe) {
-                static const regex REGEX_EMAIL(Pool::Storage()->RegexEmail());
+            if (cgiEnv->GetInformation().Subscription.Subscribe
+                    == CgiEnv::InformationRecord::SubscriptionRecord::Action::Subscribe) {
+                static const regex REGEX_EMAIL(Pool::Storage().RegexEmail());
                 smatch result;
-                if (regex_search(cgiEnv->SubscriptionData.Inbox, result, REGEX_EMAIL)) {
-                    EmailLineEdit->setText(WString::fromUTF8(cgiEnv->SubscriptionData.Inbox));
+                if (regex_search(cgiEnv->GetInformation().Subscription.Inbox, result, REGEX_EMAIL)) {
+                    EmailLineEdit->setText(WString::fromUTF8(cgiEnv->GetInformation().Subscription.Inbox));
                 }
             }
 
@@ -467,20 +484,27 @@ Wt::WWidget *Subscription::Impl::GetSubscribeForm()
             EnContentsCheckBox = new WCheckBox();
             FaContentsCheckBox = new WCheckBox();
 
-            if ((cgiEnv->SubscriptionData.Subscribe == CgiEnv::Subscription::Action::Subscribe
-                 || cgiEnv->SubscriptionData.Subscribe == CgiEnv::Subscription::Action::None)
-                    && cgiEnv->SubscriptionData.Languages.size() > 0) {
-                if (std::find(cgiEnv->SubscriptionData.Languages.begin(), cgiEnv->SubscriptionData.Languages.end(),
-                              CgiEnv::Subscription::Language::En) != cgiEnv->SubscriptionData.Languages.end()) {
+            if ((cgiEnv->GetInformation().Subscription.Subscribe
+                 == CgiEnv::InformationRecord::SubscriptionRecord::Action::Subscribe
+                 || cgiEnv->GetInformation().Subscription.Subscribe
+                 == CgiEnv::InformationRecord::SubscriptionRecord::Action::None)
+                    && cgiEnv->GetInformation().Subscription.Languages.size() > 0) {
+                if (std::find(cgiEnv->GetInformation().Subscription.Languages.begin(),
+                              cgiEnv->GetInformation().Subscription.Languages.end(),
+                              CgiEnv::InformationRecord::SubscriptionRecord::Language::En)
+                        != cgiEnv->GetInformation().Subscription.Languages.end()) {
                     EnContentsCheckBox->setChecked(true);
                 }
 
-                if (std::find(cgiEnv->SubscriptionData.Languages.begin(), cgiEnv->SubscriptionData.Languages.end(),
-                              CgiEnv::Subscription::Language::Fa) != cgiEnv->SubscriptionData.Languages.end()) {
+                if (std::find(cgiEnv->GetInformation().Subscription.Languages.begin(),
+                              cgiEnv->GetInformation().Subscription.Languages.end(),
+                              CgiEnv::InformationRecord::SubscriptionRecord::Language::Fa)
+                        != cgiEnv->GetInformation().Subscription.Languages.end()) {
                     FaContentsCheckBox->setChecked(true);
                 }
             } else {
-                if (cgiEnv->GetCurrentLanguage() == CgiEnv::Language::Fa) {
+                if (cgiEnv->GetInformation().Client.Language.Code
+                        == CgiEnv::InformationRecord::ClientRecord::LanguageCode::Fa) {
                     EnContentsCheckBox->setChecked(true);
                     FaContentsCheckBox->setChecked(true);
                 } else {
@@ -539,16 +563,20 @@ Wt::WWidget *Subscription::Impl::GetSubscribeForm()
         }
     }
 
+    catch (const pqxx::sql_error &ex) {
+        LOG_ERROR(ex.what(), ex.query(), cgiEnv->GetInformation().ToJson());
+    }
+
     catch (const boost::exception &ex) {
-        LOG_ERROR(boost::diagnostic_information(ex));
+        LOG_ERROR(boost::diagnostic_information(ex), cgiEnv->GetInformation().ToJson());
     }
 
     catch (const std::exception &ex) {
-        LOG_ERROR(ex.what());
+        LOG_ERROR(ex.what(), cgiEnv->GetInformation().ToJson());
     }
 
     catch (...) {
-        LOG_ERROR(UNKNOWN_ERROR);
+        LOG_ERROR(UNKNOWN_ERROR, cgiEnv->GetInformation().ToJson());
     }
 
     return tmpl;
@@ -559,7 +587,8 @@ Wt::WWidget *Subscription::Impl::GetConfirmationPage()
     CgiRoot *cgiRoot = static_cast<CgiRoot *>(WApplication::instance());
     CgiEnv *cgiEnv = cgiRoot->GetCgiEnvInstance();
 
-    if (cgiEnv->SubscriptionData.Subscribe != CgiEnv::Subscription::Action::Confirm) {
+    if (cgiEnv->GetInformation().Subscription.Subscribe
+            != CgiEnv::InformationRecord::SubscriptionRecord::Action::Confirm) {
         return new WText(L"Oops!");
     }
 
@@ -568,9 +597,10 @@ Wt::WWidget *Subscription::Impl::GetConfirmationPage()
     tmpl->setStyleClass("container-table");
 
     try {
-        static const regex REGEX_UUID(Pool::Storage()->RegexUuid());
+        static const regex REGEX_UUID(Pool::Storage().RegexUuid());
         smatch result;
-        if (cgiEnv->SubscriptionData.Uuid == "" || !regex_search(cgiEnv->SubscriptionData.Uuid, result, REGEX_UUID)) {
+        if (cgiEnv->GetInformation().Subscription.Uuid == ""
+                || !regex_search(cgiEnv->GetInformation().Subscription.Uuid, result, REGEX_UUID)) {
             cgiRoot->setTitle(tr("home-subscription-invalid-recipient-id-title"));
             this->GetMessageTemplate(tmpl,
                                      tr("home-subscription-invalid-recipient-id-title"),
@@ -578,11 +608,17 @@ Wt::WWidget *Subscription::Impl::GetConfirmationPage()
             return tmpl;
         }
 
-        cppdb::result r = Pool::Database()->Sql()
-                << (format("SELECT inbox, subscription, pending_confirm FROM \"%1%\""
-                           " WHERE uuid=?;")
-                    % Pool::Database()->GetTableName("SUBSCRIBERS")).str()
-                << cgiEnv->SubscriptionData.Uuid << row;
+        auto conn = Pool::Database().Connection();
+        conn->activate();
+        pqxx::work txn(*conn.get());
+
+        string query((boost::format("SELECT inbox, subscription, pending_confirm FROM \"%1%\""
+                                    " WHERE uuid = %2%;")
+                      % txn.esc(Service::Pool::Database().GetTableName("SUBSCRIBERS"))
+                      % txn.quote(cgiEnv->GetInformation().Subscription.Uuid)).str());
+        LOG_INFO("Running query...", query, cgiEnv->GetInformation().ToJson());
+
+        pqxx::result r = txn.exec(query);
 
         if (r.empty()) {
             cgiRoot->setTitle(tr("home-subscription-invalid-recipient-id-title"));
@@ -595,34 +631,35 @@ Wt::WWidget *Subscription::Impl::GetConfirmationPage()
         CDate::Now n(CDate::Timezone::UTC);
         string date(lexical_cast<std::string>(n.RawTime()));
 
-        string inbox;
-        string subscription;
-        string pending_confirm;
-        r >> inbox >> subscription >> pending_confirm;
+        const result::tuple row(r[0]);
+        const string inbox(row["inbox"].c_str());
+        const string subscription(row["subscription"].c_str());
+        const string pendingConfirm(row["pending_confirm"].c_str());
 
-        if (pending_confirm == "none" && subscription == "none") {
-            cgiEnv->SubscriptionData.Subscribe = CgiEnv::Subscription::Action::Subscribe;
-            cgiEnv->SubscriptionData.Inbox = inbox;
+        if (pendingConfirm == "none" && subscription == "none") {
+            cgiEnv->SetSubscriptionAction(CgiEnv::InformationRecord::SubscriptionRecord::Action::Subscribe);
+            cgiEnv->SetSubscriptionInbox(inbox);
 
             if (subscription == "en_fa") {
-                cgiEnv->SubscriptionData.Languages.push_back(CgiEnv::Subscription::Language::En);
-                cgiEnv->SubscriptionData.Languages.push_back(CgiEnv::Subscription::Language::Fa);
+                cgiEnv->AddSubscriptionLanguage(CgiEnv::InformationRecord::SubscriptionRecord::Language::En);
+                cgiEnv->AddSubscriptionLanguage(CgiEnv::InformationRecord::SubscriptionRecord::Language::Fa);
             } else if (subscription == "en") {
-                cgiEnv->SubscriptionData.Languages.push_back(CgiEnv::Subscription::Language::En);
+                cgiEnv->AddSubscriptionLanguage(CgiEnv::InformationRecord::SubscriptionRecord::Language::En);
             } else if (subscription == "fa") {
-                cgiEnv->SubscriptionData.Languages.push_back(CgiEnv::Subscription::Language::Fa);
+                cgiEnv->AddSubscriptionLanguage(CgiEnv::InformationRecord::SubscriptionRecord::Language::Fa);
             } else {
-                cgiEnv->SubscriptionData.Languages.push_back(CgiEnv::Subscription::Language::En);
+                cgiEnv->AddSubscriptionLanguage(CgiEnv::InformationRecord::SubscriptionRecord::Language::En);
 
-                if (cgiEnv->GetCurrentLanguage() == CgiEnv::Language::Fa) {
-                    cgiEnv->SubscriptionData.Languages.push_back(CgiEnv::Subscription::Language::Fa);
+                if (cgiEnv->GetInformation().Client.Language.Code
+                        == CgiEnv::InformationRecord::ClientRecord::LanguageCode::Fa) {
+                    cgiEnv->AddSubscriptionLanguage(CgiEnv::InformationRecord::SubscriptionRecord::Language::Fa);
                 }
             }
 
             cgiRoot->setTitle(tr("home-subscription-subscribe-page-title"));
 
             return GetSubscribeForm();
-        } else if (pending_confirm == "none") {
+        } else if (pendingConfirm == "none") {
             cgiRoot->setTitle(tr("home-subscription-confirmation-already-confirmed-title"));
             this->GetMessageTemplate(tmpl,
                                      tr("home-subscription-confirmation-already-confirmed-title"),
@@ -632,7 +669,8 @@ Wt::WWidget *Subscription::Impl::GetConfirmationPage()
 
         string htmlData;
         string file;
-        if (cgiEnv->GetCurrentLanguage() == CgiEnv::Language::Fa) {
+        if (cgiEnv->GetInformation().Client.Language.Code
+                == CgiEnv::InformationRecord::ClientRecord::LanguageCode::Fa) {
             file = "../templates/home-subscription-confirmation-fa.wtml";
         } else {
             file = "../templates/home-subscription-confirmation.wtml";
@@ -642,62 +680,59 @@ Wt::WWidget *Subscription::Impl::GetConfirmationPage()
             /// Fill the template
             tmpl->setTemplateText(WString::fromUTF8(htmlData), TextFormat::XHTMLUnsafeText);
 
-            string final_subscription;
+            string finalSubscription;
 
             if (subscription == "none") {
-                final_subscription = pending_confirm;
+                finalSubscription = pendingConfirm;
             } else if (subscription == "en_fa") {
-                final_subscription = subscription;
+                finalSubscription = subscription;
             } else if (subscription == "en") {
-                if (pending_confirm == "fa") {
-                    final_subscription = "en_fa";
+                if (pendingConfirm == "fa") {
+                    finalSubscription = "en_fa";
                 } else {
-                    final_subscription = subscription;
+                    finalSubscription = subscription;
                 }
             } else if (subscription == "fa") {
-                if (pending_confirm == "en") {
-                    final_subscription = "en_fa";
+                if (pendingConfirm == "en") {
+                    finalSubscription = "en_fa";
                 } else {
-                    final_subscription = subscription;
+                    finalSubscription = subscription;
                 }
             } else {
-                final_subscription = "en_fa";
+                finalSubscription = "en_fa";
             }
 
-            transaction guard(Service::Pool::Database()->Sql());
+            Pool::Database().Update("SUBSCRIBERS",
+                                    "inbox",
+                                    inbox,
+                                    "subscription=?, pending_confirm=?, pending_cancel=?, update_date=?",
+            { finalSubscription, "none", "none", date });
 
-            Pool::Database()->Update("SUBSCRIBERS",
-                                     "inbox",
-                                     inbox,
-                                     "subscription=?, pending_confirm=?, pending_cancel=?, update_date=?",
-                                     { final_subscription, "none", "none", date });
-
-            guard.commit();
-
-            SendMessage(Message::Confirmed, cgiEnv->SubscriptionData.Uuid, inbox);
+            SendMessage(Message::Confirmed, cgiEnv->GetInformation().Subscription.Uuid, inbox);
 
             tmpl->bindString("title", tr("home-subscription-confirmation-congratulation-title"));
             tmpl->bindString("message", tr("home-subscription-confirmation-congratulation-message"));
 
             string homePageFields;
-            if (cgiEnv->GetCurrentLanguage() == CgiEnv::Language::Fa) {
+            if (cgiEnv->GetInformation().Client.Language.Code
+                    == CgiEnv::InformationRecord::ClientRecord::LanguageCode::Fa) {
                 homePageFields = "homepage_url_fa, homepage_title_fa";
             } else {
                 homePageFields = "homepage_url_en, homepage_title_en";
             }
 
-            r = Pool::Database()->Sql()
-                    << (format("SELECT %1%"
-                               " FROM \"%2%\" WHERE pseudo_id = '0';")
-                        % homePageFields
-                        % Pool::Database()->GetTableName("SETTINGS")).str()
-                    << row;
+            query.assign((boost::format("SELECT %1% FROM \"%2%\""
+                                        " WHERE pseudo_id = '0';")
+                          % homePageFields
+                          % txn.esc(Service::Pool::Database().GetTableName("SETTINGS"))).str());
+            LOG_INFO("Running query...", query, cgiEnv->GetInformation().ToJson());
+
+            pqxx::result r = txn.exec(query);
 
             if (!r.empty()) {
-                string homePageUrl;
-                string homePageTitle;
-
-                r >> homePageUrl >> homePageTitle;
+                const result::tuple row(r[0]);
+                const string homePageUrl(row[0].c_str());
+                const string homePageTitle(row[1].c_str());
 
                 tmpl->bindString("home-page-url", WString::fromUTF8(homePageUrl));
                 tmpl->bindString("home-page-title", WString::fromUTF8(homePageTitle));
@@ -705,16 +740,20 @@ Wt::WWidget *Subscription::Impl::GetConfirmationPage()
         }
     }
 
+    catch (const pqxx::sql_error &ex) {
+        LOG_ERROR(ex.what(), ex.query(), cgiEnv->GetInformation().ToJson());
+    }
+
     catch (const boost::exception &ex) {
-        LOG_ERROR(boost::diagnostic_information(ex));
+        LOG_ERROR(boost::diagnostic_information(ex), cgiEnv->GetInformation().ToJson());
     }
 
     catch (const std::exception &ex) {
-        LOG_ERROR(ex.what());
+        LOG_ERROR(ex.what(), cgiEnv->GetInformation().ToJson());
     }
 
     catch (...) {
-        LOG_ERROR(UNKNOWN_ERROR);
+        LOG_ERROR(UNKNOWN_ERROR, cgiEnv->GetInformation().ToJson());
     }
 
     return tmpl;
@@ -725,7 +764,8 @@ Wt::WWidget *Subscription::Impl::GetUnsubscribeForm()
     CgiRoot *cgiRoot = static_cast<CgiRoot *>(WApplication::instance());
     CgiEnv *cgiEnv = cgiRoot->GetCgiEnvInstance();
 
-    if (cgiEnv->SubscriptionData.Subscribe != CgiEnv::Subscription::Action::Unsubscribe) {
+    if (cgiEnv->GetInformation().Subscription.Subscribe
+            != CgiEnv::InformationRecord::SubscriptionRecord::Action::Unsubscribe) {
         return new WText(L"Oops!");
     }
 
@@ -734,9 +774,10 @@ Wt::WWidget *Subscription::Impl::GetUnsubscribeForm()
     tmpl->setStyleClass("container-table");
 
     try {
-        static const regex REGEX_UUID(Pool::Storage()->RegexUuid());
+        static const regex REGEX_UUID(Pool::Storage().RegexUuid());
         smatch result;
-        if (cgiEnv->SubscriptionData.Uuid == "" || !regex_search(cgiEnv->SubscriptionData.Uuid, result, REGEX_UUID)) {
+        if (cgiEnv->GetInformation().Subscription.Uuid == ""
+                || !regex_search(cgiEnv->GetInformation().Subscription.Uuid, result, REGEX_UUID)) {
             cgiRoot->setTitle(tr("home-subscription-invalid-recipient-id-title"));
             this->GetMessageTemplate(tmpl,
                                      tr("home-subscription-invalid-recipient-id-title"),
@@ -744,11 +785,17 @@ Wt::WWidget *Subscription::Impl::GetUnsubscribeForm()
             return tmpl;
         }
 
-        cppdb::result r = Pool::Database()->Sql()
-                << (format("SELECT inbox, subscription FROM \"%1%\""
-                           " WHERE uuid=?;")
-                    % Pool::Database()->GetTableName("SUBSCRIBERS")).str()
-                << cgiEnv->SubscriptionData.Uuid << row;
+        auto conn = Pool::Database().Connection();
+        conn->activate();
+        pqxx::work txn(*conn.get());
+
+        string query((boost::format("SELECT inbox, subscription FROM \"%1%\""
+                                    " WHERE uuid = %2%;")
+                      % txn.esc(Service::Pool::Database().GetTableName("SUBSCRIBERS"))
+                      % txn.quote(cgiEnv->GetInformation().Subscription.Uuid)).str());
+        LOG_INFO("Running query...", query, cgiEnv->GetInformation().ToJson());
+
+        pqxx::result r = txn.exec(query);
 
         if (r.empty()) {
             cgiRoot->setTitle(tr("home-subscription-invalid-recipient-id-title"));
@@ -758,9 +805,9 @@ Wt::WWidget *Subscription::Impl::GetUnsubscribeForm()
             return tmpl;
         }
 
-        string inbox;
-        string subscription;
-        r >> inbox >> subscription;
+        const result::tuple row(r[0]);
+        const string inbox(row["inbox"].c_str());
+        const string subscription(row["subscription"].c_str());
 
         if (subscription == "none") {
             cgiRoot->setTitle(tr("home-subscription-unsubscribe-already-unsubscribed-title"));
@@ -772,7 +819,8 @@ Wt::WWidget *Subscription::Impl::GetUnsubscribeForm()
 
         string htmlData;
         string file;
-        if (cgiEnv->GetCurrentLanguage() == CgiEnv::Language::Fa) {
+        if (cgiEnv->GetInformation().Client.Language.Code
+                == CgiEnv::InformationRecord::ClientRecord::LanguageCode::Fa) {
             file = "../templates/home-subscription-unsubscribe-fa.wtml";
         } else {
             file = "../templates/home-subscription-unsubscribe.wtml";
@@ -784,13 +832,13 @@ Wt::WWidget *Subscription::Impl::GetUnsubscribeForm()
 
             EmailLineEdit = new WLineEdit();
             EmailLineEdit->setPlaceholderText(tr("home-subscription-unsubscribe-email-placeholder"));
-            WRegExpValidator *emailValidator = new WRegExpValidator(Pool::Storage()->RegexEmail());
+            WRegExpValidator *emailValidator = new WRegExpValidator(Pool::Storage().RegexEmail());
             emailValidator->setFlags(MatchCaseInsensitive);
             emailValidator->setMandatory(true);
             EmailLineEdit->setValidator(emailValidator);
             EmailLineEdit->setReadOnly(true);
 
-            static const regex REGEX_EMAIL(Pool::Storage()->RegexEmail());
+            static const regex REGEX_EMAIL(Pool::Storage().RegexEmail());
             if (regex_search(inbox, result, REGEX_EMAIL)) {
                 EmailLineEdit->setText(WString::fromUTF8(inbox));
             }
@@ -801,14 +849,18 @@ Wt::WWidget *Subscription::Impl::GetUnsubscribeForm()
             EnContentsCheckBox = new WCheckBox();
             FaContentsCheckBox = new WCheckBox();
 
-            if (cgiEnv->SubscriptionData.Languages.size() > 0) {
-                if (std::find(cgiEnv->SubscriptionData.Languages.begin(), cgiEnv->SubscriptionData.Languages.end(),
-                              CgiEnv::Subscription::Language::En) != cgiEnv->SubscriptionData.Languages.end()) {
+            if (cgiEnv->GetInformation().Subscription.Languages.size() > 0) {
+                if (std::find(cgiEnv->GetInformation().Subscription.Languages.begin(),
+                              cgiEnv->GetInformation().Subscription.Languages.end(),
+                              CgiEnv::InformationRecord::SubscriptionRecord::Language::En)
+                        != cgiEnv->GetInformation().Subscription.Languages.end()) {
                     EnContentsCheckBox->setChecked(true);
                 }
 
-                if (std::find(cgiEnv->SubscriptionData.Languages.begin(), cgiEnv->SubscriptionData.Languages.end(),
-                              CgiEnv::Subscription::Language::Fa) != cgiEnv->SubscriptionData.Languages.end()) {
+                if (std::find(cgiEnv->GetInformation().Subscription.Languages.begin(),
+                              cgiEnv->GetInformation().Subscription.Languages.end(),
+                              CgiEnv::InformationRecord::SubscriptionRecord::Language::Fa)
+                        != cgiEnv->GetInformation().Subscription.Languages.end()) {
                     FaContentsCheckBox->setChecked(true);
                 }
             } else {
@@ -822,7 +874,8 @@ Wt::WWidget *Subscription::Impl::GetUnsubscribeForm()
                     EnContentsCheckBox->setChecked(false);
                     FaContentsCheckBox->setChecked(true);
                 } else {
-                    if (cgiEnv->GetCurrentLanguage() == CgiEnv::Language::Fa) {
+                    if (cgiEnv->GetInformation().Client.Language.Code
+                            == CgiEnv::InformationRecord::ClientRecord::LanguageCode::Fa) {
                         EnContentsCheckBox->setChecked(false);
                         FaContentsCheckBox->setChecked(true);
                     } else {
@@ -911,16 +964,20 @@ Wt::WWidget *Subscription::Impl::GetUnsubscribeForm()
         }
     }
 
+    catch (const pqxx::sql_error &ex) {
+        LOG_ERROR(ex.what(), ex.query(), cgiEnv->GetInformation().ToJson());
+    }
+
     catch (const boost::exception &ex) {
-        LOG_ERROR(boost::diagnostic_information(ex));
+        LOG_ERROR(boost::diagnostic_information(ex), cgiEnv->GetInformation().ToJson());
     }
 
     catch (const std::exception &ex) {
-        LOG_ERROR(ex.what());
+        LOG_ERROR(ex.what(), cgiEnv->GetInformation().ToJson());
     }
 
     catch (...) {
-        LOG_ERROR(UNKNOWN_ERROR);
+        LOG_ERROR(UNKNOWN_ERROR, cgiEnv->GetInformation().ToJson());
     }
 
     return tmpl;
@@ -931,7 +988,8 @@ Wt::WWidget *Subscription::Impl::GetCancellationPage()
     CgiRoot *cgiRoot = static_cast<CgiRoot *>(WApplication::instance());
     CgiEnv *cgiEnv = cgiRoot->GetCgiEnvInstance();
 
-    if (cgiEnv->SubscriptionData.Subscribe != CgiEnv::Subscription::Action::Cancel) {
+    if (cgiEnv->GetInformation().Subscription.Subscribe
+            != CgiEnv::InformationRecord::SubscriptionRecord::Action::Cancel) {
         return new WText(L"Oops!");
     }
 
@@ -939,65 +997,73 @@ Wt::WWidget *Subscription::Impl::GetCancellationPage()
     tmpl->setId("Cancellation");
     tmpl->setStyleClass("container-table");
 
-    static const regex REGEX_UUID(Pool::Storage()->RegexUuid());
-    smatch result;
-    if (cgiEnv->SubscriptionData.Uuid == "" || !regex_search(cgiEnv->SubscriptionData.Uuid, result, REGEX_UUID)) {
-        cgiRoot->setTitle(tr("home-subscription-invalid-recipient-id-title"));
-        this->GetMessageTemplate(tmpl,
-                                 tr("home-subscription-invalid-recipient-id-title"),
-                                 tr("home-subscription-invalid-recipient-id-message"));
-        return tmpl;
-    }
-
-    cppdb::result r = Pool::Database()->Sql()
-            << (format("SELECT inbox, subscription, pending_cancel FROM \"%1%\""
-                       " WHERE uuid=?;")
-                % Pool::Database()->GetTableName("SUBSCRIBERS")).str()
-            << cgiEnv->SubscriptionData.Uuid << row;
-
-    if (r.empty()) {
-        cgiRoot->setTitle(tr("home-subscription-invalid-recipient-id-title"));
-        this->GetMessageTemplate(tmpl,
-                                 tr("home-subscription-invalid-recipient-id-title"),
-                                 tr("home-subscription-invalid-recipient-id-message"));
-        return tmpl;
-    }
-
-    CDate::Now n(CDate::Timezone::UTC);
-    string date(lexical_cast<std::string>(n.RawTime()));
-
-    if (cgiEnv->SubscriptionData.Timestamp == 0
-            || (n.RawTime() - cgiEnv->SubscriptionData.Timestamp) >= Pool::Storage()->TokenLifespan()) {
-        cgiRoot->setTitle(tr("home-subscription-token-has-expired-title"));
-        this->GetMessageTemplate(tmpl,
-                                 tr("home-subscription-token-has-expired-title"),
-                                 tr("home-subscription-token-has-expired-message"));
-        return tmpl;
-    }
-
-    string inbox;
-    string subscription;
-    string pending_cancel;
-    r >> inbox >> subscription >> pending_cancel;
-
-    if (pending_cancel == "none" && subscription == "none") {
-        cgiRoot->setTitle(tr("home-subscription-cancellation-cancelled-title"));
-        this->GetMessageTemplate(tmpl,
-                                 tr("home-subscription-cancellation-already-cancelled-title"),
-                                 tr("home-subscription-cancellation-already-cancelled-message"));
-        return tmpl;
-    } else if (pending_cancel == "none") {
-        cgiRoot->setTitle(tr("home-subscription-cancellation-invalid-request-title"));
-        this->GetMessageTemplate(tmpl,
-                                 tr("home-subscription-cancellation-invalid-request-title"),
-                                 tr("home-subscription-cancellation-invalid-request-message"));
-        return tmpl;
-    }
-
     try {
+        static const regex REGEX_UUID(Pool::Storage().RegexUuid());
+        smatch result;
+        if (cgiEnv->GetInformation().Subscription.Uuid == ""
+                || !regex_search(cgiEnv->GetInformation().Subscription.Uuid, result, REGEX_UUID)) {
+            cgiRoot->setTitle(tr("home-subscription-invalid-recipient-id-title"));
+            this->GetMessageTemplate(tmpl,
+                                     tr("home-subscription-invalid-recipient-id-title"),
+                                     tr("home-subscription-invalid-recipient-id-message"));
+            return tmpl;
+        }
+
+        auto conn = Pool::Database().Connection();
+        conn->activate();
+        pqxx::work txn(*conn.get());
+
+        string query((boost::format("SELECT inbox, subscription, pending_cancel FROM \"%1%\""
+                                    " WHERE uuid = %2%;")
+                      % txn.esc(Service::Pool::Database().GetTableName("SUBSCRIBERS"))
+                      % txn.quote(cgiEnv->GetInformation().Subscription.Uuid)).str());
+        LOG_INFO("Running query...", query, cgiEnv->GetInformation().ToJson());
+
+        pqxx::result r = txn.exec(query);
+
+        if (r.empty()) {
+            cgiRoot->setTitle(tr("home-subscription-invalid-recipient-id-title"));
+            this->GetMessageTemplate(tmpl,
+                                     tr("home-subscription-invalid-recipient-id-title"),
+                                     tr("home-subscription-invalid-recipient-id-message"));
+            return tmpl;
+        }
+
+        CDate::Now n(CDate::Timezone::UTC);
+        string date(lexical_cast<std::string>(n.RawTime()));
+
+        if (cgiEnv->GetInformation().Subscription.Timestamp == 0
+                || (n.RawTime() - cgiEnv->GetInformation().Subscription.Timestamp) >= Pool::Storage().TokenLifespan()) {
+            cgiRoot->setTitle(tr("home-subscription-token-has-expired-title"));
+            this->GetMessageTemplate(tmpl,
+                                     tr("home-subscription-token-has-expired-title"),
+                                     tr("home-subscription-token-has-expired-message"));
+            return tmpl;
+        }
+
+        const result::tuple row(r[0]);
+        const string inbox(row["inbox"].c_str());
+        const string subscription(row["subscription"].c_str());
+        const string pendingCancel(row["pending_cancel"].c_str());
+
+        if (pendingCancel == "none" && subscription == "none") {
+            cgiRoot->setTitle(tr("home-subscription-cancellation-cancelled-title"));
+            this->GetMessageTemplate(tmpl,
+                                     tr("home-subscription-cancellation-already-cancelled-title"),
+                                     tr("home-subscription-cancellation-already-cancelled-message"));
+            return tmpl;
+        } else if (pendingCancel == "none") {
+            cgiRoot->setTitle(tr("home-subscription-cancellation-invalid-request-title"));
+            this->GetMessageTemplate(tmpl,
+                                     tr("home-subscription-cancellation-invalid-request-title"),
+                                     tr("home-subscription-cancellation-invalid-request-message"));
+            return tmpl;
+        }
+
         string htmlData;
         string file;
-        if (cgiEnv->GetCurrentLanguage() == CgiEnv::Language::Fa) {
+        if (cgiEnv->GetInformation().Client.Language.Code
+                == CgiEnv::InformationRecord::ClientRecord::LanguageCode::Fa) {
             file = "../templates/home-subscription-cancellation-fa.wtml";
         } else {
             file = "../templates/home-subscription-cancellation.wtml";
@@ -1007,60 +1073,57 @@ Wt::WWidget *Subscription::Impl::GetCancellationPage()
             /// Fill the template
             tmpl->setTemplateText(WString::fromUTF8(htmlData), TextFormat::XHTMLUnsafeText);
 
-            string final_subscription;
+            string finalSubscription;
 
-            if (pending_cancel == "en_fa") {
-                final_subscription = "none";
-            } else if (pending_cancel == "en") {
+            if (pendingCancel == "en_fa") {
+                finalSubscription = "none";
+            } else if (pendingCancel == "en") {
                 if (subscription == "en_fa" || subscription == "fa") {
-                    final_subscription = "fa";
+                    finalSubscription = "fa";
                 } else {
-                    final_subscription = "none";
+                    finalSubscription = "none";
                 }
-            } else if (pending_cancel == "fa") {
+            } else if (pendingCancel == "fa") {
                 if (subscription == "en_fa" || subscription == "en") {
-                    final_subscription = "en";
+                    finalSubscription = "en";
                 } else {
-                    final_subscription = "none";
+                    finalSubscription = "none";
                 }
             } else {
-                final_subscription = "none";
+                finalSubscription = "none";
             }
 
-            transaction guard(Service::Pool::Database()->Sql());
+            Pool::Database().Update("SUBSCRIBERS",
+                                    "inbox",
+                                    inbox,
+                                    "subscription=?, pending_cancel=?, update_date=?",
+            { finalSubscription, "none", date });
 
-            Pool::Database()->Update("SUBSCRIBERS",
-                                     "inbox",
-                                     inbox,
-                                     "subscription=?, pending_cancel=?, update_date=?",
-                                     { final_subscription, "none", date });
-
-            guard.commit();
-
-            SendMessage(Message::Cancelled, cgiEnv->SubscriptionData.Uuid, inbox);
+            SendMessage(Message::Cancelled, cgiEnv->GetInformation().Subscription.Uuid, inbox);
 
             tmpl->bindString("title", tr("home-subscription-cancellation-cancelled-title"));
             tmpl->bindString("message", tr("home-subscription-cancellation-cancelled-message"));
 
             string homePageFields;
-            if (cgiEnv->GetCurrentLanguage() == CgiEnv::Language::Fa) {
+            if (cgiEnv->GetInformation().Client.Language.Code
+                    == CgiEnv::InformationRecord::ClientRecord::LanguageCode::Fa) {
                 homePageFields = "homepage_url_fa, homepage_title_fa";
             } else {
                 homePageFields = "homepage_url_en, homepage_title_en";
             }
 
-            r = Pool::Database()->Sql()
-                    << (format("SELECT %1%"
-                               " FROM \"%2%\" WHERE pseudo_id = '0';")
-                        % homePageFields
-                        % Pool::Database()->GetTableName("SETTINGS")).str()
-                    << row;
+            query.assign((boost::format("SELECT %1% FROM \"%2%\""
+                                        " WHERE pseudo_id = '0';")
+                          % homePageFields
+                          % txn.esc(Service::Pool::Database().GetTableName("SETTINGS"))).str());
+            LOG_INFO("Running query...", query, cgiEnv->GetInformation().ToJson());
+
+            r = txn.exec(query);
 
             if (!r.empty()) {
-                string homePageUrl;
-                string homePageTitle;
-
-                r >> homePageUrl >> homePageTitle;
+                const result::tuple row(r[0]);
+                const string homePageUrl(row[0].c_str());
+                const string homePageTitle(row[1].c_str());
 
                 tmpl->bindString("home-page-url", WString::fromUTF8(homePageUrl));
                 tmpl->bindString("home-page-title", WString::fromUTF8(homePageTitle));
@@ -1068,16 +1131,20 @@ Wt::WWidget *Subscription::Impl::GetCancellationPage()
         }
     }
 
+    catch (const pqxx::sql_error &ex) {
+        LOG_ERROR(ex.what(), ex.query(), cgiEnv->GetInformation().ToJson());
+    }
+
     catch (const boost::exception &ex) {
-        LOG_ERROR(boost::diagnostic_information(ex));
+        LOG_ERROR(boost::diagnostic_information(ex), cgiEnv->GetInformation().ToJson());
     }
 
     catch (const std::exception &ex) {
-        LOG_ERROR(ex.what());
+        LOG_ERROR(ex.what(), cgiEnv->GetInformation().ToJson());
     }
 
     catch (...) {
-        LOG_ERROR(UNKNOWN_ERROR);
+        LOG_ERROR(UNKNOWN_ERROR, cgiEnv->GetInformation().ToJson());
     }
 
     return tmpl;
@@ -1088,58 +1155,83 @@ void Subscription::Impl::GetMessageTemplate(WTemplate *tmpl, const Wt::WString &
     CgiRoot *cgiRoot = static_cast<CgiRoot *>(WApplication::instance());
     CgiEnv *cgiEnv = cgiRoot->GetCgiEnvInstance();
 
-    string htmlData;
-    string file;
-    if (cgiEnv->GetCurrentLanguage() == CgiEnv::Language::Fa) {
-        file = "../templates/home-subscription-message-template-fa.wtml";
-    } else {
-        file = "../templates/home-subscription-message-template.wtml";
+    try {
+        string htmlData;
+        string file;
+        if (cgiEnv->GetInformation().Client.Language.Code
+                == CgiEnv::InformationRecord::ClientRecord::LanguageCode::Fa) {
+            file = "../templates/home-subscription-message-template-fa.wtml";
+        } else {
+            file = "../templates/home-subscription-message-template.wtml";
+        }
+
+        if (CoreLib::FileSystem::Read(file, htmlData)) {
+            /// Fill the template
+            tmpl->setTemplateText(WString::fromUTF8(htmlData), TextFormat::XHTMLUnsafeText);
+
+            tmpl->bindString("title", title);
+            tmpl->bindString("message", message);
+
+            string homePageFields;
+            if (cgiEnv->GetInformation().Client.Language.Code
+                    == CgiEnv::InformationRecord::ClientRecord::LanguageCode::Fa) {
+                homePageFields = "homepage_url_fa, homepage_title_fa";
+            } else {
+                homePageFields = "homepage_url_en, homepage_title_en";
+            }
+
+            auto conn = Pool::Database().Connection();
+            conn->activate();
+            pqxx::work txn(*conn.get());
+
+            string query((boost::format("SELECT %1% FROM \"%2%\""
+                                        " WHERE pseudo_id = '0';")
+                          % homePageFields
+                          % txn.esc(Service::Pool::Database().GetTableName("SETTINGS"))).str());
+            LOG_INFO("Running query...", query, cgiEnv->GetInformation().ToJson());
+
+            result r = txn.exec(query);
+
+            if (!r.empty()) {
+                const result::tuple row(r[0]);
+                const string homePageUrl(row[0].c_str());
+                const string homePageTitle(row[1].c_str());
+
+                tmpl->bindString("home-page-url", WString::fromUTF8(homePageUrl));
+                tmpl->bindString("home-page-title", WString::fromUTF8(homePageTitle));
+            }
+        }
     }
 
-    if (CoreLib::FileSystem::Read(file, htmlData)) {
-        /// Fill the template
-        tmpl->setTemplateText(WString::fromUTF8(htmlData), TextFormat::XHTMLUnsafeText);
+    catch (const pqxx::sql_error &ex) {
+        LOG_ERROR(ex.what(), ex.query(), cgiEnv->GetInformation().ToJson());
+    }
 
-        tmpl->bindString("title", title);
-        tmpl->bindString("message", message);
+    catch (const boost::exception &ex) {
+        LOG_ERROR(boost::diagnostic_information(ex), cgiEnv->GetInformation().ToJson());
+    }
 
-        string homePageFields;
-        if (cgiEnv->GetCurrentLanguage() == CgiEnv::Language::Fa) {
-            homePageFields = "homepage_url_fa, homepage_title_fa";
-        } else {
-            homePageFields = "homepage_url_en, homepage_title_en";
-        }
+    catch (const std::exception &ex) {
+        LOG_ERROR(ex.what(), cgiEnv->GetInformation().ToJson());
+    }
 
-        result r = Pool::Database()->Sql()
-                << (format("SELECT %1%"
-                           " FROM \"%2%\" WHERE pseudo_id = '0';")
-                    % homePageFields
-                    % Pool::Database()->GetTableName("SETTINGS")).str()
-                << row;
-
-        if (!r.empty()) {
-            string homePageUrl;
-            string homePageTitle;
-
-            r >> homePageUrl >> homePageTitle;
-
-            tmpl->bindString("home-page-url", WString::fromUTF8(homePageUrl));
-            tmpl->bindString("home-page-title", WString::fromUTF8(homePageTitle));
-        }
+    catch (...) {
+        LOG_ERROR(UNKNOWN_ERROR, cgiEnv->GetInformation().ToJson());
     }
 }
 
 void Subscription::Impl::SendMessage(const Message &type, const string &uuid, const string &inbox)
 {
+    CgiRoot *cgiRoot = static_cast<CgiRoot *>(WApplication::instance());
+    CgiEnv *cgiEnv = cgiRoot->GetCgiEnvInstance();
+
     try {
         CDate::Now n(CDate::Timezone::UTC);
 
-        CgiRoot *cgiRoot = static_cast<CgiRoot *>(WApplication::instance());
-        CgiEnv *cgiEnv = cgiRoot->GetCgiEnvInstance();
-
         string htmlData;
         string file;
-        if (cgiEnv->GetCurrentLanguage() == CgiEnv::Language::Fa) {
+        if (cgiEnv->GetInformation().Client.Language.Code
+                == CgiEnv::InformationRecord::ClientRecord::LanguageCode::Fa) {
             switch (type) {
             case Message::Confirm:
                 file = "../templates/email-confirm-subscription-fa.wtml";
@@ -1177,31 +1269,31 @@ void Subscription::Impl::SendMessage(const Message &type, const string &uuid, co
             switch (type) {
             case Message::Confirm:
                 subject = (format(tr("email-subject-confirm-subscription").toUTF8())
-                                  % cgiEnv->GetServerInfo(CgiEnv::ServerInfo::Host)).str();
+                           % cgiEnv->GetInformation().Server.Hostname).str();
                 break;
             case Message::Confirmed:
                 subject = (format(tr("email-subject-subscription-confirmed").toUTF8())
-                                  % cgiEnv->GetServerInfo(CgiEnv::ServerInfo::Host)).str();
+                           % cgiEnv->GetInformation().Server.Hostname).str();
                 break;
             case Message::Cancel:
                 subject = (format(tr("email-subject-cancel-subscription").toUTF8())
-                                  % cgiEnv->GetServerInfo(CgiEnv::ServerInfo::Host)).str();
+                           % cgiEnv->GetInformation().Server.Hostname).str();
                 break;
             case Message::Cancelled:
                 subject = (format(tr("email-subject-subscription-cancelled").toUTF8())
-                                  % cgiEnv->GetServerInfo(CgiEnv::ServerInfo::Host)).str();
+                           % cgiEnv->GetInformation().Server.Hostname).str();
                 break;
             }
 
             replace_all(htmlData, "${client-ip}",
-                               cgiEnv->GetClientInfo(CgiEnv::ClientInfo::IP));
-            replace_all(htmlData, "${client-location}",
-                               cgiEnv->GetClientInfo(CgiEnv::ClientInfo::Location));
+                        cgiEnv->GetInformation().Client.IPAddress);
             replace_all(htmlData, "${client-user-agent}",
-                               cgiEnv->GetClientInfo(CgiEnv::ClientInfo::Browser));
+                        cgiEnv->GetInformation().Client.UserAgent);
             replace_all(htmlData, "${client-referer}",
-                               cgiEnv->GetClientInfo(CgiEnv::ClientInfo::Referer));
-            if (cgiEnv->GetCurrentLanguage() == CgiEnv::Language::Fa) {
+                        cgiEnv->GetInformation().Client.Referer);
+
+            if (cgiEnv->GetInformation().Client.Language.Code
+                    == CgiEnv::InformationRecord::ClientRecord::LanguageCode::Fa) {
                 replace_all(htmlData, "${time}",
                             (format("%1% ~ %2%")
                              % WString(DateConv::FormatToPersianNums(DateConv::ToJalali(n))).toUTF8()
@@ -1211,30 +1303,67 @@ void Subscription::Impl::SendMessage(const Message &type, const string &uuid, co
                             algorithm::trim_copy(DateConv::DateTimeString(n)));
             }
 
+            replace_all(htmlData, "${client-location-country-code}",
+                        cgiEnv->GetInformation().Client.GeoLocation.CountryCode);
+            replace_all(htmlData, "${client-location-country-code3}",
+                        cgiEnv->GetInformation().Client.GeoLocation.CountryCode3);
+            replace_all(htmlData, "${client-location-country-name}",
+                        cgiEnv->GetInformation().Client.GeoLocation.CountryName);
+            replace_all(htmlData, "${client-location-region}",
+                        cgiEnv->GetInformation().Client.GeoLocation.Region);
+            replace_all(htmlData, "${client-location-city}",
+                        cgiEnv->GetInformation().Client.GeoLocation.City);
+            replace_all(htmlData, "${client-location-postal-code}",
+                        cgiEnv->GetInformation().Client.GeoLocation.PostalCode);
+            replace_all(htmlData, "${client-location-latitude}",
+                        lexical_cast<string>(cgiEnv->GetInformation().Client.GeoLocation.Latitude));
+            replace_all(htmlData, "${client-location-longitude}",
+                        lexical_cast<string>(cgiEnv->GetInformation().Client.GeoLocation.Longitude));
+            replace_all(htmlData, "${client-location-metro-code}",
+                        lexical_cast<string>(cgiEnv->GetInformation().Client.GeoLocation.MetroCode));
+            replace_all(htmlData, "${client-location-dma-code}",
+                        lexical_cast<string>(cgiEnv->GetInformation().Client.GeoLocation.DmaCode));
+            replace_all(htmlData, "${client-location-area-code}",
+                        lexical_cast<string>(cgiEnv->GetInformation().Client.GeoLocation.AreaCode));
+            replace_all(htmlData, "${client-location-charset}",
+                        lexical_cast<string>(cgiEnv->GetInformation().Client.GeoLocation.Charset));
+            replace_all(htmlData, "${client-location-continent-code}",
+                        cgiEnv->GetInformation().Client.GeoLocation.ContinentCode);
+            replace_all(htmlData, "${client-location-netmask}",
+                        lexical_cast<string>(cgiEnv->GetInformation().Client.GeoLocation.Netmask));
+
             string homePageFields;
-            if (cgiEnv->GetCurrentLanguage() == CgiEnv::Language::Fa) {
+            if (cgiEnv->GetInformation().Client.Language.Code
+                    == CgiEnv::InformationRecord::ClientRecord::LanguageCode::Fa) {
                 homePageFields = "homepage_url_fa, homepage_title_fa";
             } else {
                 homePageFields = "homepage_url_en, homepage_title_en";
             }
 
-            result r = Pool::Database()->Sql()
-                    << (format("SELECT %1%"
-                               " FROM \"%2%\" WHERE pseudo_id = '0';")
-                        % homePageFields
-                        % Pool::Database()->GetTableName("SETTINGS")).str()
-                    << row;
+            auto conn = Pool::Database().Connection();
+            conn->activate();
+            pqxx::work txn(*conn.get());
+
+            string query((boost::format("SELECT %1% FROM \"%2%\""
+                                        " WHERE pseudo_id = '0';")
+                          % homePageFields
+                          % txn.esc(Service::Pool::Database().GetTableName("SETTINGS"))).str());
+            LOG_INFO("Running query...", query, cgiEnv->GetInformation().ToJson());
+
+            result r = txn.exec(query);
 
             string homePageUrl;
             string homePageTitle;
             if (!r.empty()) {
-                r >> homePageUrl >> homePageTitle;
+                const result::tuple row(r[0]);
+                homePageUrl.assign(row[0].c_str());
+                homePageTitle.assign(row[1].c_str());
             }
 
             replace_all(htmlData, "${home-page-url}", homePageUrl);
             replace_all(htmlData, "${home-page-title}", homePageTitle);
 
-            string link(cgiEnv->GetServerInfo(CgiEnv::ServerInfo::URL));
+            string link(cgiEnv->GetInformation().Server.Url);
 
             if (!ends_with(link, "/"))
                 link += "/";
@@ -1246,7 +1375,7 @@ void Subscription::Impl::SendMessage(const Message &type, const string &uuid, co
                 replace_all(htmlData, "${confirm-link}", link);
             } else if (type == Message::Cancel) {
                 std::string token;
-                Pool::Crypto()->Encrypt(lexical_cast<string>(n.RawTime()), token);
+                Pool::Crypto().Encrypt(lexical_cast<string>(n.RawTime()), token);
 
                 link += (format("?subscribe=-2&recipient=%1%&token=%2%")
                          % uuid
@@ -1256,22 +1385,26 @@ void Subscription::Impl::SendMessage(const Message &type, const string &uuid, co
             }
 
             CoreLib::Mail *mail = new CoreLib::Mail(
-                        cgiEnv->GetServerInfo(CgiEnv::ServerInfo::NoReplyAddr),
+                        cgiEnv->GetInformation().Server.NoReplyAddress,
                         inbox, subject, htmlData);
             mail->SetDeleteLater(true);
             mail->SendAsync();
         }
     }
 
+    catch (const pqxx::sql_error &ex) {
+        LOG_ERROR(ex.what(), ex.query(), cgiEnv->GetInformation().ToJson());
+    }
+
     catch (const boost::exception &ex) {
-        LOG_ERROR(boost::diagnostic_information(ex));
+        LOG_ERROR(boost::diagnostic_information(ex), cgiEnv->GetInformation().ToJson());
     }
 
     catch (const std::exception &ex) {
-        LOG_ERROR(ex.what());
+        LOG_ERROR(ex.what(), cgiEnv->GetInformation().ToJson());
     }
 
     catch (...) {
-        LOG_ERROR(UNKNOWN_ERROR);
+        LOG_ERROR(UNKNOWN_ERROR, cgiEnv->GetInformation().ToJson());
     }
 }
