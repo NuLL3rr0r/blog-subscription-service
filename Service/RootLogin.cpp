@@ -979,7 +979,9 @@ void RootLogin::Impl::SendLoginAlertEmail(const CDate::Now &n)
         replace_all(htmlData, "${client-referer}",
                     cgiEnv->GetInformation().Client.Referer);
         replace_all(htmlData, "${time}",
-                    algorithm::trim_copy(DateConv::DateTimeString(n)));
+                    (format("%1% ~ %2%")
+                     % WString(DateConv::FormatToPersianNums(DateConv::ToJalali(n))).toUTF8()
+                     % algorithm::trim_copy(DateConv::DateTimeString(n))).str());
         replace_all(htmlData, "${client-location-country-code}",
                     cgiEnv->GetInformation().Client.GeoLocation.CountryCode);
         replace_all(htmlData, "${client-location-country-code3}",
