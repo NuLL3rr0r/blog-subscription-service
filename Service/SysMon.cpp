@@ -181,7 +181,8 @@ WWidget *SysMon::Layout()
 
     string htmlData;
     string file;
-    if (cgiEnv->GetCurrentLanguage() == CgiEnv::Language::Fa) {
+    if (cgiEnv->GetInformation().Client.Language.Code
+            == CgiEnv::InformationRecord::ClientRecord::LanguageCode::Fa) {
         file = "../templates/system-monitor-fa.wtml";
     } else {
         file = "../templates/system-monitor.wtml";
