@@ -35,7 +35,7 @@
 
 #include <boost/exception/diagnostic_information.hpp>
 #include <boost/format.hpp>
-#include <cppdb/frontend.h>
+#include <pqxx/pqxx>
 #include <Wt/WApplication>
 #include <Wt/WLengthValidator>
 #include <Wt/WLineEdit>
@@ -45,6 +45,7 @@
 #include <Wt/WTemplate>
 #include <Wt/WText>
 #include <Wt/WWidget>
+#include <CoreLib/CDate.hpp>
 #include <CoreLib/Crypto.hpp>
 #include <CoreLib/Database.hpp>
 #include <CoreLib/FileSystem.hpp>
@@ -57,8 +58,10 @@
 
 using namespace std;
 using namespace boost;
-using namespace cppdb;
+using namespace pqxx;
 using namespace Wt;
+using namespace CoreLib;
+using namespace CoreLib::CDate;
 using namespace Service;
 
 struct CmsChangeEmail::Impl : public Wt::WObject
@@ -94,15 +97,16 @@ WWidget *CmsChangeEmail::Layout()
 {
     Div *container = new Div("CmsChangeEmail", "container-fluid");
 
-    try {
-        CgiRoot *cgiRoot = static_cast<CgiRoot *>(WApplication::instance());
-        CgiEnv *cgiEnv = cgiRoot->GetCgiEnvInstance();
+    CgiRoot *cgiRoot = static_cast<CgiRoot *>(WApplication::instance());
+    CgiEnv *cgiEnv = cgiRoot->GetCgiEnvInstance();
 
+    try {
         string htmlData;
         string file;
         if (cgiEnv->GetCurrentLanguage() == CgiEnv::Language::Fa) {
             file = "../templates/cms-change-email-fa.wtml";
         } else {
+
             file = "../templates/cms-change-email.wtml";
         }
 
@@ -113,16 +117,16 @@ WWidget *CmsChangeEmail::Layout()
 
             m_pimpl->EmailLineEdit = new WLineEdit();
             m_pimpl->EmailLineEdit->setPlaceholderText(tr("cms-change-email-mailbox-placeholder"));
-            WRegExpValidator *emailValidator = new WRegExpValidator(Pool::Storage()->RegexEmail());
+            WRegExpValidator *emailValidator = new WRegExpValidator(Pool::Storage().RegexEmail());
             emailValidator->setMandatory(true);
             m_pimpl->EmailLineEdit->setValidator(emailValidator);
-            m_pimpl->EmailLineEdit->setText(WString::fromUTF8(cgiEnv->SignedInUser.Email));
+            m_pimpl->EmailLineEdit->setText(WString::fromUTF8(cgiEnv->GetInformation().Client.Session.Email));
 
             m_pimpl->PasswordLineEdit = new WLineEdit();
             m_pimpl->PasswordLineEdit->setEchoMode(WLineEdit::Password);
             m_pimpl->PasswordLineEdit->setPlaceholderText(tr("cms-change-email-password-placeholder"));
-            WLengthValidator *passwordValidator = new WLengthValidator(Pool::Storage()->MinPasswordLength(),
-                                                                       Pool::Storage()->MaxPasswordLength());
+            WLengthValidator *passwordValidator = new WLengthValidator(Pool::Storage().MinPasswordLength(),
+                                                                       Pool::Storage().MaxPasswordLength());
             passwordValidator->setMandatory(true);
             m_pimpl->PasswordLineEdit->setValidator(passwordValidator);
 
@@ -153,15 +157,15 @@ WWidget *CmsChangeEmail::Layout()
     }
 
     catch (const boost::exception &ex) {
-        LOG_ERROR(boost::diagnostic_information(ex));
+        LOG_ERROR(boost::diagnostic_information(ex), cgiEnv->GetInformation().ToJson());
     }
 
     catch (const std::exception &ex) {
-        LOG_ERROR(ex.what());
+        LOG_ERROR(ex.what(), cgiEnv->GetInformation().ToJson());
     }
 
     catch (...) {
-        LOG_ERROR(UNKNOWN_ERROR);
+        LOG_ERROR(UNKNOWN_ERROR, cgiEnv->GetInformation().ToJson());
     }
 
     return container;
@@ -182,47 +186,60 @@ void CmsChangeEmail::Impl::OnEmailChangeFormSubmitted()
         return;
     }
 
-    transaction guard(Service::Pool::Database()->Sql());
+    CgiRoot *cgiRoot = static_cast<CgiRoot *>(WApplication::instance());
+    CgiEnv *cgiEnv = cgiRoot->GetCgiEnvInstance();
 
     try {
-        CgiRoot *cgiRoot = static_cast<CgiRoot *>(WApplication::instance());
-        CgiEnv *cgiEnv = cgiRoot->GetCgiEnvInstance();
+        auto conn = Pool::Database().Connection();
+        conn->activate();
+        pqxx::work txn(*conn.get());
 
         bool success = false;
 
-        result r = Pool::Database()->Sql()
-                << (format("SELECT pwd FROM \"%1%\""
-                                  " WHERE username=?;")
-                    % Pool::Database()->GetTableName("ROOT")).str()
-                << cgiEnv->SignedInUser.Username
-                << row;
+        string query((format("SELECT pwd FROM \"%1%\""
+                             " WHERE user_id = %2%;")
+                      % Pool::Database().GetTableName("ROOT_CREDENTIALS")
+                      %  txn.quote(cgiEnv->GetInformation().Client.Session.UserId)).str());
+        LOG_INFO("Running query...", query, cgiEnv->GetInformation().ToJson());
+
+        result r = txn.exec(query);
 
         if (!r.empty()) {
-            string hashedPwd;
-            r >> hashedPwd;
+            const result::tuple row(r[0]);
 
-            Pool::Crypto()->Decrypt(hashedPwd, hashedPwd);
+            string hashedPwd(row["pwd"].c_str());
+            Pool::Crypto().Decrypt(hashedPwd, hashedPwd);
 
-            if (Pool::Crypto()->Argon2iVerify(PasswordLineEdit->text().toUTF8(), hashedPwd)) {
+            if (Pool::Crypto().Argon2iVerify(PasswordLineEdit->text().toUTF8(), hashedPwd)) {
                 success = true;
             }
         }
 
         if (!success) {
-            guard.rollback();
+            LOG_ERROR("Invalid password!", cgiEnv->GetInformation().ToJson());
             m_parent->HtmlError(tr("cms-change-email-invalid-pwd-error"), ChangeEmailMessageArea);
             PasswordLineEdit->setFocus();
             return;
         }
 
-        Pool::Database()->Update("ROOT",
-                                 "username", cgiEnv->SignedInUser.Username,
-                                 "email=?",
-                                 { EmailLineEdit->text().toUTF8() });
+        CDate::Now n(CDate::Timezone::UTC);
 
-        guard.commit();
+        string email(EmailLineEdit->text().toUTF8());
 
-        cgiEnv->SignedInUser.Email = EmailLineEdit->text().toUTF8();
+        query.assign((boost::format("UPDATE ONLY \"%1%\""
+                                    " SET email = %2%, modification_time = TO_TIMESTAMP(%3%)::TIMESTAMPTZ"
+                                    " WHERE user_id = %4%;")
+                      % txn.esc(Service::Pool::Database().GetTableName("ROOT"))
+                      % txn.quote(email)
+                      % txn.esc(lexical_cast<string>(n.RawTime()))
+                      % txn.quote(cgiEnv->GetInformation().Client.Session.UserId)).str());
+        LOG_INFO("Running query...", query, cgiEnv->GetInformation().ToJson());
+
+        r = txn.exec(query);
+
+        txn.commit();
+
+        cgiEnv->SetSessionEmail(email);
 
         PasswordLineEdit->setText("");
         EmailLineEdit->setFocus();
@@ -232,17 +249,19 @@ void CmsChangeEmail::Impl::OnEmailChangeFormSubmitted()
         return;
     }
 
+    catch (const pqxx::sql_error &ex) {
+        LOG_ERROR(ex.what(), ex.query(), cgiEnv->GetInformation().ToJson());
+    }
+
     catch (const boost::exception &ex) {
-        LOG_ERROR(boost::diagnostic_information(ex));
+        LOG_ERROR(boost::diagnostic_information(ex), cgiEnv->GetInformation().ToJson());
     }
 
     catch (const std::exception &ex) {
-        LOG_ERROR(ex.what());
+        LOG_ERROR(ex.what(), cgiEnv->GetInformation().ToJson());
     }
 
     catch (...) {
-        LOG_ERROR(UNKNOWN_ERROR);
+        LOG_ERROR(UNKNOWN_ERROR, cgiEnv->GetInformation().ToJson());
     }
-
-    guard.rollback();
 }
