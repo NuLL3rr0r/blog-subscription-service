@@ -35,7 +35,7 @@
 
 #include <boost/exception/diagnostic_information.hpp>
 #include <boost/format.hpp>
-#include <cppdb/frontend.h>
+#include <pqxx/pqxx>
 #include <Wt/WApplication>
 #include <Wt/WLengthValidator>
 #include <Wt/WLineEdit>
@@ -44,6 +44,7 @@
 #include <Wt/WTemplate>
 #include <Wt/WText>
 #include <Wt/WWidget>
+#include <CoreLib/CDate.hpp>
 #include <CoreLib/Crypto.hpp>
 #include <CoreLib/Database.hpp>
 #include <CoreLib/FileSystem.hpp>
@@ -56,8 +57,10 @@
 
 using namespace std;
 using namespace boost;
-using namespace cppdb;
+using namespace pqxx;
 using namespace Wt;
+using namespace CoreLib;
+using namespace CoreLib::CDate;
 using namespace Service;
 
 struct CmsChangePassword::Impl : public Wt::WObject
@@ -94,10 +97,10 @@ WWidget *CmsChangePassword::Layout()
 {
     Div *container = new Div("CmsChangePassword", "container-fluid");
 
-    try {
-        CgiRoot *cgiRoot = static_cast<CgiRoot *>(WApplication::instance());
-        CgiEnv *cgiEnv = cgiRoot->GetCgiEnvInstance();
+    CgiRoot *cgiRoot = static_cast<CgiRoot *>(WApplication::instance());
+    CgiEnv *cgiEnv = cgiRoot->GetCgiEnvInstance();
 
+    try {
         string htmlData;
         string file;
         if (cgiEnv->GetCurrentLanguage() == CgiEnv::Language::Fa) {
@@ -114,24 +117,24 @@ WWidget *CmsChangePassword::Layout()
             m_pimpl->CurrentPasswordLineEdit = new WLineEdit();
             m_pimpl->CurrentPasswordLineEdit->setEchoMode(WLineEdit::Password);
             m_pimpl->CurrentPasswordLineEdit->setPlaceholderText(tr("cms-change-password-current-pwd-placeholder"));
-            WLengthValidator *currentPasswordValidator = new WLengthValidator(Pool::Storage()->MinPasswordLength(),
-                                                                              Pool::Storage()->MaxPasswordLength());
+            WLengthValidator *currentPasswordValidator = new WLengthValidator(Pool::Storage().MinPasswordLength(),
+                                                                              Pool::Storage().MaxPasswordLength());
             currentPasswordValidator->setMandatory(true);
             m_pimpl->CurrentPasswordLineEdit->setValidator(currentPasswordValidator);
 
             m_pimpl->NewPasswordLineEdit = new WLineEdit();
             m_pimpl->NewPasswordLineEdit->setEchoMode(WLineEdit::Password);
             m_pimpl->NewPasswordLineEdit->setPlaceholderText(tr("cms-change-password-new--pwdplaceholder"));
-            WLengthValidator *newPasswordValidator = new WLengthValidator(Pool::Storage()->MinPasswordLength(),
-                                                                          Pool::Storage()->MaxPasswordLength());
+            WLengthValidator *newPasswordValidator = new WLengthValidator(Pool::Storage().MinPasswordLength(),
+                                                                          Pool::Storage().MaxPasswordLength());
             newPasswordValidator->setMandatory(true);
             m_pimpl->NewPasswordLineEdit->setValidator(newPasswordValidator);
 
             m_pimpl->ConfirmPasswordLineEdit = new WLineEdit();
             m_pimpl->ConfirmPasswordLineEdit->setEchoMode(WLineEdit::Password);
             m_pimpl->ConfirmPasswordLineEdit->setPlaceholderText(tr("cms-change-password-confirm-pwd-placeholder"));
-            WLengthValidator *confirmPasswordValidator = new WLengthValidator(Pool::Storage()->MinPasswordLength(),
-                                                                              Pool::Storage()->MaxPasswordLength());
+            WLengthValidator *confirmPasswordValidator = new WLengthValidator(Pool::Storage().MinPasswordLength(),
+                                                                              Pool::Storage().MaxPasswordLength());
             confirmPasswordValidator->setMandatory(true);
             m_pimpl->ConfirmPasswordLineEdit->setValidator(confirmPasswordValidator);
 
@@ -166,15 +169,15 @@ WWidget *CmsChangePassword::Layout()
     }
 
     catch (const boost::exception &ex) {
-        LOG_ERROR(boost::diagnostic_information(ex));
+        LOG_ERROR(boost::diagnostic_information(ex), cgiEnv->GetInformation().ToJson());
     }
 
     catch (const std::exception &ex) {
-        LOG_ERROR(ex.what());
+        LOG_ERROR(ex.what(), cgiEnv->GetInformation().ToJson());
     }
 
     catch (...) {
-        LOG_ERROR(UNKNOWN_ERROR);
+        LOG_ERROR(UNKNOWN_ERROR, cgiEnv->GetInformation().ToJson());
     }
 
     return container;
@@ -196,65 +199,76 @@ void CmsChangePassword::Impl::OnPasswordChangeFormSubmitted()
         return;
     }
 
-    transaction guard(Service::Pool::Database()->Sql());
+    CgiRoot *cgiRoot = static_cast<CgiRoot *>(WApplication::instance());
+    CgiEnv *cgiEnv = cgiRoot->GetCgiEnvInstance();
 
     try {
-        CgiRoot *cgiRoot = static_cast<CgiRoot *>(WApplication::instance());
-        CgiEnv *cgiEnv = cgiRoot->GetCgiEnvInstance();
+        auto conn = Pool::Database().Connection();
+        conn->activate();
+        pqxx::work txn(*conn.get());
 
         bool success = false;
 
-        result r = Pool::Database()->Sql()
-                << (format("SELECT pwd FROM \"%1%\""
-                                  " WHERE username=?;")
-                    % Pool::Database()->GetTableName("ROOT")).str()
-                << cgiEnv->SignedInUser.Username
-                << row;
+        string query((format("SELECT pwd FROM \"%1%\""
+                             " WHERE user_id = %2%;")
+                      % Pool::Database().GetTableName("ROOT_CREDENTIALS")
+                      % txn.quote(cgiEnv->GetInformation().Client.Session.UserId)).str());
+        LOG_INFO("Running query...", query, cgiEnv->GetInformation().ToJson());
+
+        result r = txn.exec(query);
 
         if (!r.empty()) {
-            string hashedPwd;
-            r >> hashedPwd;
+            const result::tuple row(r[0]);
 
-            Pool::Crypto()->Decrypt(hashedPwd, hashedPwd);
+            string hashedPwd(row["pwd"].c_str());
+            Pool::Crypto().Decrypt(hashedPwd, hashedPwd);
 
-            if (Pool::Crypto()->Argon2iVerify(CurrentPasswordLineEdit->text().toUTF8(), hashedPwd)) {
+            if (Pool::Crypto().Argon2iVerify(CurrentPasswordLineEdit->text().toUTF8(), hashedPwd)) {
                 success = true;
             }
         }
 
         if (!success) {
-            guard.rollback();
+            LOG_ERROR("Invalid password!", cgiEnv->GetInformation().ToJson());
             m_parent->HtmlError(tr("cms-change-password-invalid-pwd-error"), ChangePasswordMessageArea);
             CurrentPasswordLineEdit->setFocus();
             return;
         }
 
         if (NewPasswordLineEdit->text() == CurrentPasswordLineEdit->text()) {
-            guard.rollback();
+            LOG_ERROR("Password must be different from the current password!", cgiEnv->GetInformation().ToJson());
             m_parent->HtmlError(tr("cms-change-password-same-pwd-error"), ChangePasswordMessageArea);
             NewPasswordLineEdit->setFocus();
             return;
         }
 
         if (NewPasswordLineEdit->text() != ConfirmPasswordLineEdit->text()) {
-            guard.rollback();
+            LOG_ERROR("Password mismatch!", cgiEnv->GetInformation().ToJson());
             m_parent->HtmlError(tr("cms-change-password-confirm-pwd-error"), ChangePasswordMessageArea);
             ConfirmPasswordLineEdit->setFocus();
             return;
         }
 
         string encryptedPwd;
-        Pool::Crypto()->Argon2i(NewPasswordLineEdit->text().toUTF8(), encryptedPwd,
+        Pool::Crypto().Argon2i(NewPasswordLineEdit->text().toUTF8(), encryptedPwd,
                                 CoreLib::Crypto::Argon2iOpsLimit::Sensitive,
                                 CoreLib::Crypto::Argon2iMemLimit::Sensitive);
-        Pool::Crypto()->Encrypt(encryptedPwd, encryptedPwd);
+        Pool::Crypto().Encrypt(encryptedPwd, encryptedPwd);
 
-        Pool::Database()->Update("ROOT",
-                                 "username", cgiEnv->SignedInUser.Username,
-                                 "pwd=?",
-                                 { encryptedPwd });
+        CDate::Now n(CDate::Timezone::UTC);
 
-        guard.commit();
+        query.assign((boost::format("UPDATE ONLY \"%1%\""
+                                    " SET pwd = %2%, modification_time = TO_TIMESTAMP(%3%)::TIMESTAMPTZ"
+                                    " WHERE user_id = %4%;")
+                      % txn.esc(Service::Pool::Database().GetTableName("ROOT_CREDENTIALS"))
+                      % txn.quote(encryptedPwd)
+                      % txn.esc(lexical_cast<string>(n.RawTime()))
+                      % txn.quote(cgiEnv->GetInformation().Client.Session.UserId)).str());
+        LOG_INFO("Running query...", query, cgiEnv->GetInformation().ToJson());
+
+        r = txn.exec(query);
+
+        txn.commit();
 
         CurrentPasswordLineEdit->setText("");
         NewPasswordLineEdit->setText("");
@@ -266,17 +280,19 @@ void CmsChangePassword::Impl::OnPasswordChangeFormSubmitted()
         return;
     }
 
+    catch (const pqxx::sql_error &ex) {
+        LOG_ERROR(ex.what(), ex.query(), cgiEnv->GetInformation().ToJson());
+    }
+
     catch (const boost::exception &ex) {
-        LOG_ERROR(boost::diagnostic_information(ex));
+        LOG_ERROR(boost::diagnostic_information(ex), cgiEnv->GetInformation().ToJson());
     }
 
     catch (const std::exception &ex) {
-        LOG_ERROR(ex.what());
+        LOG_ERROR(ex.what(), cgiEnv->GetInformation().ToJson());
     }
 
     catch (...) {
-        LOG_ERROR(UNKNOWN_ERROR);
+        LOG_ERROR(UNKNOWN_ERROR, cgiEnv->GetInformation().ToJson());
     }
-
-    guard.rollback();
 }
