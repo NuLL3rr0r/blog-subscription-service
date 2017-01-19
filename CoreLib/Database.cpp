@@ -50,6 +50,7 @@
 #include "SharedObjectPool.hpp"
 
 #define     MAX_DATABASE_CONNECTIONS    16
+#define     QUERY_SUCCEED               "CoreLib::Database ==>  Query Succeed!"
 #define     UNKNOWN_ERROR               "Unknow database error!"
 
 using namespace std;
@@ -217,6 +218,8 @@ bool Database::CreateEnum(const std::string &id)
         pqxx::result r = txn.exec((format("SELECT EXISTS ( SELECT 1 FROM pg_type WHERE typname = %1% );")
                                    % txn.quote(m_pimpl->EnumNames[id])).str());
 
+        LOG_INFO(QUERY_SUCCEED, r.query());
+
         if (!r.empty()) {
             std::string exists(r[0][0].as<string>());
 
@@ -228,9 +231,11 @@ bool Database::CreateEnum(const std::string &id)
                     ph += txn.quote(m_pimpl->Enumerators[id][i]);
                 }
 
-                txn.exec((format("CREATE TYPE \"%1%\" AS ENUM ( %2% );")
+                r = txn.exec((format("CREATE TYPE \"%1%\" AS ENUM ( %2% );")
                           % txn.esc(m_pimpl->EnumNames[id])
                           % txn.esc(ph)).str());
+
+                LOG_INFO(QUERY_SUCCEED, r.query());
 
                 txn.commit();
             }
@@ -255,9 +260,11 @@ bool Database::CreateTable(const std::string &id)
         c->activate();
         pqxx::work txn(*c.get());
 
-        txn.exec((format("CREATE TABLE IF NOT EXISTS \"%1%\" ( %2% );")
+        pqxx::result r = txn.exec((format("CREATE TABLE IF NOT EXISTS \"%1%\" ( %2% );")
                   % txn.esc(m_pimpl->TableNames[id])
                   % txn.esc(m_pimpl->TableFields[id])).str());
+
+        LOG_INFO(QUERY_SUCCEED, r.query());
 
         txn.commit();
 
@@ -280,8 +287,10 @@ bool Database::DropTable(const std::string &id)
         c->activate();
         pqxx::work txn(*c.get());
 
-        txn.exec((format("DROP TABLE IF EXISTS \"%1%\";")
+        pqxx::result r = txn.exec((format("DROP TABLE IF EXISTS \"%1%\";")
                   % txn.esc(m_pimpl->TableNames[id])).str());
+
+        LOG_INFO(QUERY_SUCCEED, r.query());
 
         txn.commit();
 
@@ -306,9 +315,11 @@ bool Database::RenameTable(const std::string &id, const std::string &newName)
             c->activate();
             pqxx::work txn(*c.get());
 
-            txn.exec((format("ALTER TABLE \"%1%\" RENAME TO \"%2%\";")
+            pqxx::result r = txn.exec((format("ALTER TABLE \"%1%\" RENAME TO \"%2%\";")
                       % txn.esc(m_pimpl->TableNames[id])
                       % txn.esc(newName)).str());
+
+            LOG_INFO(QUERY_SUCCEED, r.query());
 
             txn.commit();
 
@@ -352,7 +363,9 @@ bool Database::Insert(const std::string &id,
 
         ss << ");";
 
-        txn.exec(ss.str());
+        pqxx::result r = txn.exec(ss.str());
+
+        LOG_INFO(QUERY_SUCCEED, r.query());
 
         txn.commit();
 
@@ -384,11 +397,13 @@ bool Database::Update(const std::string &id,
             processedSet = boost::replace_nth_copy(set, "?", 0, txn.quote(arg));
         }
 
-        txn.exec((format("UPDATE ONLY \"%1%\" SET %2% WHERE \"%3%\" = %4%;")
+        pqxx::result r = txn.exec((format("UPDATE ONLY \"%1%\" SET %2% WHERE \"%3%\" = %4%;")
                   % txn.esc(m_pimpl->TableNames[id])
                   % processedSet
                   % txn.esc(where)
                   % txn.quote(value)).str());
+
+        LOG_INFO(QUERY_SUCCEED, r.query());
 
         txn.commit();
 
@@ -413,10 +428,12 @@ bool Database::Delete(const std::string &id,
         c->activate();
         pqxx::work txn(*c.get());
 
-        txn.exec((format("DELETE FROM ONLY \"%1%\" WHERE \"%2%\"=%3%;")
+        pqxx::result r = txn.exec((format("DELETE FROM ONLY \"%1%\" WHERE \"%2%\"=%3%;")
                   % txn.esc(m_pimpl->TableNames[id])
                   % txn.esc(where)
                   % txn.quote(value)).str());
+
+        LOG_INFO(QUERY_SUCCEED, r.query());
 
         txn.commit();
 
