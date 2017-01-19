@@ -50,7 +50,7 @@
 #include "SharedObjectPool.hpp"
 
 #define     MAX_DATABASE_CONNECTIONS    16
-#define     QUERY_SUCCEED               "CoreLib::Database ==>  Query Succeed!"
+#define     QUERY_SUCCEED               "CoreLib::Database ==>  Query succeed!"
 #define     UNKNOWN_ERROR               "Unknow database error!"
 
 using namespace std;
