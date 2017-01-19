@@ -132,7 +132,7 @@ Database::Database(const std::string &connectionString) :
             c->inhibit_reactivation(false);
             c->activate();
 
-            LOG_INFO((format("Database connection #%1% successed!") % i).str(), (boost::format("Backend PID: %1%") % c->backendpid()).str(), (boost::format("Socket: %1%") % c->sock()).str(), (boost::format("Host Name: %1%") % c->hostname()).str(), (boost::format("Port Number: %1%") % c->port()).str(), (boost::format("Database Name: %1%") % c->dbname()).str(), (boost::format("User Name: %1%") % c->username()).str());
+            LOG_INFO((format("Database connection #%1% succeed!") % i).str(), (boost::format("Backend PID: %1%") % c->backendpid()).str(), (boost::format("Socket: %1%") % c->sock()).str(), (boost::format("Host Name: %1%") % c->hostname()).str(), (boost::format("Port Number: %1%") % c->port()).str(), (boost::format("Database Name: %1%") % c->dbname()).str(), (boost::format("User Name: %1%") % c->username()).str());
 
             m_pimpl->Connections.Add(c);
         } catch (const pqxx::sql_error &ex) {
