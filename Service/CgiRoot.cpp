@@ -101,19 +101,19 @@ CgiRoot::CgiRoot(const WEnvironment &env)
 
         CgiEnv *cgiEnv = this->GetCgiEnvInstance();
 
-        if (cgiEnv->FoundXSS())
-            throw Service::Exception(ALICE);
+        if (cgiEnv->GetInformation().Client.Security.XssAttackDetected)
+            throw Service::Exception<std::wstring>(ALICE);
 
         root()->clear();
 
-        switch (cgiEnv->GetCurrentLanguage()) {
-        case CgiEnv::Language::None:
-        case CgiEnv::Language::Invalid:
+        switch (cgiEnv->GetInformation().Client.Language.Code) {
+        case CgiEnv::InformationRecord::ClientRecord::LanguageCode::None:
+        case CgiEnv::InformationRecord::ClientRecord::LanguageCode::Invalid:
             try {
             m_pimpl->ReloadWithLanguage(env.getCookie("lang"));
         } catch (...) {
             if (algorithm::contains(
-                        cgiEnv->GetClientInfo(CgiEnv::ClientInfo::Location),
+                        cgiEnv->GetInformation().Client.GeoLocation.CountryName,
                         "Iran")
                     || algorithm::starts_with(locale().name(), "fa")) {
                 m_pimpl->ReloadWithLanguage("fa");
@@ -123,39 +123,49 @@ CgiRoot::CgiRoot(const WEnvironment &env)
         }
             return;
 
-        case CgiEnv::Language::En:
-        case CgiEnv::Language::Fa:
+        case CgiEnv::InformationRecord::ClientRecord::LanguageCode::En:
+        case CgiEnv::InformationRecord::ClientRecord::LanguageCode::Fa:
             if (env.supportsCookies()) {
-                setCookie("lang", cgiEnv->GetCurrentLanguageString(),
-                          Pool::Storage()->LanguageCookieLifespan());
+                setCookie("lang",cgiEnv->GetInformation().Client.Language.CodeAsString,
+                          Pool::Storage().LanguageCookieLifespan());
             }
         }
 
-        setLocale(cgiEnv->GetCurrentLanguageString());
+        setLocale(cgiEnv->GetInformation().Client.Language.CodeAsString);
         messageResourceBundle().use(appRoot() + "../i18n/localization");
 
-        if (cgiEnv->GetCurrentLanguageDirection() == CgiEnv::LanguageDirection::RightToLeft) {
+        if (cgiEnv->GetInformation().Client.Language.PageDirection
+                == CgiEnv::InformationRecord::ClientRecord::PageDirection::RightToLeft) {
             setLayoutDirection(Wt::LayoutDirection::RightToLeft);
         }
 
-        if (!cgiEnv->IsRootLoginRequested()) {
+        if (!cgiEnv->GetInformation().Client.Request.Root.Login) {
             root()->addWidget(m_pimpl->GetHomePage());
         } else {
             root()->addWidget(m_pimpl->GetRootLoginPage());
         }
     }
 
-    catch (const Service::Exception &ex) {
+    catch (Service::Exception<std::wstring> &ex) {
         root()->clear();
         root()->addWidget(new WText(ex.What()));
     }
 
-    catch (const CoreLib::Exception &ex) {
-        LOG_ERROR(ex.what());
+    catch (Service::Exception<std::string> &ex) {
+        root()->clear();
+        root()->addWidget(new WText(WString::fromUTF8(ex.What())));
+    }
+
+    catch (CoreLib::Exception<std::wstring> &ex) {
+        LOG_ERROR(Wt::WString(ex.What()).toUTF8(), GetCgiEnvInstance()->GetInformation().ToJson());
+    }
+
+    catch (CoreLib::Exception<std::string> &ex) {
+        LOG_ERROR(ex.What(), GetCgiEnvInstance()->GetInformation().ToJson());
     }
 
     catch (...) {
-        LOG_ERROR(UNKNOWN_ERROR);
+        LOG_ERROR(UNKNOWN_ERROR, GetCgiEnvInstance()->GetInformation().ToJson());
     }
 }
 
@@ -199,8 +209,8 @@ Wt::WWidget *CgiRoot::Impl::GetHomePage()
 
     m_parent->useStyleSheet("css/home.css");
 
-    switch (cgiEnv->GetCurrentLanguage()) {
-    case CgiEnv::Language::En:
+    switch (cgiEnv->GetInformation().Client.Language.Code) {
+    case CgiEnv::InformationRecord::ClientRecord::LanguageCode::En:
         m_parent->useStyleSheet("css/home-ltr.css");
         m_parent->useStyleSheet("css/home-en.css");
 
@@ -214,15 +224,15 @@ Wt::WWidget *CgiRoot::Impl::GetHomePage()
         m_parent->useStyleSheet(Wt::WCssStyleSheet("css/wf-open-sans-v13-latin-regular.css"), "IE");
         m_parent->useStyleSheet(Wt::WCssStyleSheet("css/wf-open-sans-v13-latin-semibold.css"), "IE");
         break;
-    case CgiEnv::Language::Fa:
+    case CgiEnv::InformationRecord::ClientRecord::LanguageCode::Fa:
         m_parent->useStyleSheet("css/home-rtl.css");
         m_parent->useStyleSheet("css/home-fa.css");
 
         /// Farsi Webfont (Yekan 400)
         m_parent->useStyleSheet("css/wf-yekan.css");
         break;
-    case CgiEnv::Language::None:
-    case CgiEnv::Language::Invalid:
+    case CgiEnv::InformationRecord::ClientRecord::LanguageCode::None:
+    case CgiEnv::InformationRecord::ClientRecord::LanguageCode::Invalid:
         break;
     }
 
@@ -237,17 +247,17 @@ Wt::WWidget *CgiRoot::Impl::GetRootLoginPage()
 
     m_parent->useStyleSheet("css/root.css");
 
-    switch (cgiEnv->GetCurrentLanguage()) {
-    case CgiEnv::Language::En:
+    switch (cgiEnv->GetInformation().Client.Language.Code) {
+    case CgiEnv::InformationRecord::ClientRecord::LanguageCode::En:
         m_parent->useStyleSheet("css/root-ltr.css");
         m_parent->useStyleSheet("css/root-en.css");
         break;
-    case CgiEnv::Language::Fa:
+    case CgiEnv::InformationRecord::ClientRecord::LanguageCode::Fa:
         m_parent->useStyleSheet("css/root-rtl.css");
         m_parent->useStyleSheet("css/root-fa.css");
         break;
-    case CgiEnv::Language::None:
-    case CgiEnv::Language::Invalid:
+    case CgiEnv::InformationRecord::ClientRecord::LanguageCode::None:
+    case CgiEnv::InformationRecord::ClientRecord::LanguageCode::Invalid:
         break;
     }
 
