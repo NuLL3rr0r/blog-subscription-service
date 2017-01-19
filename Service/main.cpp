@@ -46,7 +46,10 @@
 #include <boost/filesystem/operations.hpp>
 #include <boost/filesystem/path.hpp>
 #include <boost/format.hpp>
+#include <boost/lexical_cast.hpp>
+#include <pqxx/pqxx>
 #include <Wt/WServer>
+#include <Wt/WString>
 #if MAGICKPP_BACKEND == MAGICKPP_GM
 #include <GraphicsMagick/Magick++.h>
 #elif MAGICKPP_BACKEND == MAGICKPP_IM
@@ -54,10 +57,13 @@
 #endif // MAGICKPP_BACKEND == MAGICKPP_GM
 #include <statgrab.h>
 #include <CoreLib/CoreLib.hpp>
+#include <CoreLib/CDate.hpp>
+#include <CoreLib/Crypto.hpp>
 #include <CoreLib/Database.hpp>
 #include <CoreLib/Exception.hpp>
 #include <CoreLib/Log.hpp>
 #include <CoreLib/make_unique.hpp>
+#include <CoreLib/Random.hpp>
 #include <CoreLib/System.hpp>
 #include "CgiRoot.hpp"
 #include "Exception.hpp"
@@ -74,7 +80,7 @@ int main(int argc, char **argv)
 #endif  // defined ( __unix__ )
 {
     try {
-        /// Gracefully handling SIGTERM
+        /// Gracefully handle SIGTERM
         void (*prev_fn)(int);
         prev_fn = signal(SIGTERM, Terminate);
         if (prev_fn == SIG_IGN)
@@ -87,14 +93,14 @@ int main(int argc, char **argv)
             path = boost::filesystem::system_complete(boost::filesystem::path(argv[0]));
         std::string appId(path.filename().string());
         std::string appPath(boost::algorithm::replace_last_copy(path.string(), appId, ""));
-        Service::Pool::Storage()->AppPath = appPath;
+        Service::Pool::Storage().AppPath = appPath;
 
 
         /// Force changing the current path to executable path
         boost::filesystem::current_path(appPath);
 
 
-        /// Initializing CoreLib
+        /// Initialize CoreLib
         CoreLib::CoreLibInitialize(argc, argv);
 
 
@@ -120,7 +126,7 @@ int main(int argc, char **argv)
 #endif  // defined ( __unix__ )
 
 
-        /// Logging application info
+        /// Log application info
         LOG_INFO("Version Information", "", "BUILD_COMPILER             " VERSION_INFO_BUILD_COMPILER, "BUILD_DATE                 " VERSION_INFO_BUILD_DATE, "BUILD_HOST                 " VERSION_INFO_BUILD_HOST, "BUILD_PROCESSOR            " VERSION_INFO_BUILD_PROCESSOR, "BUILD_SYSTEM               " VERSION_INFO_BUILD_SYSTEM, "PRODUCT_COMPANY_NAME       " VERSION_INFO_PRODUCT_COMPANY_NAME, "PRODUCT_COPYRIGHT          " VERSION_INFO_PRODUCT_COPYRIGHT, "PRODUCT_INTERNAL_NAME      " VERSION_INFO_PRODUCT_INTERNAL_NAME, "PRODUCT_NAME               " VERSION_INFO_PRODUCT_NAME, "PRODUCT_VERSION            " VERSION_INFO_PRODUCT_VERSION, "PRODUCT_DESCRIPTION        " VERSION_INFO_PRODUCT_DESCRIPTION);
 
 
@@ -131,11 +137,18 @@ int main(int argc, char **argv)
         }
 
 
-        /*! Initializing Magick++ or You'll crash HARD!! */
+        /// Initialize CoreLib::Crypto
+        CoreLib::Crypto::Initialize();
+
+
+        /*! Initialize Magick++ or You'll crash HARD!! */
+        LOG_INFO("Initializing Magick++...");
         Magick::InitializeMagick(*argv);
+        LOG_INFO("Magick++ initialized successfully!");
 
 
         /// Initialize libstatgrab
+        LOG_INFO("Initializing libstatgrab...");
 #if defined ( __unix__ )
 #if defined ( __FreeBSD__ )
         sg_init(1);
@@ -149,13 +162,21 @@ int main(int argc, char **argv)
 #endif  // defined ( __unix__ )
         /// Drop setuid/setgid privileges.
         if (sg_drop_privileges() != SG_ERROR_NONE) {
-            LOG_ERROR("Error: Failed to drop privileges!");
+            LOG_FATAL("Error: libstatgrab has failed to drop privileges!");
+            return EXIT_FAILURE;
         }
+        LOG_INFO("libstatgrab initialized successfully!");
+
+
+        /// Prevent libpqxx from crashing the program when a connection to the database breaks
+        signal(SIGPIPE, SIG_IGN);
+
 
         /// Initialize the whole database
         InitializeDatabase();
 
-        /// Starting the server, otherwise going down
+
+        /// Start the server, otherwise go down
         LOG_INFO("Starting the server...");
         Wt::WServer server(argv[0]);
         server.setServerConfiguration(argc, argv, WTHTTP_CONFIGURATION);
@@ -173,15 +194,25 @@ int main(int argc, char **argv)
 
 
         /// Shutdown libstatgrab before return
+        LOG_INFO("Shutting down libstatgrab...");
         sg_shutdown();
+        LOG_INFO("libstatgrab shutdown successfully!");
     }
 
-    catch (const Service::Exception &ex) {
-        LOG_ERROR(ex.what());
+    catch (Service::Exception<std::wstring> &ex) {
+        LOG_ERROR(Wt::WString(ex.What()).toUTF8());
     }
 
-    catch (const CoreLib::Exception &ex) {
-        LOG_ERROR(ex.what());
+    catch (Service::Exception<std::string> &ex) {
+        LOG_ERROR(ex.What());
+    }
+
+    catch (CoreLib::Exception<std::wstring> &ex) {
+        LOG_ERROR(Wt::WString(ex.What()).toUTF8());
+    }
+
+    catch (CoreLib::Exception<std::string> &ex) {
+        LOG_ERROR(ex.What());
     }
 
     catch (const Wt::WServer::Exception &ex) {
@@ -205,41 +236,103 @@ int main(int argc, char **argv)
 
 void Terminate(int signo)
 {
-    LOG_WARNING((boost::format("Terminating by signal %1%...") % signo).str());
-    exit(1);
+    LOG_WARNING((boost::format("Received signal %1%; terminating...") % signo).str());
+    exit(EXIT_FAILURE);
 }
 
 void InitializeDatabase()
 {
     try {
-        Service::Pool::Database()->RegisterEnum("SUBSCRIPTION", "subscription",
-                                                { "none", "en_fa", "en", "fa" });
+        LOG_INFO("main: Initializing database...");
 
-        Service::Pool::Database()->RegisterTable("ROOT", "root",
-                                                 " username TEXT NOT NULL PRIMARY KEY, "
-                                                 " email TEXT NOT NULL UNIQUE, "
-                                                 " last_login_ip TEXT, "
-                                                 " last_login_location TEXT, "
-                                                 " last_login_rawtime TEXT, "
-                                                 " last_login_gdate TEXT, "
-                                                 " last_login_jdate TEXT, "
-                                                 " last_login_time TEXT, "
-                                                 " last_login_user_agent TEXT, "
-                                                 " last_login_referer TEXT, "
-                                                 " pwd TEXT NOT NULL, "
-                                                 " recovery_pwd TEXT ");
+        LOG_INFO("main: Registering database enums...");
 
-        Service::Pool::Database()->RegisterTable("ROOT_SESSIONS", "root_sessions",
-                                                 " token TEXT NOT NULL PRIMARY KEY, "
-                                                 " expiry TEXT NOT NULL DEFAULT '0', "
-                                                 " ip TEXT, "
-                                                 " location TEXT, "
-                                                 " rawtime TEXT, "
-                                                 " gdate TEXT, "
-                                                 " jdate TEXT, "
-                                                 " time TEXT, "
-                                                 " user_agent TEXT, "
-                                                 " referer TEXT ");
+        /// ToDo:
+        /// If there's any enum, they should go here.
+
+        LOG_INFO("main: Registered all database enums!");
+
+        LOG_INFO("main: Registering database tables...");
+
+        Service::Pool::Database().RegisterTable("VERSION", "version",
+                                                " version SMALLINT NOT NULL PRIMARY KEY ");
+
+        Service::Pool::Database().RegisterTable("ROOT", "root",
+                                                " user_id UUID NOT NULL PRIMARY KEY, "
+                                                " username TEXT NOT NULL UNIQUE, "
+                                                " email TEXT NOT NULL UNIQUE, "
+                                                " creation_time TIMESTAMPTZ NOT NULL DEFAULT TIMESTAMPTZ $token$'EPOCH'''$token$, "
+                                                " modification_time TIMESTAMPTZ NOT NULL DEFAULT TIMESTAMPTZ $token$'EPOCH'''$token$ ");
+
+        Service::Pool::Database().RegisterTable("ROOT_CREDENTIALS", "root_credentials",
+                                                " user_id UUID NOT NULL PRIMARY KEY, "
+                                                " pwd TEXT NOT NULL, "
+                                                " modification_time TIMESTAMPTZ NOT NULL DEFAULT TIMESTAMPTZ $token$'EPOCH'''$token$ ");
+
+        Service::Pool::Database().RegisterTable("ROOT_CREDENTIALS_RECOVERY", "root_credentials_recovery",
+                                                " token UUID NOT NULL PRIMARY KEY, "
+                                                " user_id UUID NOT NULL, "
+                                                " expiry TIMESTAMPTZ NOT NULL DEFAULT TIMESTAMPTZ $token$'EPOCH'''$token$, "
+                                                " new_pwd TEXT NOT NULL, "
+                                                " request_time TIMESTAMPTZ NOT NULL, "
+                                                " request_ip_address INET, "
+                                                " request_location_country_code TEXT, "
+                                                " request_location_country_code3 TEXT, "
+                                                " request_location_country_name TEXT, "
+                                                " request_location_region TEXT, "
+                                                " request_location_city TEXT, "
+                                                " request_location_postal_code TEXT, "
+                                                " request_location_latitude TEXT, "
+                                                " request_location_longitude TEXT, "
+                                                " request_location_metro_code TEXT, "
+                                                " request_location_dma_code TEXT, "
+                                                " request_location_area_code TEXT, "
+                                                " request_location_charset TEXT, "
+                                                " request_location_continent_code TEXT, "
+                                                " request_location_netmask TEXT, "
+                                                " request_user_agent TEXT, "
+                                                " request_referer TEXT, "
+                                                " utilization_time TIMESTAMPTZ NOT NULL DEFAULT TIMESTAMPTZ $token$'EPOCH'''$token$, "
+                                                " utilization_ip_address INET, "
+                                                " utilization_location_country_code TEXT, "
+                                                " utilization_location_country_code3 TEXT, "
+                                                " utilization_location_country_name TEXT, "
+                                                " utilization_location_region TEXT, "
+                                                " utilization_location_city TEXT, "
+                                                " utilization_location_postal_code TEXT, "
+                                                " utilization_location_latitude TEXT, "
+                                                " utilization_location_longitude TEXT, "
+                                                " utilization_location_metro_code TEXT, "
+                                                " utilization_location_dma_code TEXT, "
+                                                " utilization_location_area_code TEXT, "
+                                                " utilization_location_charset TEXT, "
+                                                " utilization_location_continent_code TEXT, "
+                                                " utilization_location_netmask TEXT, "
+                                                " utilization_user_agent TEXT, "
+                                                " utilization_referer TEXT ");
+
+        Service::Pool::Database().RegisterTable("ROOT_SESSIONS", "root_sessions",
+                                                " token UUID NOT NULL PRIMARY KEY, "
+                                                " user_id UUID NOT NULL, "
+                                                " expiry TIMESTAMPTZ NOT NULL DEFAULT TIMESTAMPTZ $token$'EPOCH'''$token$, "
+                                                " login_time TIMESTAMPTZ NOT NULL DEFAULT TIMESTAMPTZ $token$'EPOCH'''$token$, "
+                                                " ip_address INET, "
+                                                " location_country_code TEXT, "
+                                                " location_country_code3 TEXT, "
+                                                " location_country_name TEXT, "
+                                                " location_region TEXT, "
+                                                " location_city TEXT, "
+                                                " location_postal_code TEXT, "
+                                                " location_latitude REAL, "
+                                                " location_longitude REAL, "
+                                                " location_metro_code INTEGER, "
+                                                " location_dma_code INTEGER, "
+                                                " location_area_code INTEGER, "
+                                                " location_charset INTEGER, "
+                                                " location_continent_code TEXT, "
+                                                " location_netmask INTEGER, "
+                                                " user_agent TEXT, "
+                                                " referer TEXT ");
 
         Service::Pool::Database()->RegisterTable("SETTINGS", "settings",
                                                  " pseudo_id TEXT NOT NULL PRIMARY KEY, "
@@ -263,58 +356,87 @@ void InitializeDatabase()
                                                  " join_date TEXT NOT NULL, "
                                                  " update_date TEXT NOT NULL ");
 
-        Service::Pool::Database()->RegisterTable("VERSION", "version",
-                                                 " version SMALLINT NOT NULL PRIMARY KEY ");
+        LOG_INFO("main: Registered all database tables!");
 
-        Service::Pool::Database()->Initialize();
 
-        cppdb::transaction guard(Service::Pool::Database()->Sql());
+        LOG_INFO("main: Calling Database::Initialize()...");
+        Service::Pool::Database().Initialize();
 
-        cppdb::result r = Service::Pool::Database()->Sql()
-                << (boost::format("SELECT username"
-                                  " FROM %1% WHERE username=?;")
-                    % Service::Pool::Database()->GetTableName("ROOT")).str()
-                << Service::Pool::Storage()->RootUsername() << cppdb::row;
 
+        LOG_INFO("main: Setting up the database...");
+
+        auto conn = Service::Pool::Database().Connection();
+        conn->activate();
+        pqxx::work txn(*conn.get());
+
+        /// Check the database version
+        pqxx::result r = txn.exec((boost::format("SELECT version FROM \"%1%\" WHERE 1=1;")
+                                   % txn.esc(Service::Pool::Database().GetTableName("VERSION"))).str());
+
+        /// If the database is un-versioned
         if (r.empty()) {
-            Service::Pool::Database()->Insert("ROOT", "username, email, pwd",
-                                              {
-                                                  Service::Pool::Storage()->RootUsername(),
-                                                  Service::Pool::Storage()->RootInitialEmail(),
-                                                  Service::Pool::Storage()->RootInitialPassword()
-                                              });
+            /// Insert the version number 1
+            Service::Pool::Database().Insert("VERSION", "version", { "1" });
         }
 
-        r = Service::Pool::Database()->Sql()
-                << (boost::format("SELECT pseudo_id"
-                                  " FROM %1% WHERE pseudo_id = '0';")
-                    % Service::Pool::Database()->GetTableName("SETTINGS")).str()
-                << cppdb::row;
+        /// Check whether the default root user already exists
+        r = txn.exec((boost::format("SELECT username FROM \"%1%\" WHERE username=%2%;")
+                      % txn.esc(Service::Pool::Database().GetTableName("ROOT"))
+                      % txn.quote(Service::Pool::Storage().RootUsername())).str());
 
+        /// If the default root user does not exists
         if (r.empty()) {
-            Service::Pool::Database()->Insert("SETTINGS",
-                                              "pseudo_id, homepage_url_en, homepage_url_fa,"
-                                              " homepage_title_en, homepage_title_fa",
-                                              {
-                                                  "0",
-                                                  std::string(INITAL_EN_HOME_PAGE_URL),
-                                                  std::string(INITAL_FA_HOME_PAGE_URL),
-                                                  std::string(INITAL_EN_HOME_PAGE_TITLE),
-                                                  std::string(INITAL_FA_HOME_PAGE_TITLE)
-                                              });
+            std::string uuid;
+
+            /// Continue untile we can generate a unique UUID
+            while (true) {
+                /// Generate a new UUID
+                CoreLib::Random::Uuid(uuid);
+
+                /// Query all existing UUIDs in order to avoid a possible duplicate UUID
+                r = txn.exec((boost::format("SELECT user_id FROM \"%1%\" WHERE user_id=%2%;")
+                              % txn.esc(Service::Pool::Database().GetTableName("ROOT"))
+                              % txn.quote(uuid)).str());
+
+                /// Break the loop if the new UUID is not a duplicate
+                if (r.empty()) {
+                    break;
+                }
+            }
+
+            /// Get the current date/time
+            CoreLib::CDate::Now n(CoreLib::CDate::Timezone::UTC);
+
+            /// Insert a new default root user into the database with default password
+            txn.exec((boost::format("INSERT INTO \"%1%\""
+                                    " ( user_id, username, email, creation_time )"
+                                    " VALUES ( %2%, %3%, %4%, TO_TIMESTAMP(%5%)::TIMESTAMPTZ );")
+                      % txn.esc(Service::Pool::Database().GetTableName("ROOT"))
+                      % txn.quote(uuid)
+                      % txn.quote(Service::Pool::Storage().RootUsername())
+                      % txn.quote(Service::Pool::Storage().RootInitialEmail())
+                      % txn.esc(boost::lexical_cast<std::string>(n.RawTime()))).str());
+            Service::Pool::Database().Insert("ROOT_CREDENTIALS",
+                                             "user_id, pwd",
+                                             {
+                                                 uuid,
+                                                 Service::Pool::Storage().RootInitialPassword()
+                                             });
         }
 
-        r = Service::Pool::Database()->Sql()
-                << (boost::format("SELECT version"
-                                  " FROM %1% WHERE 1 = 1;")
-                    % Service::Pool::Database()->GetTableName("VERSION")).str()
-                << cppdb::row;
+        txn.commit();
 
-        if (r.empty()) {
-            Service::Pool::Database()->Insert("VERSION", "version", { "1" });
-        }
+        LOG_INFO("main: Database setup is complete!");
 
-        guard.commit();
+        LOG_INFO("main: Database initialization is complete!");
+    }
+
+    catch (const pqxx::sql_error &ex) {
+        LOG_ERROR(ex.what(), ex.query());
+    }
+
+    catch (const boost::exception &ex) {
+        LOG_ERROR(boost::diagnostic_information(ex));
     }
 
     catch (const std::exception &ex) {
