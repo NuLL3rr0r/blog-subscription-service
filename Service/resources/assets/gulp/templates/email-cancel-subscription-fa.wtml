@@ -72,11 +72,12 @@
                 </td>
                 <td width="16"></td>
                 <td>
-                    <table>
+                    <table style="color: #777; font-size: 11px;">
                         <tr valign="top">
                             <td>
                                 کد کشور
                             </td>
+                            <td width="8"></td>
                             <td>
                                 ${client-location-country-code}
                             </td>
@@ -85,6 +86,7 @@
                             <td>
                                 کد کشور ۳ رقمی
                             </td>
+                            <td width="8"></td>
                             <td>
                                 ${client-location-country-code3}
                             </td>
@@ -93,6 +95,7 @@
                             <td>
                                 کشور
                             </td>
+                            <td width="8"></td>
                             <td>
                                 ${client-location-country-name}
                             </td>
@@ -101,6 +104,7 @@
                             <td>
                                 منطقه
                             </td>
+                            <td width="8"></td>
                             <td>
                                 ${client-location-region}
                             </td>
@@ -109,6 +113,7 @@
                             <td>
                                 شهر
                             </td>
+                            <td width="8"></td>
                             <td>
                                 ${client-location-city}
                             </td>
@@ -117,6 +122,7 @@
                             <td>
                                 کد پستی
                             </td>
+                            <td width="8"></td>
                             <td>
                                 ${client-location-postal-code}
                             </td>
@@ -125,6 +131,7 @@
                             <td>
                                 عرض جغرافیایی
                             </td>
+                            <td width="8"></td>
                             <td>
                                 ${client-location-latitude}
                             </td>
@@ -133,6 +140,7 @@
                             <td>
                                 طول جغرافیایی
                             </td>
+                            <td width="8"></td>
                             <td>
                                 ${client-location-longitude}
                             </td>
@@ -141,6 +149,7 @@
                             <td>
                                 کد مترو
                             </td>
+                            <td width="8"></td>
                             <td>
                                 ${client-location-metro-code}
                             </td>
@@ -149,6 +158,7 @@
                             <td>
                                 کد DMA
                             </td>
+                            <td width="8"></td>
                             <td>
                                 ${client-location-dma-code}
                             </td>
@@ -157,6 +167,7 @@
                             <td>
                                 کد منطقه
                             </td>
+                            <td width="8"></td>
                             <td>
                                 ${client-location-area-code}
                             </td>
@@ -165,6 +176,7 @@
                             <td>
                                 مجموعه کاراکتر
                             </td>
+                            <td width="8"></td>
                             <td>
                                 ${client-location-charset}
                             </td>
@@ -173,6 +185,7 @@
                             <td>
                                 قاره
                             </td>
+                            <td width="8"></td>
                             <td>
                                 ${client-location-continent-code}
                             </td>
@@ -181,6 +194,7 @@
                             <td>
                                 پوشش شبکه
                             </td>
+                            <td width="8"></td>
                             <td>
                                 ${client-location-netmask}
                             </td>

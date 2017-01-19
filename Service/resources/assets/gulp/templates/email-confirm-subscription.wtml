@@ -72,12 +72,12 @@
                 </td>
                 <td width="16"></td>
                 <td>
-                    <table>
+                    <table style="color: #777; font-size: 11px;">
                         <tr valign="top">
                             <td>
                                 Country Code
                             </td>
-                            <td width="16"></td>
+                            <td width="8"></td>
                             <td>
                                 ${client-location-country-code}
                             </td>
@@ -86,7 +86,7 @@
                             <td>
                                 Country Code 3
                             </td>
-                            <td width="16"></td>
+                            <td width="8"></td>
                             <td>
                                 ${client-location-country-code3}
                             </td>
@@ -95,7 +95,7 @@
                             <td>
                                 Country Name
                             </td>
-                            <td width="16"></td>
+                            <td width="8"></td>
                             <td>
                                 ${client-location-country-name}
                             </td>
@@ -104,7 +104,7 @@
                             <td>
                                 Region
                             </td>
-                            <td width="16"></td>
+                            <td width="8"></td>
                             <td>
                                 ${client-location-region}
                             </td>
@@ -113,7 +113,7 @@
                             <td>
                                 City
                             </td>
-                            <td width="16"></td>
+                            <td width="8"></td>
                             <td>
                                 ${client-location-city}
                             </td>
@@ -122,7 +122,7 @@
                             <td>
                                 Postal Code
                             </td>
-                            <td width="16"></td>
+                            <td width="8"></td>
                             <td>
                                 ${client-location-postal-code}
                             </td>
@@ -131,7 +131,7 @@
                             <td>
                                 Latitude
                             </td>
-                            <td width="16"></td>
+                            <td width="8"></td>
                             <td>
                                 ${client-location-latitude}
                             </td>
@@ -140,7 +140,7 @@
                             <td>
                                 Longitude
                             </td>
-                            <td width="16"></td>
+                            <td width="8"></td>
                             <td>
                                 ${client-location-longitude}
                             </td>
@@ -149,7 +149,7 @@
                             <td>
                                 Metro Code
                             </td>
-                            <td width="16"></td>
+                            <td width="8"></td>
                             <td>
                                 ${client-location-metro-code}
                             </td>
@@ -158,7 +158,7 @@
                             <td>
                                 DMA Code
                             </td>
-                            <td width="16"></td>
+                            <td width="8"></td>
                             <td>
                                 ${client-location-dma-code}
                             </td>
@@ -167,7 +167,7 @@
                             <td>
                                 Area Code
                             </td>
-                            <td width="16"></td>
+                            <td width="8"></td>
                             <td>
                                 ${client-location-area-code}
                             </td>
@@ -176,7 +176,7 @@
                             <td>
                                 Charset
                             </td>
-                            <td width="16"></td>
+                            <td width="8"></td>
                             <td>
                                 ${client-location-charset}
                             </td>
@@ -185,7 +185,7 @@
                             <td>
                                 Continent
                             </td>
-                            <td width="16"></td>
+                            <td width="8"></td>
                             <td>
                                 ${client-location-continent-code}
                             </td>
@@ -194,7 +194,7 @@
                             <td>
                                 Netmask
                             </td>
-                            <td width="16"></td>
+                            <td width="8"></td>
                             <td>
                                 ${client-location-netmask}
                             </td>
