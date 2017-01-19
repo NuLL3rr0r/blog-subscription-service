@@ -247,8 +247,8 @@ void InitializeDatabase()
 
         LOG_INFO("main: Registering database enums...");
 
-        /// ToDo:
-        /// If there's any enum, they should go here.
+        Service::Pool::Database().RegisterEnum("SUBSCRIPTION", "subscription",
+        { "none", "en_fa", "en", "fa" });
 
         LOG_INFO("main: Registered all database enums!");
 
