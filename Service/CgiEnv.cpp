@@ -384,7 +384,7 @@ void CgiEnv::Impl::Initialize()
         }
 
         if (it->first == "inbox" && it->second[0] != "") {
-            static const regex REGEX(Pool::Storage()->RegexEmail());
+            static const regex REGEX(Pool::Storage().RegexEmail());
             smatch result;
             if (regex_search(it->second[0], result, REGEX)) {
                 this->Information.Subscription.Inbox.assign(it->second[0]);
@@ -392,7 +392,7 @@ void CgiEnv::Impl::Initialize()
         }
 
         if (it->first == "subscription" && it->second[0] != "") {
-            static const regex REGEX(Pool::Storage()->RegexLanguageArray());
+            static const regex REGEX(Pool::Storage().RegexLanguageArray());
             smatch result;
             if (regex_search(it->second[0], result, REGEX)) {
                 vector<string> vec;
@@ -410,7 +410,7 @@ void CgiEnv::Impl::Initialize()
         }
 
         if (it->first == "recipient" && it->second[0] != "") {
-            static const regex REGEX(Pool::Storage()->RegexUuid());
+            static const regex REGEX(Pool::Storage().RegexUuid());
             smatch result;
             if (regex_search(it->second[0], result, REGEX)) {
                 this->Information.Subscription.Uuid.assign(it->second[0]);
@@ -420,7 +420,7 @@ void CgiEnv::Impl::Initialize()
         if (it->first == "token" && it->second[0] != "") {
             try {
                 string token;
-                Pool::Crypto()->Decrypt(it->second[0], token);
+                Pool::Crypto().Decrypt(it->second[0], token);
                 this->Information.Subscription.Timestamp = lexical_cast<time_t>(token);
             } catch (...) {
             }
