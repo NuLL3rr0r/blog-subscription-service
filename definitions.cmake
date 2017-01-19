@@ -40,24 +40,22 @@ SET (INITAL_FA_HOME_PAGE_URL "http://fa.babaei.net/" CACHE STRING "" )
 SET (INITAL_EN_HOME_PAGE_TITLE "The blog of Mohammad S. Babaei" CACHE STRING "" )
 SET (INITAL_FA_HOME_PAGE_TITLE "وبلاگ محمد صادق بابائی" CACHE STRING "" )
 
-SET ( DATABASE_BACKEND "PGSQL" CACHE STRING "" )
-SET_PROPERTY( CACHE DATABASE_BACKEND PROPERTY STRINGS "SQLITE3" "PGSQL" "MYSQL" )
-
-SET ( SQLITE3_DATABASE_FILE_PATH "../db/" CACHE STRING "" )
-SET ( SQLITE3_DATABASE_FILE_NAME "subscription.db" CACHE STRING "" )
+# Either Keyword/Value Connection Strings or Connection URIs,
+# to set more values such as:
+# host, hostaddr, port, dbname, user, password, connect_timeout,
+# client_encoding, options, application_name, fallback_application_name,
+# keepalives, keepalives_idle, keepalives_interval, keepalives_count, tty,
+# sslmode, requiressl, sslcompression, sslcert, sslkey, sslrootcert, sslcrl,
+# requirepeer, krbsrvname, gsslib, service
+# https://www.postgresql.org/docs/9.6/static/libpq-connect.html#LIBPQ-CONNSTRING
+# NOTE: If this parameter is set, the rest of the PGSQL_* variables will be ignored.
+SET ( PGSQL_CONNECTION_STRING "" CACHE STRING "" )
 
 SET ( PGSQL_HOST "localhost" CACHE STRING "" )
 SET ( PGSQL_PORT "5432" CACHE STRING "" )
-SET ( PGSQL_DATABASE "blog_subscription_service_db" CACHE STRING "" )
-SET ( PGSQL_USER "blog_subscription_service_user" CACHE STRING "" )
-SET ( PGSQL_PASSWORD "BE_SURE_TO_USE_A_STRONG_SECRET_PASSPHRASE_HERE" CACHE STRING "" )
-
-SET ( MYSQL_HOST "localhost" CACHE STRING "" )
-SET ( MYSQL_PORT "3306" CACHE STRING "" )
-SET ( MYSQL_UNIX_SOCKET "" CACHE STRING "" )
-SET ( MYSQL_DATABASE "blog_subscription_service_db" CACHE STRING "" )
-SET ( MYSQL_USER "blog_subscription_service_user" CACHE STRING "" )
-SET ( MYSQL_PASSWORD "BE_SURE_TO_USE_A_STRONG_SECRET_PASSPHRASE_HERE" CACHE STRING "" )
+SET ( PGSQL_DATABASE "blog_subscription_service_production" CACHE STRING "" )
+SET ( PGSQL_USER "blog_subscription_service" CACHE STRING "" )
+SET ( PGSQL_PASSWORD "A_STRONG_SECRET_PASSPHRASE" CACHE STRING "" )
 
 SET ( CEREAL_THREAD_SAFE 1 CACHE STRING "" )
 
