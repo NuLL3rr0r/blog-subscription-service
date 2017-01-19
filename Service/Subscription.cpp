@@ -730,9 +730,8 @@ Wt::WWidget *Subscription::Impl::GetConfirmationPage()
             r = txn.exec(query);
 
             if (!r.empty()) {
-                row = r[0];
-                const string homePageUrl(row[0].c_str());
-                const string homePageTitle(row[1].c_str());
+                const string homePageUrl(r[0][0].c_str());
+                const string homePageTitle(r[0][1].c_str());
 
                 tmpl->bindString("home-page-url", WString::fromUTF8(homePageUrl));
                 tmpl->bindString("home-page-title", WString::fromUTF8(homePageTitle));
@@ -1121,9 +1120,8 @@ Wt::WWidget *Subscription::Impl::GetCancellationPage()
             r = txn.exec(query);
 
             if (!r.empty()) {
-                row = r[0];
-                const string homePageUrl(row[0].c_str());
-                const string homePageTitle(row[1].c_str());
+                const string homePageUrl(r[0][0].c_str());
+                const string homePageTitle(r[0][1].c_str());
 
                 tmpl->bindString("home-page-url", WString::fromUTF8(homePageUrl));
                 tmpl->bindString("home-page-title", WString::fromUTF8(homePageTitle));
