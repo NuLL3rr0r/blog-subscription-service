@@ -37,7 +37,7 @@
 #include <boost/exception/diagnostic_information.hpp>
 #include <boost/format.hpp>
 #include <boost/lexical_cast.hpp>
-#include <cppdb/frontend.h>
+#include <pqxx/pqxx>
 #include <Wt/WApplication>
 #include <Wt/WPushButton>
 #include <Wt/WString>
@@ -58,7 +58,7 @@
 
 using namespace std;
 using namespace boost;
-using namespace cppdb;
+using namespace pqxx;
 using namespace Wt;
 using namespace CoreLib;
 using namespace Service;
@@ -116,7 +116,8 @@ WWidget *CmsSubscribers::Layout()
 
         string htmlData;
         string file;
-        if (cgiEnv->GetCurrentLanguage() == CgiEnv::Language::Fa) {
+        if (cgiEnv->GetInformation().Client.Language.Code
+                == CgiEnv::InformationRecord::ClientRecord::LanguageCode::Fa) {
             file = "../templates/cms-subscribers-fa.wtml";
         } else {
             file = "../templates/cms-subscribers.wtml";
@@ -225,7 +226,8 @@ void CmsSubscribers::Impl::GetDate(const std::string &timeSinceEpoch, Wt::WStrin
         CgiRoot *cgiRoot = static_cast<CgiRoot *>(WApplication::instance());
         CgiEnv *cgiEnv = cgiRoot->GetCgiEnvInstance();
 
-        if (cgiEnv->GetCurrentLanguage() != CgiEnv::Language::Fa) {
+        if (cgiEnv->GetInformation().Client.Language.Code
+                == CgiEnv::InformationRecord::ClientRecord::LanguageCode::Fa) {
             out_date = (boost::wformat(L"%1%/%2%/%3%/")
                         % lexical_cast<wstring>(year)
                         % lexical_cast<wstring>(month)
@@ -263,6 +265,9 @@ void CmsSubscribers::Impl::GetSubscriptionTypeName(const std::string &type, Wt::
 
 void CmsSubscribers::Impl::FillDataTable(const CmsSubscribers::Impl::Table &tableType)
 {
+    CgiRoot *cgiRoot = static_cast<CgiRoot *>(WApplication::instance());
+    CgiEnv *cgiEnv = cgiRoot->GetCgiEnvInstance();
+
     try {
         SubscribersTableContainer->clear();
 
@@ -279,87 +284,93 @@ void CmsSubscribers::Impl::FillDataTable(const CmsSubscribers::Impl::Table &tabl
         table->elementAt(0, 6)->addWidget(new WText(tr("cms-subscribers-update-date")));
         table->elementAt(0, 7)->addWidget(new WText(tr("cms-subscribers-uuid")));
 
-        result r;
+        string query;
         switch (tableType) {
         case Table::All:
-            r = Pool::Database()->Sql()
-                    << (format("SELECT inbox, uuid, subscription, pending_confirm, pending_cancel, join_date, update_date"
-                               " FROM \"%1%\" ORDER BY inbox COLLATE \"en_US.UTF-8\" ASC;")
-                        % Pool::Database()->GetTableName("SUBSCRIBERS")).str();
+            query.assign((format("SELECT inbox, uuid, subscription, pending_confirm, pending_cancel, join_date, update_date"
+                                 " FROM \"%1%\" ORDER BY inbox COLLATE \"en_US.UTF-8\" ASC;")
+                          % Pool::Database().GetTableName("SUBSCRIBERS")).str());
             break;
         case Table::EnFa:
-            r = Pool::Database()->Sql()
-                    << (format("SELECT inbox, uuid, subscription, pending_confirm, pending_cancel, join_date, update_date"
-                               " FROM \"%1%\" WHERE subscription = 'en_fa' ORDER BY inbox COLLATE \"en_US.UTF-8\" ASC;")
-                        % Pool::Database()->GetTableName("SUBSCRIBERS")).str();
+            query.assign((format("SELECT inbox, uuid, subscription, pending_confirm, pending_cancel, join_date, update_date"
+                                 " FROM \"%1%\" WHERE subscription = 'en_fa' ORDER BY inbox COLLATE \"en_US.UTF-8\" ASC;")
+                          % Pool::Database().GetTableName("SUBSCRIBERS")).str());
             break;
         case Table::En:
-            r = Pool::Database()->Sql()
-                    << (format("SELECT inbox, uuid, subscription, pending_confirm, pending_cancel, join_date, update_date"
-                               " FROM \"%1%\" WHERE subscription = 'en' ORDER BY inbox COLLATE \"en_US.UTF-8\" ASC;")
-                        % Pool::Database()->GetTableName("SUBSCRIBERS")).str();
+            query.assign((format("SELECT inbox, uuid, subscription, pending_confirm, pending_cancel, join_date, update_date"
+                                 " FROM \"%1%\" WHERE subscription = 'en' ORDER BY inbox COLLATE \"en_US.UTF-8\" ASC;")
+                          % Pool::Database().GetTableName("SUBSCRIBERS")).str());
             break;
         case Table::Fa:
-            r = Pool::Database()->Sql()
-                    << (format("SELECT inbox, uuid, subscription, pending_confirm, pending_cancel, join_date, update_date"
-                               " FROM \"%1%\" WHERE subscription = 'fa' ORDER BY inbox COLLATE \"en_US.UTF-8\" ASC;")
-                        % Pool::Database()->GetTableName("SUBSCRIBERS")).str();
+            query.assign((format("SELECT inbox, uuid, subscription, pending_confirm, pending_cancel, join_date, update_date"
+                                 " FROM \"%1%\" WHERE subscription = 'fa' ORDER BY inbox COLLATE \"en_US.UTF-8\" ASC;")
+                          % Pool::Database().GetTableName("SUBSCRIBERS")).str());
             break;
         case Table::Inactive:
-            r = Pool::Database()->Sql()
-                    << (format("SELECT inbox, uuid, subscription, pending_confirm, pending_cancel, join_date, update_date"
-                               " FROM \"%1%\" WHERE subscription = 'none' ORDER BY inbox COLLATE \"en_US.UTF-8\" ASC;")
-                        % Pool::Database()->GetTableName("SUBSCRIBERS")).str();
+            query.assign((format("SELECT inbox, uuid, subscription, pending_confirm, pending_cancel, join_date, update_date"
+                                 " FROM \"%1%\" WHERE subscription = 'none' ORDER BY inbox COLLATE \"en_US.UTF-8\" ASC;")
+                          % Pool::Database().GetTableName("SUBSCRIBERS")).str());
             break;
         }
 
-        int i = 0;
-        while(r.next()) {
-            ++i;
-            string inbox;
-            string uuid;
-            string subscription;
-            string pending_confirm;
-            string pending_cancel;
-            string join_date;
-            string update_date;
+        LOG_INFO("Running query...", query, cgiEnv->GetInformation().ToJson());
 
-            r >> inbox >> uuid >> subscription >> pending_confirm >> pending_cancel >> join_date >> update_date;
+        auto conn = Pool::Database().Connection();
+        conn->activate();
+        pqxx::work txn(*conn.get());
+
+        result r = txn.exec(query);
+
+        int i = 0;
+        for (const auto & row : r) {
+            ++i;
+
+            const string inbox(row["inbox"].c_str());
+            const string uuid(row["uuid"].c_str());
+            const string subscription(row["subscription"].c_str());
+            const string pendingConfirm(row["pending_confirm"].c_str());
+            const string pendingCancel(row["pending_cancel"].c_str());
+            const string joinDate(row["join_date"].c_str());
+            const string updateDate(row["update_date"].c_str());
 
             WString subscriptionTypeName;
             WString pendingConfirmTypeName;
             WString pendingCancelTypeName;
 
             this->GetSubscriptionTypeName(subscription, subscriptionTypeName);
-            this->GetSubscriptionTypeName(pending_confirm, pendingConfirmTypeName);
-            this->GetSubscriptionTypeName(pending_cancel, pendingCancelTypeName);
+            this->GetSubscriptionTypeName(pendingConfirm, pendingConfirmTypeName);
+            this->GetSubscriptionTypeName(pendingCancel, pendingCancelTypeName);
 
-            WString joinDate;
-            WString updateDate;
+            WString joinDateFormatted;
+            WString updateDateFormatted;
 
-            this->GetDate(join_date, joinDate);
-            this->GetDate(join_date, updateDate);
+            this->GetDate(joinDate, joinDateFormatted);
+            this->GetDate(updateDate, updateDateFormatted);
 
             table->elementAt(i, 0)->addWidget(new WText(WString::fromUTF8(lexical_cast<string>(i))));
             table->elementAt(i, 1)->addWidget(new WText(WString::fromUTF8(inbox)));
             table->elementAt(i, 2)->addWidget(new WText(subscriptionTypeName));
             table->elementAt(i, 3)->addWidget(new WText(pendingConfirmTypeName));
             table->elementAt(i, 4)->addWidget(new WText(pendingCancelTypeName));
-            table->elementAt(i, 5)->addWidget(new WText(joinDate));
-            table->elementAt(i, 6)->addWidget(new WText(updateDate));
+            table->elementAt(i, 5)->addWidget(new WText(joinDateFormatted));
+            table->elementAt(i, 6)->addWidget(new WText(updateDateFormatted));
             table->elementAt(i, 7)->addWidget(new WText(WString::fromUTF8(uuid)));
         }
     }
 
+    catch (const pqxx::sql_error &ex) {
+        LOG_ERROR(ex.what(), ex.query(), cgiEnv->GetInformation().ToJson());
+    }
+
     catch (const boost::exception &ex) {
-        LOG_ERROR(boost::diagnostic_information(ex));
+        LOG_ERROR(boost::diagnostic_information(ex), cgiEnv->GetInformation().ToJson());
     }
 
     catch (const std::exception &ex) {
-        LOG_ERROR(ex.what());
+        LOG_ERROR(ex.what(), cgiEnv->GetInformation().ToJson());
     }
 
     catch (...) {
-        LOG_ERROR(UNKNOWN_ERROR);
+        LOG_ERROR(UNKNOWN_ERROR, cgiEnv->GetInformation().ToJson());
     }
 }
