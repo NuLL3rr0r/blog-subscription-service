@@ -36,6 +36,7 @@
 #include <boost/algorithm/string.hpp>
 #include <boost/exception/diagnostic_information.hpp>
 #include <boost/format.hpp>
+#include <pqxx/pqxx>
 #include <Wt/WApplication>
 #include <Wt/WContainerWidget>
 #include <Wt/WComboBox>
@@ -65,7 +66,7 @@
 
 using namespace std;
 using namespace boost;
-using namespace cppdb;
+using namespace pqxx;
 using namespace Wt;
 using namespace CoreLib;
 using namespace CDate;
@@ -127,13 +128,14 @@ WWidget *ContactForm::Layout()
 {
     Div *container = new Div("ContactForm", "contact-form-layout full-width full-height");
 
-    try {
-        CgiRoot *cgiRoot = static_cast<CgiRoot *>(WApplication::instance());
-        CgiEnv *cgiEnv = cgiRoot->GetCgiEnvInstance();
+    CgiRoot *cgiRoot = static_cast<CgiRoot *>(WApplication::instance());
+    CgiEnv *cgiEnv = cgiRoot->GetCgiEnvInstance();
 
+    try {
         string htmlData;
         string file;
-        if (cgiEnv->GetCurrentLanguage() == CgiEnv::Language::Fa) {
+        if (cgiEnv->GetInformation().Client.Language.Code
+                == CgiEnv::InformationRecord::ClientRecord::LanguageCode::Fa) {
             file = "../templates/home-contact-form-fa.wtml";
         } else {
             file = "../templates/home-contact-form.wtml";
@@ -148,25 +150,33 @@ WWidget *ContactForm::Layout()
             m_pimpl->RecipientComboBox = new WComboBox();
 
             {
-                string recipientsQuery;
-                if (cgiEnv->GetCurrentLanguage() == CgiEnv::Language::Fa) {
-                    recipientsQuery = (format("SELECT recipient_fa, is_default"
-                                              " FROM \"%1%\" ORDER BY recipient_fa COLLATE \"en_US.UTF-8\" ASC;")
-                                       % Pool::Database()->GetTableName("CONTACTS")).str();
+                string query;
+                if (cgiEnv->GetInformation().Client.Language.Code
+                        == CgiEnv::InformationRecord::ClientRecord::LanguageCode::Fa) {
+                    query.assign((format("SELECT recipient_fa, is_default"
+                                         " FROM \"%1%\" ORDER BY recipient_fa COLLATE \"en_US.UTF-8\" ASC;")
+                                  % Pool::Database().GetTableName("CONTACTS")).str());
                 } else {
-                    recipientsQuery = (format("SELECT recipient, is_default"
-                                              " FROM \"%1%\" ORDER BY recipient COLLATE \"en_US.UTF-8\" ASC;")
-                                       % Pool::Database()->GetTableName("CONTACTS")).str();
+                    query.assign((format("SELECT recipient, is_default"
+                                         " FROM \"%1%\" ORDER BY recipient COLLATE \"en_US.UTF-8\" ASC;")
+                                  % Pool::Database().GetTableName("CONTACTS")).str());
                 }
 
-                result r = Pool::Database()->Sql() << recipientsQuery;
+                auto conn = Pool::Database().Connection();
+                conn->activate();
+                pqxx::work txn(*conn.get());
+
+                LOG_INFO("Running query...", query, cgiEnv->GetInformation().ToJson());
+
+                result r = txn.exec(query);
 
                 int count = 0;
                 string recipient;
                 string is_default;
 
-                while (r.next()) {
-                    r >> recipient >> is_default;
+                for (const auto & row : r) {
+                    recipient.assign(row[0].c_str());
+                    is_default.assign(row["is_default"].c_str());
                     m_pimpl->RecipientComboBox->addItem(WString::fromUTF8(recipient));
                     if (Database::IsTrue(is_default)) {
                         m_pimpl->RecipientComboBox->setCurrentIndex(count);
@@ -183,36 +193,36 @@ WWidget *ContactForm::Layout()
 
             m_pimpl->FromLineEdit = new WLineEdit();
             m_pimpl->FromLineEdit->setPlaceholderText(tr("home-contact-form-from-placeholder"));
-            WLengthValidator *fromValidator = new WLengthValidator(Pool::Storage()->MinEmailSenderNameLength(),
-                                                                       Pool::Storage()->MaxEmailSenderNameLength());
+            WLengthValidator *fromValidator = new WLengthValidator(Pool::Storage().MinEmailSenderNameLength(),
+                                                                       Pool::Storage().MaxEmailSenderNameLength());
             fromValidator->setMandatory(true);
             m_pimpl->FromLineEdit->setValidator(fromValidator);
 
             m_pimpl->EmailLineEdit = new WLineEdit();
             m_pimpl->EmailLineEdit->setPlaceholderText(tr("home-contact-form-email-placeholder"));
-            WRegExpValidator *emailValidator = new WRegExpValidator(Pool::Storage()->RegexEmail());
+            WRegExpValidator *emailValidator = new WRegExpValidator(Pool::Storage().RegexEmail());
             emailValidator->setFlags(MatchCaseInsensitive);
             emailValidator->setMandatory(true);
             m_pimpl->EmailLineEdit->setValidator(emailValidator);
 
             m_pimpl->UrlLineEdit = new WLineEdit();
             m_pimpl->UrlLineEdit->setPlaceholderText(tr("home-contact-form-url-placeholder"));
-            WRegExpValidator *urlValidator = new WRegExpValidator(Pool::Storage()->RegexHttpUrl());
+            WRegExpValidator *urlValidator = new WRegExpValidator(Pool::Storage().RegexHttpUrl());
             urlValidator->setFlags(MatchCaseInsensitive);
             urlValidator->setMandatory(false);
             m_pimpl->UrlLineEdit->setValidator(urlValidator);
 
             m_pimpl->SubjectLineEdit = new WLineEdit();
             m_pimpl->SubjectLineEdit->setPlaceholderText(tr("home-contact-form-subject-placeholder"));
-            WLengthValidator *subjectValidator = new WLengthValidator(Pool::Storage()->MinEmailSubjectLength(),
-                                                                       Pool::Storage()->MaxEmailSubjectLength());
+            WLengthValidator *subjectValidator = new WLengthValidator(Pool::Storage().MinEmailSubjectLength(),
+                                                                       Pool::Storage().MaxEmailSubjectLength());
             subjectValidator->setMandatory(true);
             m_pimpl->SubjectLineEdit->setValidator(subjectValidator);
 
             m_pimpl->BodyTextArea = new WTextArea();
             m_pimpl->BodyTextArea->setPlaceholderText(tr("home-contact-form-body-placeholder"));
-            WLengthValidator *bodyValidator = new WLengthValidator(Pool::Storage()->MinEmailBodyLength(),
-                                                                       Pool::Storage()->MaxEmailBodyLength());
+            WLengthValidator *bodyValidator = new WLengthValidator(Pool::Storage().MinEmailBodyLength(),
+                                                                       Pool::Storage().MaxEmailBodyLength());
             bodyValidator->setMandatory(true);
             m_pimpl->BodyTextArea->setValidator(bodyValidator);
 
@@ -277,16 +287,20 @@ WWidget *ContactForm::Layout()
         }
     }
 
+    catch (const pqxx::sql_error &ex) {
+        LOG_ERROR(ex.what(), ex.query(), cgiEnv->GetInformation().ToJson());
+    }
+
     catch (const boost::exception &ex) {
-        LOG_ERROR(boost::diagnostic_information(ex));
+        LOG_ERROR(boost::diagnostic_information(ex), cgiEnv->GetInformation().ToJson());
     }
 
     catch (const std::exception &ex) {
-        LOG_ERROR(ex.what());
+        LOG_ERROR(ex.what(), cgiEnv->GetInformation().ToJson());
     }
 
     catch (...) {
-        LOG_ERROR(UNKNOWN_ERROR);
+        LOG_ERROR(UNKNOWN_ERROR, cgiEnv->GetInformation().ToJson());
     }
 
     return container;
@@ -314,15 +328,17 @@ void ContactForm::Impl::OnContactFormSubmitted()
         return;
     }
 
+    CgiRoot *cgiRoot = static_cast<CgiRoot *>(WApplication::instance());
+    CgiEnv *cgiEnv = cgiRoot->GetCgiEnvInstance();
+
     try {
         CDate::Now n(CDate::Timezone::UTC);
-        CgiRoot *cgiRoot = static_cast<CgiRoot *>(WApplication::instance());
-        CgiEnv *cgiEnv = cgiRoot->GetCgiEnvInstance();
 
         string email;
         if (!UseRootEmailAsRecipient) {
             string recipientColumn;
-            if (cgiEnv->GetCurrentLanguage() == CgiEnv::Language::Fa) {
+            if (cgiEnv->GetInformation().Client.Language.Code
+                    == CgiEnv::InformationRecord::ClientRecord::LanguageCode::Fa) {
                 recipientColumn = "recipient_fa";
             } else {
                 recipientColumn = "recipient";
@@ -330,24 +346,39 @@ void ContactForm::Impl::OnContactFormSubmitted()
 
             string recipient = RecipientComboBox->currentText().trim().toUTF8();
 
-            result r = Pool::Database()->Sql()
-                    << (format("SELECT address FROM \"%1%\""
-                               " WHERE %2%=?;")
-                        % Pool::Database()->GetTableName("CONTACTS") % recipientColumn).str()
-                    << recipient << row;
+            auto conn = Pool::Database().Connection();
+            conn->activate();
+            pqxx::work txn(*conn.get());
+
+            string query((format("SELECT address FROM \"%1%\""
+                                 " WHERE \"%2%\" = %3%;")
+                          % Pool::Database().GetTableName("CONTACTS")
+                          % recipientColumn
+                          % txn.quote(recipient)).str());
+            LOG_INFO("Running query...", query, cgiEnv->GetInformation().ToJson());
+
+            result r = txn.exec(query);
 
             if (!r.empty()) {
-                r >> email;
+                const result::tuple row(r[0]);
+                email.assign(row["address"].c_str());
             }
         } else {
-            result r = Pool::Database()->Sql()
-                    << (format("SELECT email"
-                               " FROM \"%1%\" WHERE username=?;")
-                        % Pool::Database()->GetTableName("ROOT")).str()
-                    << Service::Pool::Storage()->RootUsername() << row;
+            auto conn = Pool::Database().Connection();
+            conn->activate();
+            pqxx::work txn(*conn.get());
+
+            string query((format("SELECT email FROM \"%1%\""
+                                 " WHERE username = %2%;")
+                          % Pool::Database().GetTableName("CONTACTS")
+                          % txn.quote(Service::Pool::Storage().RootUsername())).str());
+            LOG_INFO("Running query...", query, cgiEnv->GetInformation().ToJson());
+
+            result r = txn.exec(query);
 
             if (!r.empty()) {
-                r >> email;
+                const result::tuple row(r[0]);
+                email.assign(row["email"].c_str());
             }
         }
 
@@ -377,16 +408,20 @@ void ContactForm::Impl::OnContactFormSubmitted()
         return;
     }
 
+    catch (const pqxx::sql_error &ex) {
+        LOG_ERROR(ex.what(), ex.query(), cgiEnv->GetInformation().ToJson());
+    }
+
     catch (const boost::exception &ex) {
-        LOG_ERROR(boost::diagnostic_information(ex));
+        LOG_ERROR(boost::diagnostic_information(ex), cgiEnv->GetInformation().ToJson());
     }
 
     catch (const std::exception &ex) {
-        LOG_ERROR(ex.what());
+        LOG_ERROR(ex.what(), cgiEnv->GetInformation().ToJson());
     }
 
     catch (...) {
-        LOG_ERROR(UNKNOWN_ERROR);
+        LOG_ERROR(UNKNOWN_ERROR, cgiEnv->GetInformation().ToJson());
     }
 
     MessageBox = std::make_unique<WMessageBox>(tr("home-contact-form-send-error-dialog-title"),
@@ -425,7 +460,8 @@ void ContactForm::Impl::SendUserMessageEmail(const std::string &to, const CDate:
 
     string htmlData;
     string file;
-    if (cgiEnv->GetCurrentLanguage() == CgiEnv::Language::Fa) {
+    if (cgiEnv->GetInformation().Client.Language.Code
+            == CgiEnv::InformationRecord::ClientRecord::LanguageCode::Fa) {
         file = "../templates/email-user-message-fa.wtml";
     } else {
         file = "../templates/email-user-message.wtml";
@@ -444,21 +480,47 @@ void ContactForm::Impl::SendUserMessageEmail(const std::string &to, const CDate:
         replace_all(htmlData, "${subject}", subject);
         replace_all(htmlData, "${body}", body);
         replace_all(htmlData, "${client-ip}",
-                           cgiEnv->GetClientInfo(CgiEnv::ClientInfo::IP));
-        replace_all(htmlData, "${client-location}",
-                           cgiEnv->GetClientInfo(CgiEnv::ClientInfo::Location));
+                    cgiEnv->GetInformation().Client.IPAddress);
         replace_all(htmlData, "${client-user-agent}",
-                           cgiEnv->GetClientInfo(CgiEnv::ClientInfo::Browser));
+                    cgiEnv->GetInformation().Client.UserAgent);
         replace_all(htmlData, "${client-referer}",
-                           cgiEnv->GetClientInfo(CgiEnv::ClientInfo::Referer));
+                    cgiEnv->GetInformation().Client.Referer);
         replace_all(htmlData, "${time}",
-                           DateConv::ToJalali(n)
-                           + " ~ "
-                           + algorithm::trim_copy(DateConv::DateTimeString(n)));
+                    (format("%1% ~ %2%")
+                     % WString(DateConv::FormatToPersianNums(DateConv::ToJalali(n))).toUTF8()
+                     % algorithm::trim_copy(DateConv::DateTimeString(n))).str());
+        replace_all(htmlData, "${client-location-country-code}",
+                    cgiEnv->GetInformation().Client.GeoLocation.CountryCode);
+        replace_all(htmlData, "${client-location-country-code3}",
+                    cgiEnv->GetInformation().Client.GeoLocation.CountryCode3);
+        replace_all(htmlData, "${client-location-country-name}",
+                    cgiEnv->GetInformation().Client.GeoLocation.CountryName);
+        replace_all(htmlData, "${client-location-region}",
+                    cgiEnv->GetInformation().Client.GeoLocation.Region);
+        replace_all(htmlData, "${client-location-city}",
+                    cgiEnv->GetInformation().Client.GeoLocation.City);
+        replace_all(htmlData, "${client-location-postal-code}",
+                    cgiEnv->GetInformation().Client.GeoLocation.PostalCode);
+        replace_all(htmlData, "${client-location-latitude}",
+                    lexical_cast<string>(cgiEnv->GetInformation().Client.GeoLocation.Latitude));
+        replace_all(htmlData, "${client-location-longitude}",
+                    lexical_cast<string>(cgiEnv->GetInformation().Client.GeoLocation.Longitude));
+        replace_all(htmlData, "${client-location-metro-code}",
+                    lexical_cast<string>(cgiEnv->GetInformation().Client.GeoLocation.MetroCode));
+        replace_all(htmlData, "${client-location-dma-code}",
+                    lexical_cast<string>(cgiEnv->GetInformation().Client.GeoLocation.DmaCode));
+        replace_all(htmlData, "${client-location-area-code}",
+                    lexical_cast<string>(cgiEnv->GetInformation().Client.GeoLocation.AreaCode));
+        replace_all(htmlData, "${client-location-charset}",
+                    lexical_cast<string>(cgiEnv->GetInformation().Client.GeoLocation.Charset));
+        replace_all(htmlData, "${client-location-continent-code}",
+                    cgiEnv->GetInformation().Client.GeoLocation.ContinentCode);
+        replace_all(htmlData, "${client-location-netmask}",
+                    lexical_cast<string>(cgiEnv->GetInformation().Client.GeoLocation.Netmask));
 
         CoreLib::Mail *mail = new CoreLib::Mail(from, to,
                     (format(tr("home-contact-form-email-subject").toUTF8())
-                     % cgiEnv->GetServerInfo(CgiEnv::ServerInfo::Host) % name).str(),
+                     % cgiEnv->GetInformation().Server.Hostname % name).str(),
                     htmlData);
         mail->SetDeleteLater(true);
         mail->SendAsync();
