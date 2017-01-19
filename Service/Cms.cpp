@@ -67,7 +67,7 @@
 
 using namespace std;
 using namespace boost;
-using namespace cppdb;
+using namespace pqxx;
 using namespace Wt;
 using namespace CoreLib;
 using namespace Service;
@@ -128,7 +128,8 @@ WWidget *Cms::Layout()
 
     string htmlData;
     string file;
-    if (cgiEnv->GetCurrentLanguage() == CgiEnv::Language::Fa) {
+    if (cgiEnv->GetInformation().Client.Language.Code
+            == CgiEnv::InformationRecord::ClientRecord::LanguageCode::Fa) {
         file = "../templates/cms-fa.wtml";
     } else {
         file = "../templates/cms.wtml";
@@ -265,14 +266,14 @@ void Cms::Impl::OnMenuItemPressed(WText *sender)
     } else if (sender->id() == "menu-item-change-password") {
         Contents->setCurrentIndex(6);
     } else if (sender->id() == "menu-item-switch-language") {
-        switch (cgiEnv->GetCurrentLanguage()) {
-        case CgiEnv::Language::None:
-        case CgiEnv::Language::Invalid:
+        switch (cgiEnv->GetInformation().Client.Language.Code) {
+        case CgiEnv::InformationRecord::ClientRecord::LanguageCode::None:
+        case CgiEnv::InformationRecord::ClientRecord::LanguageCode::Invalid:
             break;
-        case CgiEnv::Language::En:
+        case CgiEnv::InformationRecord::ClientRecord::LanguageCode::En:
             cgiRoot->redirect("/?root&lang=fa");
             break;
-        case CgiEnv::Language::Fa:
+        case CgiEnv::InformationRecord::ClientRecord::LanguageCode::Fa:
             cgiRoot->redirect("/?root&lang=en");
             break;
         }
