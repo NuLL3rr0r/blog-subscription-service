@@ -37,7 +37,7 @@
 #define SERVICE_POOL_HPP
 
 
-#include <memory>
+#include <string>
 
 namespace CoreLib {
 class Crypto;
@@ -77,7 +77,6 @@ public:
         const int &MaxEmailBodyLength() const;
 
         const std::string &RegexHttpUrl() const;
-
         const std::string &RegexUuid() const;
         const std::string &RegexLanguageArray() const;
 
@@ -86,16 +85,15 @@ public:
         const int &MinHomePageTitleLength() const;
         const int &MaxHomePageTitleLength() const;
 
+        const int &ResetPwdLifespan() const;
+
         std::string AppPath;
     };
 
-private:
-    struct Impl;
-
 public:
-    static StorageStruct *Storage();
-    static CoreLib::Crypto *Crypto();
-    static CoreLib::Database *Database();
+    static StorageStruct &Storage();
+    static CoreLib::Crypto &Crypto();
+    static CoreLib::Database &Database();
 };
 
 

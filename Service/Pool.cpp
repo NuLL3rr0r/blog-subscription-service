@@ -34,12 +34,11 @@
 
 
 #include <boost/algorithm/string.hpp>
-#include <boost/filesystem/path.hpp>
 #include <boost/format.hpp>
 #include <boost/thread/once.hpp>
+#include <CoreLib/make_unique.hpp>
 #include <CoreLib/Crypto.hpp>
 #include <CoreLib/Database.hpp>
-#include <CoreLib/make_unique.hpp>
 #include <CoreLib/Log.hpp>
 #include "Pool.hpp"
 
@@ -47,30 +46,9 @@ using namespace std;
 using namespace boost;
 using namespace Service;
 
-struct Pool::Impl {
-public:
-    static boost::once_flag StorageOnceFlag;
-    static unique_ptr<StorageStruct> StorageInstance;
-
-    static boost::once_flag CryptoOnceFlag;
-    static unique_ptr<CoreLib::Crypto> CryptoInstance;
-
-    static boost::once_flag DatabaseOnceFlag;
-    static unique_ptr<CoreLib::Database> DatabaseInstance;
-};
-
-boost::once_flag Pool::Impl::StorageOnceFlag;
-unique_ptr<Pool::StorageStruct> Pool::Impl::StorageInstance = nullptr;
-
-boost::once_flag Pool::Impl::CryptoOnceFlag;
-unique_ptr<CoreLib::Crypto> Pool::Impl::CryptoInstance = nullptr;
-
-boost::once_flag Pool::Impl::DatabaseOnceFlag;
-unique_ptr<CoreLib::Database> Pool::Impl::DatabaseInstance = nullptr;
-
 const int &Pool::StorageStruct::LanguageCookieLifespan() const
 {
-    // 365 Days * 24 Hours * 60 Minutes * 60 Seconds = Number of Days in Seconds
+    /// 365 Days * 24 Hours * 60 Minutes * 60 Seconds = Number of Days in Seconds
     static constexpr int DURATION = 365 * 24 * 60 * 60;
     return DURATION;
 }
@@ -86,14 +64,27 @@ const std::string &Pool::StorageStruct::RootUsername() const
 
 const std::string &Pool::StorageStruct::RootInitialPassword() const
 {
+    /// For an unknown reason
+    /// CoreLib::Crypto::Argon2iOpsLimit::Sensitive
+    /// and
+    /// CoreLib::Crypto::Argon2iMemLimit::Sensitive
+    /// causes segfault on my development VPS under VirtualBox.
+    /// For now use either:
+    /// Interactive (very fast, requires 32 Mb of dedicated RAM)
+    /// or
+    /// Moderate (more secure, fast, requires 128 Mb of dedicated RAM, and takes about 0.7 seconds on a 2.8 Ghz Core i7 CPU)
+    /// Note that Sensitive is also more demanding:
+    /// Deriving a key takes about 3.5 seconds on a 2.8 Ghz Core i7 CPU and requires 512 Mb of dedicated RAM.
+    /// More info:
+    /// https://download.libsodium.org/libsodium/content/password_hashing/the_argon2i_function.html
     static string rootInitialPassowrd;
     if (rootInitialPassowrd == "") {
         CoreLib::Crypto::Argon2i(
                     CoreLib::Crypto::HexStringToString(ROOT_INITIAL_PASSWORD),
                     rootInitialPassowrd,
-                    CoreLib::Crypto::Argon2iOpsLimit::Sensitive,
-                    CoreLib::Crypto::Argon2iMemLimit::Sensitive);
-        Crypto()->Encrypt(rootInitialPassowrd, rootInitialPassowrd);
+                    CoreLib::Crypto::Argon2iOpsLimit::Interactive,
+                    CoreLib::Crypto::Argon2iMemLimit::Interactive);
+        Crypto().Encrypt(rootInitialPassowrd, rootInitialPassowrd);
     }
     return rootInitialPassowrd;
 }
@@ -232,6 +223,7 @@ const int &Pool::StorageStruct::TokenLifespan() const
     return DURATION;
 }
 
+
 const int &Pool::StorageStruct::MinHomePageTitleLength() const
 {
     static constexpr int LENGTH = 1;
@@ -244,132 +236,46 @@ const int &Pool::StorageStruct::MaxHomePageTitleLength() const
     return LENGTH;
 }
 
-Pool::StorageStruct *Pool::Storage()
+const int &Pool::StorageStruct::ResetPwdLifespan() const
 {
-    boost::call_once(Impl::StorageOnceFlag, [] {
-        Impl::StorageInstance = make_unique<StorageStruct>();
-    });
-
-    return Impl::StorageInstance.get();
+    // 1 Hour(s) * 60 Minutes * 60 Seconds = Number of Days in Seconds
+    static constexpr int DURATION = 1 * 60 * 60;
+    return DURATION;
 }
 
-CoreLib::Crypto *Pool::Crypto()
+Pool::StorageStruct &Pool::Storage()
 {
-    boost::call_once(Impl::CryptoOnceFlag, [] {
-        static const string KEY = CoreLib::Crypto::HexStringToString(CRYPTO_KEY);
-        static const string IV = CoreLib::Crypto::HexStringToString(CRYPTO_IV);
-
-        Impl::CryptoInstance = make_unique<CoreLib::Crypto>(reinterpret_cast<const CoreLib::Crypto::Byte *>(KEY.c_str()), KEY.size(),
-                                                            reinterpret_cast<const CoreLib::Crypto::Byte *>(IV.c_str()), IV.size());
-    });
-
-    return Impl::CryptoInstance.get();
+    /// C++11 specifies it to be thread safe.
+    /// Warning: VS2013 does not implement thread-safe construction of function-local statics.
+    static StorageStruct instance;
+    return instance;
 }
 
-CoreLib::Database *Pool::Database()
+CoreLib::Crypto &Pool::Crypto()
 {
-    boost::call_once(Impl::DatabaseOnceFlag, [] {
-#if DATABASE_BACKEND == PGSQL
+    static const string KEY = CoreLib::Crypto::HexStringToString(CRYPTO_KEY);
+    static const string IV = CoreLib::Crypto::HexStringToString(CRYPTO_IV);
 
-#ifdef CORELIB_STATIC
-#if defined ( HAS_CPPDB_PGSQL_DRIVER )
-        if (!Database::IsPgSqlDriverLoaded()) {
-            Database::LoadPgSqlDriver();
-        }
-#endif  // defined ( HAS_CPPDB_PGSQL_DRIVER )
-#endif  // CORELIB_STATIC
+    static CoreLib::Crypto instance(reinterpret_cast<const CoreLib::Crypto::Byte *>(KEY.c_str()), KEY.size(),
+                                    reinterpret_cast<const CoreLib::Crypto::Byte *>(IV.c_str()), IV.size());
 
-        string parameters;
-        string pgSqlHost(PGSQL_HOST);
-        string pgSqlPort(PGSQL_PORT);
-        string pgSqlDatabase(PGSQL_DATABASE);
-        string pgSqlUser(PGSQL_USER);
-        string pgSqlPassword(PGSQL_PASSWORD);
+    return instance;
+}
 
-        if (trim_copy(pgSqlHost) != "")
-            parameters += (format("host=%1%;") % pgSqlHost).str();
+CoreLib::Database &Pool::Database()
+{
+#if defined ( PGSQL_CONNECTION_STRING )
+    static const string CONNECTION_STRING(PGSQL_CONNECTION_STRING);
+#else
+    static const string CONNECTION_STRING(
+                (format("host=%1% port=%2% dbname=%3% user=%4% password=%5%")
+                 % trim_copy(std::string(PGSQL_HOST))
+                 % trim_copy(std::string(PGSQL_PORT))
+                 % trim_copy(std::string(PGSQL_DATABASE))
+                 % trim_copy(std::string(PGSQL_USER))
+                 % trim_copy(std::string(PGSQL_PASSWORD))).str());
+#endif  // defined ( PGSQL_CONNECTION_STRING )
+    static CoreLib::Database instance(CONNECTION_STRING);
 
-        if (trim_copy(pgSqlPort) != "")
-            parameters += (format("port=%1%;") % pgSqlPort).str();
-
-        if (trim_copy(pgSqlDatabase) != "")
-            parameters += (format("dbname=%1%;") % pgSqlDatabase).str();
-
-        if (trim_copy(pgSqlUser) != "")
-            parameters += (format("user=%1%;") % pgSqlUser).str();
-
-        if (trim_copy(pgSqlPassword) != "")
-            parameters += (format("password=%1%;") % pgSqlPassword).str();
-
-        static const string CONNECTION_STRING(
-                    (format("postgresql:%1%")
-                     % parameters).str());
-
-#elif DATABASE_BACKEND == MYSQL
-
-#ifdef CORELIB_STATIC
-#if defined ( HAS_CPPDB_MYSQL_DRIVER )
-        if (!Database::IsMySqlDriverLoaded()) {
-            Database::LoadMySqlDriver();
-        }
-#endif  // defined ( HAS_CPPDB_MYSQL_DRIVER )
-#endif  // CORELIB_STATIC
-
-        string parameters;
-        string mySqlHost(MYSQL_HOST);
-        string mySqlPort(MYSQL_PORT);
-        string mySqlUnixSocket(MYSQL_UNIX_SOCKET);
-        string mySqlDatabase(MYSQL_DATABASE);
-        string mySqlUser(MYSQL_USER);
-        string mySqlPassword(MYSQL_PASSWORD);
-
-        if (trim_copy(mySqlHost) != "")
-            parameters += (format("host=%1%;") % mySqlHost).str();
-
-        if (trim_copy(mySqlPort) != "")
-            parameters += (format("port=%1%;") % mySqlPort).str();
-
-        if (trim_copy(mySqlUnixSocket) != "")
-            parameters += (format("unix_socket=%1%;") % mySqlUnixSocket).str();
-
-        if (trim_copy(mySqlDatabase) != "")
-            parameters += (format("database=%1%;") % mySqlDatabase).str();
-
-        if (trim_copy(mySqlUser) != "")
-            parameters += (format("user=%1%;") % mySqlUser).str();
-
-        if (trim_copy(mySqlPassword) != "")
-            parameters += (format("password=%1%;") % mySqlPassword).str();
-
-        static const string CONNECTION_STRING(
-                    (format("mysql:%1%")
-                     % parameters).str());
-
-#else   // SQLITE3
-
-#if defined ( CORELIB_STATIC )
-#if defined ( HAS_CPPDB_SQLITE3_DRIVER )
-        if (!Database::IsSqlite3DriverLoaded()) {
-            Database::LoadSQLite3Driver();
-        }
-#endif  // defined ( HAS_CPPDB_SQLITE3_DRIVER )
-#endif  // defined ( CORELIB_STATIC )
-
-        static const string DB_FILE((filesystem::path(Storage()->AppPath)
-                                     / filesystem::path(SQLITE3_DATABASE_FILE_PATH)
-                                     / filesystem::path(SQLITE3_DATABASE_FILE_NAME)).string());
-        static const string CONNECTION_STRING(
-                    (format("sqlite3:db=%1%")
-                     % DB_FILE).str());
-
-#if defined ( HAS_SQLITE3 )
-        CoreLib::Database::Sqlite3Vacuum(DB_FILE);
-#endif  // defined ( HAS_SQLITE3 )
-
-#endif // DATABASE_BACKEND == PGSQL
-
-        Impl::DatabaseInstance = make_unique<CoreLib::Database>(CONNECTION_STRING);
-    });
-
-    return Impl::DatabaseInstance.get();
+    return instance;
 }
