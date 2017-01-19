@@ -37,6 +37,7 @@
 #define SERVICE_CMS_HPP
 
 
+#include <memory>
 #include "Page.hpp"
 
 namespace Service {
