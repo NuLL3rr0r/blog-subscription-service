@@ -36,6 +36,7 @@
 #include <ctime>
 #include <boost/exception/diagnostic_information.hpp>
 #include <boost/format.hpp>
+#include <pqxx/pqxx>
 #include <Wt/WApplication>
 #include <Wt/WContainerWidget>
 #include <Wt/WSignalMapper>
@@ -286,54 +287,67 @@ void Cms::Impl::OnMenuItemPressed(WText *sender)
 
 void Cms::Impl::ValidateSession()
 {
-    transaction guard(Service::Pool::Database()->Sql());
+    CgiRoot *cgiRoot = static_cast<CgiRoot *>(WApplication::instance());
+    CgiEnv *cgiEnv = cgiRoot->GetCgiEnvInstance();
 
     try {
-        CgiRoot *cgiRoot = static_cast<CgiRoot *>(WApplication::instance());
-        CgiEnv *cgiEnv = cgiRoot->GetCgiEnvInstance();
+        auto conn = Pool::Database().Connection();
+        conn->activate();
+        pqxx::work txn(*conn.get());
 
-        result r = Pool::Database()->Sql()
-                << (format("SELECT expiry FROM \"%1%\""
-                           " WHERE token=?;")
-                    % Pool::Database()->GetTableName("ROOT_SESSIONS")).str()
-                << cgiEnv->SignedInUser.SessionToken << row;
+        string query((boost::format("SELECT EXTRACT ( EPOCH FROM expiry::TIMESTAMPTZ ) as expiry FROM \"%1%\""
+                                    " WHERE token = %2%;")
+                      % txn.esc(Service::Pool::Database().GetTableName("ROOT_SESSIONS"))
+                      % txn.quote(cgiEnv->GetInformation().Client.Session.Token)).str());
+        LOG_INFO("Running query...", query, cgiEnv->GetInformation().ToJson());
+
+        result r = txn.exec(query);
 
         string expiry("0");
         if (!r.empty()) {
-            r >> expiry;
+            const result::tuple row(r[0]);
+            expiry = row["expiry"].c_str();
         }
 
         time_t rawTime = lexical_cast<time_t>(expiry);
         CDate::Now n(CDate::Timezone::UTC);
 
-        if (rawTime < n.RawTime()) {
+        /// 0 means force exit the current session
+        /// if you don't know why,
+        /// see Service::RootLogin::PreserveSessionData method
+        if (rawTime == 0) {
             ForceExit();
         }
     }
 
+    catch (const pqxx::sql_error &ex) {
+        LOG_ERROR(ex.what(), ex.query(), cgiEnv->GetInformation().ToJson());
+    }
+
     catch (const boost::exception &ex) {
-        LOG_ERROR(boost::diagnostic_information(ex));
+        LOG_ERROR(boost::diagnostic_information(ex), cgiEnv->GetInformation().ToJson());
     }
 
     catch (const std::exception &ex) {
-        LOG_ERROR(ex.what());
+        LOG_ERROR(ex.what(), cgiEnv->GetInformation().ToJson());
     }
 
     catch (...) {
-        LOG_ERROR(UNKNOWN_ERROR);
+        LOG_ERROR(UNKNOWN_ERROR, cgiEnv->GetInformation().ToJson());
     }
-
-    guard.rollback();
 }
 
 void Cms::Impl::ForceExit()
 {
     CgiRoot *cgiRoot = static_cast<CgiRoot *>(WApplication::instance());
+    CgiEnv *cgiEnv = cgiRoot->GetCgiEnvInstance();
 
     srand(static_cast<unsigned int>(System::RandSeed()));
     try {
         cgiRoot->removeCookie("cms-session-token");
+        LOG_INFO("Root logout succeed!", cgiEnv->GetInformation().ToJson());
     } catch(...) {
+        LOG_ERROR("Root logout failed!", cgiEnv->GetInformation().ToJson());
     }
     cgiRoot->Exit("/?root&logout");
 }
