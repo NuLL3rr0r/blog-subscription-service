@@ -96,10 +96,11 @@ public:
     static bool IsLeapYearJ(const int jYear);
     static std::string ToGregorian(const int jYear, const int jMonth, const int jDay);
     static std::string ToGregorian(const CDate::Timezone &tz = CDate::Timezone::Local);
+    static std::string ToGregorian(const CDate::Now &now);
     static std::string ToJalali(const int gYear, const int gMonth, const int gDay);
     static std::string ToJalali(const CDate::Timezone &tz = CDate::Timezone::Local);
-    static std::string ToGregorian(const CDate::Now &now);
     static std::string ToJalali(const CDate::Now &now);
+    static std::string ToJalali(const std::time_t rawTime, const CDate::Timezone &tz = CDate::Timezone::Local);
     static std::string Time(const CDate::Now &now);
     static std::string DateTimeString(const std::time_t rawTime, const CDate::Timezone &tz);
     static std::string DateTimeString(const CDate::Now &now);

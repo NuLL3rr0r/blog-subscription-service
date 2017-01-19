@@ -275,6 +275,17 @@ std::string DateConv::ToGregorian(const CDate::Timezone &tz)
             (d.size() != 1 ? d : "0" + d);
 }
 
+std::string DateConv::ToGregorian(const CDate::Now &now)
+{
+    string m = lexical_cast<string>(now.Month());
+    string d = lexical_cast<string>(now.DayOfMonth());
+
+    return lexical_cast<string>(now.Year()) + "/" +
+            (m.size() == 1 ? "0" + m : m)
+            + "/" +
+            (d.size() != 1 ? d : "0" + d);
+}
+
 std::string DateConv::ToJalali(int gYear, int gMonth, int gDay)
 {
     if (!IsRangeValidG(gYear, gMonth, gDay))
@@ -289,20 +300,21 @@ std::string DateConv::ToJalali(const CDate::Timezone &tz)
     return CalcToJ(n.Year(), n.DayOfYear());
 }
 
-std::string DateConv::ToGregorian(const CDate::Now &now)
-{
-    string m = lexical_cast<string>(now.Month());
-    string d = lexical_cast<string>(now.DayOfMonth());
-
-    return lexical_cast<string>(now.Year()) + "/" +
-            (m.size() == 1 ? "0" + m : m)
-            + "/" +
-            (d.size() != 1 ? d : "0" + d);
-}
-
 std::string DateConv::ToJalali(const CDate::Now &now)
 {
     return CalcToJ(now.Year(), now.DayOfYear());
+}
+
+std::string DateConv::ToJalali(const std::time_t rawTime, const CDate::Timezone &tz)
+{
+    struct tm *timeInfo;
+    if (tz == Timezone::UTC) {
+        timeInfo = gmtime(&rawTime);
+    } else {
+        timeInfo = localtime(&rawTime);
+    }
+
+    return CalcToJ(timeInfo->tm_year + 1900, timeInfo->tm_yday + 1);
 }
 
 std::string DateConv::Time(const CDate::Now &now)
