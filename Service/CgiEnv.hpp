@@ -320,6 +320,10 @@ public:
     void SetSessionRecord(const Service::CgiEnv::InformationRecord::ClientRecord::SessionRecord &record);
     void SetSessionToken(const std::string &token);
     void SetSessionEmail(const std::string &email);
+
+    void AddSubscriptionLanguage(const CgiEnv::InformationRecord::SubscriptionRecord::Language &lang);
+    void SetSubscriptionAction(const CgiEnv::InformationRecord::SubscriptionRecord::Action &action);
+    void SetSubscriptionInbox(const std::string &inbox);
 };
 
 

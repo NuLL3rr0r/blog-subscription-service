@@ -285,12 +285,27 @@ void CgiEnv::SetSessionRecord(const Service::CgiEnv::InformationRecord::ClientRe
 
 void CgiEnv::SetSessionToken(const std::string &token)
 {
-    m_pimpl->Information.Client.Session.Token = token;
+    m_pimpl->Information.Client.Session.Token.assign(token);
 }
 
 void CgiEnv::SetSessionEmail(const std::string &email)
 {
-    m_pimpl->Information.Client.Session.Email = email;
+    m_pimpl->Information.Client.Session.Email.assign(email);
+}
+
+void CgiEnv::AddSubscriptionLanguage(const CgiEnv::InformationRecord::SubscriptionRecord::Language &lang)
+{
+     m_pimpl->Information.Subscription.Languages.push_back(lang);
+}
+
+void CgiEnv::SetSubscriptionAction(const CgiEnv::InformationRecord::SubscriptionRecord::Action &action)
+{
+    m_pimpl->Information.Subscription.Subscribe = action;
+}
+
+void CgiEnv::SetSubscriptionInbox(const std::string &inbox)
+{
+    m_pimpl->Information.Subscription.Inbox.assign(inbox);
 }
 
 string CgiEnv::Impl::CStrToStr(const char *cstr)
