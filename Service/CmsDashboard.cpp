@@ -140,9 +140,10 @@ WWidget *CmsDashboard::Layout()
             tmpl->bindWidget("last-login-ip", new WText(WString::fromUTF8(cgiEnv->GetInformation().Client.Session.LastLogin.IPAddress)));
             tmpl->bindWidget("last-login-user-agent", new WText(WString::fromUTF8(cgiEnv->GetInformation().Client.Session.LastLogin.UserAgent)));
             tmpl->bindWidget("last-login-referer", new WText(WString::fromUTF8(cgiEnv->GetInformation().Client.Session.LastLogin.Referer)));
-            tmpl->bindWidget("last-login-time",new WText(
-                                 WString::fromUTF8(DateConv::DateTimeString(cgiEnv->GetInformation().Client.Session.LastLogin.Time,
-                                                                            CDate::Timezone::UTC))));
+            tmpl->bindWidget("last-login-time", new WText(
+                                 WString::fromUTF8((format("%1% ~ %2%")
+                                  % WString(DateConv::FormatToPersianNums(DateConv::ToJalali(cgiEnv->GetInformation().Client.Session.LastLogin.Time, CDate::Timezone::UTC))).toUTF8()
+                                  % algorithm::trim_copy(DateConv::DateTimeString(cgiEnv->GetInformation().Client.Session.LastLogin.Time, CDate::Timezone::UTC))).str())));
             tmpl->bindWidget("last-login-location-country-code", new WText(
                                  WString::fromUTF8(cgiEnv->GetInformation().Client.Session.LastLogin.GeoLocation.CountryCode)));
             tmpl->bindWidget("last-login-location-country-code3", new WText(
