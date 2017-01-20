@@ -233,15 +233,15 @@ bool Database::CreateEnum(const std::string &id)
 
                 r = txn.exec((format("CREATE TYPE \"%1%\" AS ENUM ( %2% );")
                           % txn.esc(m_pimpl->EnumNames[id])
-                          % txn.esc(ph)).str());
+                          % ph).str());
 
                 LOG_INFO(QUERY_SUCCEED, r.query());
 
                 txn.commit();
             }
-        }
 
-        return true;
+            return true;
+        }
     } catch (const pqxx::sql_error &ex) {
         LOG_ERROR(ex.what(), ex.query());
     } catch (const std::exception &ex) {
