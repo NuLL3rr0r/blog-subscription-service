@@ -798,7 +798,7 @@ void RootLogin::Impl::OnGoToHomePageButtonPressed()
         string homePageUrl;
         if (!r.empty()) {
             const result::tuple row(r[0]);
-            homePageUrl.assign(row[0]);
+            homePageUrl.assign(row[0].c_str());
         }
 
         cgiRoot->Exit(homePageUrl);
@@ -1174,6 +1174,9 @@ Wt::WWidget *RootLogin::Impl::LogoutPage()
         WTemplate *tmpl = new WTemplate(container);
         tmpl->setStyleClass("container-table");
         tmpl->setTemplateText(WString::fromUTF8(htmlData), TextFormat::XHTMLUnsafeText);
+
+        WPushButton *homePagePushButton = new WPushButton(tr("root-logout-go-to-home-page"));
+        homePagePushButton->setStyleClass("btn btn-default");
 
         WPushButton *signInPushButton = new WPushButton(tr("root-logout-sign-in-again"));
         signInPushButton->setStyleClass("btn btn-default");
