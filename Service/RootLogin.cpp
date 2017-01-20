@@ -775,7 +775,9 @@ void RootLogin::Impl::OnGoToHomePageButtonPressed()
 
     try {
         string homePageFields;
-        if (cgiEnv->GetCurrentLanguage() == CgiEnv::Language::Fa) {
+
+        if (cgiEnv->GetInformation().Client.Language.Code
+                == CgiEnv::InformationRecord::ClientRecord::LanguageCode::Fa) {
             homePageFields = "homepage_url_fa";
         } else {
             homePageFields = "homepage_url_en";
@@ -790,6 +792,8 @@ void RootLogin::Impl::OnGoToHomePageButtonPressed()
                       % homePageFields
                       % txn.esc(Service::Pool::Database().GetTableName("SETTINGS"))).str());
         LOG_INFO("Running query...", query, cgiEnv->GetInformation().ToJson());
+
+        result r = txn.exec(query);
 
         string homePageUrl;
         if (!r.empty()) {
