@@ -108,6 +108,7 @@ public:
     void OnLoginFormSubmitted();
     void OnPasswordRecoveryFormSubmitted();
 
+    void OnGoToHomePageButtonPressed();
     void OnSignInAgainButtonPressed();
 
     void GenerateCaptcha();
@@ -767,6 +768,55 @@ void RootLogin::Impl::OnPasswordRecoveryFormSubmitted()
     GenerateCaptcha();
 }
 
+void RootLogin::Impl::OnGoToHomePageButtonPressed()
+{
+    CgiRoot *cgiRoot = static_cast<CgiRoot *>(WApplication::instance());
+    CgiEnv *cgiEnv = cgiRoot->GetCgiEnvInstance();
+
+    try {
+        string homePageFields;
+        if (cgiEnv->GetCurrentLanguage() == CgiEnv::Language::Fa) {
+            homePageFields = "homepage_url_fa";
+        } else {
+            homePageFields = "homepage_url_en";
+        }
+
+        auto conn = Pool::Database().Connection();
+        conn->activate();
+        pqxx::work txn(*conn.get());
+
+        string query((boost::format("SELECT %1% FROM \"%2%\""
+                                    " WHERE pseudo_id = '0';")
+                      % homePageFields
+                      % txn.esc(Service::Pool::Database().GetTableName("SETTINGS"))).str());
+        LOG_INFO("Running query...", query, cgiEnv->GetInformation().ToJson());
+
+        string homePageUrl;
+        if (!r.empty()) {
+            const result::tuple row(r[0]);
+            homePageUrl.assign(row[0]);
+        }
+
+        cgiRoot->Exit(homePageUrl);
+    }
+
+    catch (const pqxx::sql_error &ex) {
+        LOG_ERROR(ex.what(), ex.query(), cgiEnv->GetInformation().ToJson());
+    }
+
+    catch (const boost::exception &ex) {
+        LOG_ERROR(boost::diagnostic_information(ex), cgiEnv->GetInformation().ToJson());
+    }
+
+    catch (const std::exception &ex) {
+        LOG_ERROR(ex.what(), cgiEnv->GetInformation().ToJson());
+    }
+
+    catch (...) {
+        LOG_ERROR(UNKNOWN_ERROR, cgiEnv->GetInformation().ToJson());
+    }
+}
+
 void RootLogin::Impl::OnSignInAgainButtonPressed()
 {
     CgiRoot *cgiRoot = static_cast<CgiRoot *>(WApplication::instance());
@@ -1125,8 +1175,10 @@ Wt::WWidget *RootLogin::Impl::LogoutPage()
         signInPushButton->setStyleClass("btn btn-default");
 
         tmpl->bindWidget("logout-message", new WText(tr("root-logout-message")));
+        tmpl->bindWidget("home-page-button", homePagePushButton);
         tmpl->bindWidget("sign-in-button", signInPushButton);
 
+        homePagePushButton->clicked().connect(this, &RootLogin::Impl::OnGoToHomePageButtonPressed);
         signInPushButton->clicked().connect(this, &RootLogin::Impl::OnSignInAgainButtonPressed);
     }
 
