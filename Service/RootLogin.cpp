@@ -850,7 +850,9 @@ void RootLogin::Impl::PasswordRecoveryForm()
         if (PasswordRecoveryHtmlData == "") {
             string file;
             if (cgiEnv->GetInformation().Client.Language.Code
-                    == CgiEnv::InformationRecord::ClientRecord::LanguageCode::En) {
+                    == CgiEnv::InformationRecord::ClientRecord::LanguageCode::Fa) {
+                file = "../templates/root-login-password-recovery-fa.wtml";
+            } else {
                 file = "../templates/root-login-password-recovery.wtml";
             }
 
@@ -1020,7 +1022,9 @@ void RootLogin::Impl::SendLoginAlertEmail(const CDate::Now &n)
     string htmlData;
     string file;
     if (cgiEnv->GetInformation().Client.Language.Code
-            == CgiEnv::InformationRecord::ClientRecord::LanguageCode::En) {
+            == CgiEnv::InformationRecord::ClientRecord::LanguageCode::Fa) {
+        file = "../templates/email-root-login-alert-fa.wtml";
+    } else {
         file = "../templates/email-root-login-alert.wtml";
     }
 
@@ -1088,7 +1092,9 @@ void RootLogin::Impl::SendPasswordRecoveryEmail(const std::string &email,
     string htmlData;
     string file;
     if (cgiEnv->GetInformation().Client.Language.Code
-            == CgiEnv::InformationRecord::ClientRecord::LanguageCode::En) {
+            == CgiEnv::InformationRecord::ClientRecord::LanguageCode::Fa) {
+        file = "../templates/email-root-password-recovery-fa.wtml";
+    } else {
         file = "../templates/email-root-password-recovery.wtml";
     }
 
