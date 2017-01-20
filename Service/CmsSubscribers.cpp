@@ -227,8 +227,8 @@ void CmsSubscribers::Impl::GetDate(const std::string &timeSinceEpoch, Wt::WStrin
         CgiEnv *cgiEnv = cgiRoot->GetCgiEnvInstance();
 
         if (cgiEnv->GetInformation().Client.Language.Code
-                == CgiEnv::InformationRecord::ClientRecord::LanguageCode::Fa) {
-            out_date = (boost::wformat(L"%1%/%2%/%3%/")
+                == CgiEnv::InformationRecord::ClientRecord::LanguageCode::En) {
+            out_date = (boost::wformat(L"%1%/%2%/%3%")
                         % lexical_cast<wstring>(year)
                         % lexical_cast<wstring>(month)
                         % lexical_cast<wstring>(day)).str();
