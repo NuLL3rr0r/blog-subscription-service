@@ -110,17 +110,17 @@ CgiRoot::CgiRoot(const WEnvironment &env)
         case CgiEnv::InformationRecord::ClientRecord::LanguageCode::None:
         case CgiEnv::InformationRecord::ClientRecord::LanguageCode::Invalid:
             try {
-            m_pimpl->ReloadWithLanguage(env.getCookie("lang"));
-        } catch (...) {
-            if (algorithm::contains(
+                m_pimpl->ReloadWithLanguage(env.getCookie("lang"));
+            } catch (...) {
+                if (algorithm::contains(
                         cgiEnv->GetInformation().Client.GeoLocation.CountryName,
                         "Iran")
                     || algorithm::starts_with(locale().name(), "fa")) {
-                m_pimpl->ReloadWithLanguage("fa");
-            } else {
-                m_pimpl->ReloadWithLanguage("en");
+                    m_pimpl->ReloadWithLanguage("fa");
+                } else {
+                    m_pimpl->ReloadWithLanguage("en");
+                }
             }
-        }
             return;
 
         case CgiEnv::InformationRecord::ClientRecord::LanguageCode::En:
