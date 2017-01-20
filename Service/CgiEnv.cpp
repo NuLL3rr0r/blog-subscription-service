@@ -367,6 +367,8 @@ void CgiEnv::Impl::Initialize()
             || queryStr.find("%3e") != string::npos)
             ? true : false;
 
+    this->Information.Subscription.Subscribe = Subscription::Action::None;
+
     bool logout = false;
 
     Http::ParameterMap map = app->environment().getParameterMap();
