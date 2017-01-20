@@ -367,7 +367,7 @@ void CgiEnv::Impl::Initialize()
             || queryStr.find("%3e") != string::npos)
             ? true : false;
 
-    this->Information.Subscription.Subscribe = Subscription::Action::None;
+    this->Information.Subscription.Subscribe = InformationRecord::SubscriptionRecord::Action::None;
 
     bool logout = false;
 
