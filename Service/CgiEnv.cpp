@@ -315,10 +315,14 @@ string CgiEnv::Impl::CStrToStr(const char *cstr)
 
 CgiEnv::Impl::Impl()
     : LanguageDirectionMapper {
-{ Service::CgiEnv::InformationRecord::ClientRecord::LanguageCode::None, Service::CgiEnv::InformationRecord::ClientRecord::PageDirection::None },
-{ Service::CgiEnv::InformationRecord::ClientRecord::LanguageCode::Invalid, Service::CgiEnv::InformationRecord::ClientRecord::PageDirection::None },
-{ Service::CgiEnv::InformationRecord::ClientRecord::LanguageCode::En, Service::CgiEnv::InformationRecord::ClientRecord::PageDirection::LeftToRight },
-{ Service::CgiEnv::InformationRecord::ClientRecord::LanguageCode::Fa, Service::CgiEnv::InformationRecord::ClientRecord::PageDirection::RightToLeft }
+{ Service::CgiEnv::InformationRecord::ClientRecord::LanguageCode::None,
+          Service::CgiEnv::InformationRecord::ClientRecord::PageDirection::None },
+{ Service::CgiEnv::InformationRecord::ClientRecord::LanguageCode::Invalid,
+          Service::CgiEnv::InformationRecord::ClientRecord::PageDirection::None },
+{ Service::CgiEnv::InformationRecord::ClientRecord::LanguageCode::En,
+          Service::CgiEnv::InformationRecord::ClientRecord::PageDirection::LeftToRight },
+{ Service::CgiEnv::InformationRecord::ClientRecord::LanguageCode::Fa,
+          Service::CgiEnv::InformationRecord::ClientRecord::PageDirection::RightToLeft }
           }
 {
     LanguageStringMapper.insert({ Service::CgiEnv::InformationRecord::ClientRecord::LanguageCode::None, "none" });
@@ -327,11 +331,12 @@ CgiEnv::Impl::Impl()
     LanguageStringMapper.insert({ Service::CgiEnv::InformationRecord::ClientRecord::LanguageCode::Fa, "fa" });
 
     this->Information.Client.Language.Code = Service::CgiEnv::InformationRecord::ClientRecord::LanguageCode::None;
-    this->Information.Client.Language.CodeAsString = LanguageStringMapper.left.find(Service::CgiEnv::InformationRecord::ClientRecord::LanguageCode::None)
-            ->second;
+    this->Information.Client.Language.CodeAsString =
+            LanguageStringMapper.left.find(Service::CgiEnv::InformationRecord::ClientRecord::LanguageCode::None)->second;
     this->Information.Client.Language.PageDirection = Service::CgiEnv::InformationRecord::ClientRecord::PageDirection::None;
     this->Information.Client.Request.Root.Login = false;
     this->Information.Client.Request.Root.Logout = false;
+    this->Information.Client.Request.ContactForm = false;
     this->Information.Client.Security.XssAttackDetected = false;
 }
 
