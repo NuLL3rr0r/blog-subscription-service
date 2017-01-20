@@ -262,7 +262,7 @@ bool Database::CreateTable(const std::string &id)
 
         pqxx::result r = txn.exec((format("CREATE TABLE IF NOT EXISTS \"%1%\" ( %2% );")
                   % txn.esc(m_pimpl->TableNames[id])
-                  % txn.esc(m_pimpl->TableFields[id])).str());
+                  % m_pimpl->TableFields[id]).str());
 
         LOG_INFO(QUERY_SUCCEED, r.query());
 
