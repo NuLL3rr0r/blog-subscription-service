@@ -215,7 +215,7 @@ bool Database::CreateEnum(const std::string &id)
         c->activate();
         pqxx::work txn(*c.get());
 
-        pqxx::result r = txn.exec((format("SELECT EXISTS ( SELECT 1 FROM pg_type WHERE typname = %1% );")
+        pqxx::result r = txn.exec((format("SELECT EXISTS ( SELECT typname FROM pg_type WHERE typname = %1% );")
                                    % txn.quote(m_pimpl->EnumNames[id])).str());
 
         LOG_INFO(QUERY_SUCCEED, r.query());
