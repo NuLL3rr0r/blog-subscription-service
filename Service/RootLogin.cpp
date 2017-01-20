@@ -1166,7 +1166,9 @@ Wt::WWidget *RootLogin::Impl::LogoutPage()
     string htmlData;
     string file;
     if (cgiEnv->GetInformation().Client.Language.Code
-            == CgiEnv::InformationRecord::ClientRecord::LanguageCode::En) {
+            == CgiEnv::InformationRecord::ClientRecord::LanguageCode::Fa) {
+        file = "../templates/root-logout-fa.wtml";
+    } else {
         file = "../templates/root-logout.wtml";
     }
 
