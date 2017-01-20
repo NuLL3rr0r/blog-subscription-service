@@ -370,7 +370,7 @@ void InitializeDatabase()
         pqxx::work txn(*conn.get());
 
         /// Check the database version
-        pqxx::result r = txn.exec((boost::format("SELECT version FROM \"%1%\" WHERE 1=1;")
+        pqxx::result r = txn.exec((boost::format("SELECT version FROM \"%1%\" WHERE 1 = 1;")
                                    % txn.esc(Service::Pool::Database().GetTableName("VERSION"))).str());
 
         /// If the database is un-versioned
