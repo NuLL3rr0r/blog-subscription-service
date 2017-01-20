@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <messages>
-    <message id="home-page-title">پنل مدیریت سرویس اشتراک وبلاگ</message>
+    <message id="internal-server-error">خطای داخلی در سرور!</message>
     <message id="no-script">
         <noscript>
             <div class="no-script">
@@ -11,6 +11,7 @@
             </div>
         </noscript>
     </message>
+    <message id="home-page-title">پنل مدیریت سرویس اشتراک وبلاگ</message>
     <message id="home-captcha">کد امنیتی</message>
     <message id="home-captcha-hint">مثال: ۲۵ = ۵ × ۵</message>
     <message id="home-dialog-button-ok">تائید</message>
@@ -139,9 +140,23 @@
     <message id="cms-dashboard-last-login-info-title">آخرین ورود</message>
     <message id="cms-dashboard-last-login-info-ip">شناسه اینترنتی</message>
     <message id="cms-dashboard-last-login-info-location">مکان</message>
+    <message id="cms-dashboard-last-login-info-location-country-code">کد کشور</message>
+    <message id="cms-dashboard-last-login-info-location-country-code3">کد ۳ رقمی کشور</message>
+    <message id="cms-dashboard-last-login-info-location-country-name">نام کشور</message>
+    <message id="cms-dashboard-last-login-info-location-region">منطقه</message>
+    <message id="cms-dashboard-last-login-info-location-city">شهر</message>
+    <message id="cms-dashboard-last-login-info-location-postal-code">کد پستی</message>
+    <message id="cms-dashboard-last-login-info-location-latitude">عرض جغرافیایی</message>
+    <message id="cms-dashboard-last-login-info-location-longitude">طول جغرافیایی</message>
+    <message id="cms-dashboard-last-login-info-location-metro-code">کد مترو</message>
+    <message id="cms-dashboard-last-login-info-location-dma-code">کد DMA</message>
+    <message id="cms-dashboard-last-login-info-location-area-code">کد منطقه</message>
+    <message id="cms-dashboard-last-login-info-location-charset">مجموعه کاراکتر</message>
+    <message id="cms-dashboard-last-login-info-location-continent-code">قاره</message>
+    <message id="cms-dashboard-last-login-info-location-netmask">پوشش شبکه</message>
     <message id="cms-dashboard-last-login-info-user-agent">شناسه مرورگر</message>
     <message id="cms-dashboard-last-login-info-referer">ارجاع دهنده</message>
-    <message id="cms-dashboard-last-login-info-time">زمان</message>
+    <message id="cms-dashboard-last-login-info-time"> زمان (گرینویچ)</message>
     <message id="cms-dashboard-force-terminate-all-sessions">متوقف نمودن تمامی جلسات</message>
     <message id="cms-dashboard-force-terminate-all-sessions-confirm-title">خاتمه جلسات</message>
     <message id="cms-dashboard-force-terminate-all-sessions-confirm-question">آیا تمامی جلسات فعال خاتمه یابند؟</message>

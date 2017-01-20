@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <messages>
-    <message id="home-page-title">‌Blog Subscription Service Control Panel</message>
+    <message id="internal-server-error">Internal server error!</message>
     <message id="no-script">
         <noscript>
             <div class="no-script">
@@ -11,6 +11,7 @@
             </div>
         </noscript>
     </message>
+    <message id="home-page-title">‌Blog Subscription Service Control Panel</message>
     <message id="home-captcha">Captcha</message>
     <message id="home-captcha-hint">e.g. 5 x 5 = 25</message>
     <message id="home-dialog-button-ok">OK</message>
@@ -143,12 +144,26 @@
     <message id="cms-dashboard-last-login-info-title">Last Login</message>
     <message id="cms-dashboard-last-login-info-ip">IP</message>
     <message id="cms-dashboard-last-login-info-location">Location</message>
+    <message id="cms-dashboard-last-login-info-location-country-code">Country Code</message>
+    <message id="cms-dashboard-last-login-info-location-country-code3">Country Code 3</message>
+    <message id="cms-dashboard-last-login-info-location-country-name">Country Name</message>
+    <message id="cms-dashboard-last-login-info-location-region">Region</message>
+    <message id="cms-dashboard-last-login-info-location-city">City</message>
+    <message id="cms-dashboard-last-login-info-location-postal-code">Postal Code</message>
+    <message id="cms-dashboard-last-login-info-location-latitude">Latitude</message>
+    <message id="cms-dashboard-last-login-info-location-longitude">Longitude</message>
+    <message id="cms-dashboard-last-login-info-location-metro-code">Metro Code</message>
+    <message id="cms-dashboard-last-login-info-location-dma-code">DMA Code</message>
+    <message id="cms-dashboard-last-login-info-location-area-code">Area Code</message>
+    <message id="cms-dashboard-last-login-info-location-charset">Charset</message>
+    <message id="cms-dashboard-last-login-info-location-continent-code">Continent</message>
+    <message id="cms-dashboard-last-login-info-location-netmask">Netmask</message>
     <message id="cms-dashboard-last-login-info-user-agent">User Agent</message>
     <message id="cms-dashboard-last-login-info-referer">Referer</message>
     <message id="cms-dashboard-last-login-info-time">Time (UTC)</message>
     <message id="cms-dashboard-force-terminate-all-sessions">Force Terminate All Sessions</message>
     <message id="cms-dashboard-force-terminate-all-sessions-confirm-title">Terminate All Sessions</message>
-    <message id="cms-dashboard-force-terminate-all-sessions-confirm-question">Force terminate all active sessions? Are you Sure?</message>
+    <message id="cms-dashboard-force-terminate-all-sessions-confirm-question">Force terminate all active sessions?<br /><br />Note that in addition to all other sessions, your current session will terminate, too;<br />So, you'll be forced to logout.<br /><br />Are you still sure?</message>
     <message id="cms-dashboard-force-terminate-all-sessions-confirm-ok">Yes</message>
     <message id="cms-dashboard-force-terminate-all-sessions-confirm-cancel">No</message>
     <message id="cms-dashboard-force-terminate-all-sessions-has-been-scheduled-title">Session Termination</message>
