@@ -187,7 +187,7 @@ SharedObjectPool<pqxx::connection>::ptrType Database::Connection()
 
                 return c;
             } else {
-                LOG_INFO((format("No free connection is available! Retrying...") % connectionNumber).str());
+                LOG_WARN("No free connection is available! Retrying...");
             }
         } catch (const pqxx::sql_error &ex) {
             LOG_ERROR((format("Connection #%1% acquisition failed!") % connectionNumber).str(), ex.what());
