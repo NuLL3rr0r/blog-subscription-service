@@ -72,7 +72,7 @@ public:
     {
 #if CXX_COMPILE_MODE == CXX_COMPILE_MODE_0x \
         || CXX_COMPILE_MODE == CXX_COMPILE_MODE_11
-        return *s1 == *s2 && (*s1 == '\0' || EqualStrings(s1 + 1, s2 + 1));
+        return *s1 == *s2 && (*s1 == '\0' || StringsEqual(s1 + 1, s2 + 1));
 #elif CXX_COMPILE_MODE == CXX_COMPILE_MODE_1y \
         || CXX_COMPILE_MODE == CXX_COMPILE_MODE_14 \
         || CXX_COMPILE_MODE == CXX_COMPILE_MODE_1z

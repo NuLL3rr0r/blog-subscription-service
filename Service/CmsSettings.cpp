@@ -49,6 +49,7 @@
 #include <CoreLib/Database.hpp>
 #include <CoreLib/FileSystem.hpp>
 #include <CoreLib/Log.hpp>
+#include <CoreLib/make_unique.hpp>
 #include "CgiEnv.hpp"
 #include "CgiRoot.hpp"
 #include "CmsSettings.hpp"

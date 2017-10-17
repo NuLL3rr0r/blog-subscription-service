@@ -48,6 +48,7 @@
 #include <CoreLib/CDate.hpp>
 #include <CoreLib/Database.hpp>
 #include <CoreLib/FileSystem.hpp>
+#include <CoreLib/make_unique.hpp>
 #include <CoreLib/Log.hpp>
 #include <CoreLib/Random.hpp>
 #include <CoreLib/System.hpp>

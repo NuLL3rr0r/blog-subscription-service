@@ -40,6 +40,7 @@
 #include <ctime>
 #include <boost/lexical_cast.hpp>
 #include "CDate.hpp"
+#include "make_unique.hpp"
 
 using namespace std;
 using namespace boost;

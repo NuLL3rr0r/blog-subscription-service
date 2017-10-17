@@ -56,6 +56,7 @@
 #include <CoreLib/FileSystem.hpp>
 #include <CoreLib/Log.hpp>
 #include <CoreLib/Mail.hpp>
+#include <CoreLib/make_unique.hpp>
 #include "CgiEnv.hpp"
 #include "CgiRoot.hpp"
 #include "CmsNewsletter.hpp"
