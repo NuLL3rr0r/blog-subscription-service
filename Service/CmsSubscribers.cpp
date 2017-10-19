@@ -287,6 +287,8 @@ void CmsSubscribers::Impl::OnItemsPerPageComboBoxChanged(Wt::WComboBox *comboBox
         }
 
         if (this->PaginationItemsPerPageLimit < 0) {
+            this->PaginationPageOffset = 0;
+            this->PaginationItemOffset = 0;
             this->FillDataTable(this->PaginationTableType);
             return;
         }
