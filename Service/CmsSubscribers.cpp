@@ -506,11 +506,15 @@ void CmsSubscribers::Impl::FillDataTable(const CmsSubscribers::Impl::Table &tabl
             this->GetDate(joinDate, joinDateFormatted);
             this->GetDate(updateDate, updateDateFormatted);
 
-            table->elementAt(i, 0)->addWidget(
-                        new WText(
-                            CDate::DateConv::FormatToPersianNums(
-                                lexical_cast<string>(
-                                    this->PaginationItemOffset + static_cast<uint_fast64_t>(i)))));
+            WString rowNumber;
+            if (cgiEnv->GetInformation().Client.Language.Code
+                    != CgiEnv::InformationRecord::ClientRecord::LanguageCode::Fa) {
+                rowNumber = WString(lexical_cast<wstring>(i));
+            } else {
+                rowNumber = WString(CDate::DateConv::FormatToPersianNums(lexical_cast<wstring>(i)));
+            }
+
+            table->elementAt(i, 0)->addWidget(new WText(rowNumber));
             table->elementAt(i, 1)->addWidget(new WText(WString::fromUTF8(inbox)));
             table->elementAt(i, 2)->addWidget(new WText(subscriptionTypeName));
             table->elementAt(i, 3)->addWidget(new WText(pendingConfirmTypeName));
@@ -556,10 +560,17 @@ void CmsSubscribers::Impl::ReEvaluatePaginationButtons()
                     std::ceil(this->PaginationTotalItems
                               / static_cast<double>(this->PaginationItemsPerPageLimit)));
         for (uint_fast64_t i = 0; i < numberOfPages; ++i) {
-            WPushButton *button = new WPushButton(
-                        CDate::DateConv::FormatToPersianNums(boost::lexical_cast<std::string>(i + 1)));
+            WString pageNumber;
+            if (cgiEnv->GetInformation().Client.Language.Code
+                    != CgiEnv::InformationRecord::ClientRecord::LanguageCode::Fa) {
+                pageNumber = WString(lexical_cast<wstring>(i));
+            } else {
+                pageNumber = WString(CDate::DateConv::FormatToPersianNums(lexical_cast<wstring>(i)));
+            }
+
+            WPushButton *button = new WPushButton(pageNumber);
             button->setAttributeValue(
-                        "page-offset", WString::fromUTF8(boost::lexical_cast<std::string>(i)));
+                        "page-offset", WString::fromUTF8(lexical_cast<string>(i)));
 
             if (i != this->PaginationPageOffset) {
                 button->setStyleClass("btn btn-default");
