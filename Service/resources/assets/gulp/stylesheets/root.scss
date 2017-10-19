@@ -296,8 +296,12 @@ html, body {
     }
 }
 
-.pagination-buttons-container {
-    .btn {
-        margin: 0 4px;
+.pagination-container {
+    padding: 8px 16px;
+
+    .pagination-buttons-container {
+        .btn {
+            margin: 4px;
+        }
     }
 }

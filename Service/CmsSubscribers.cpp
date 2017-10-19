@@ -163,7 +163,7 @@ WWidget *CmsSubscribers::Layout()
             inactiveSubscribersPushButton->setStyleClass("btn btn-default");
 
             WComboBox* itemsPerPageComboBox = new WComboBox();
-            itemsPerPageComboBox->setWidth(WLength(100.0, WLength::Pixel));
+            itemsPerPageComboBox->setWidth(WLength(200.0, WLength::Pixel));
 
             for (const pair<WString, int> &it : m_pimpl->PaginationOptions) {
                 itemsPerPageComboBox->addItem(it.first);

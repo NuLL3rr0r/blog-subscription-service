@@ -16,7 +16,7 @@
 
             <div class="clearfix"></div>
 
-            <div>
+            <div class="pagination-container">
                 <div class="pull-right">
                     <div class="form-group">
                         <label for="${items-per-page-select-id}" class="control-label">
@@ -28,7 +28,7 @@
                     </div>
                 </div>
 
-                <div class="pull-left">
+                <div class="pull-left text-right">
                     ${pagination-buttons}
                 </div>
             </div>
