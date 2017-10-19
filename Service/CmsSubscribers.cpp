@@ -337,8 +337,10 @@ void CmsSubscribers::Impl::OnPaginiationButtonPressed(Wt::WPushButton *button)
     CgiEnv *cgiEnv = cgiRoot->GetCgiEnvInstance();
 
     try {
+        const string pageOffset = button->attributeValue("page-offset").toUTF8();
+
         this->PaginationPageOffset =
-                boost::lexical_cast<uint_fast64_t>(button->text().toUTF8()) - 1;
+                boost::lexical_cast<uint_fast64_t>(pageOffset);
         this->PaginationItemOffset = this->PaginationPageOffset
                 * static_cast<uint_fast64_t>(this->PaginationItemsPerPageLimit);
 
@@ -504,7 +506,11 @@ void CmsSubscribers::Impl::FillDataTable(const CmsSubscribers::Impl::Table &tabl
             this->GetDate(joinDate, joinDateFormatted);
             this->GetDate(updateDate, updateDateFormatted);
 
-            table->elementAt(i, 0)->addWidget(new WText(WString::fromUTF8(lexical_cast<string>(this->PaginationItemOffset + static_cast<uint_fast64_t>(i)))));
+            table->elementAt(i, 0)->addWidget(
+                        new WText(
+                            CDate::DateConv::FormatToPersianNums(
+                                lexical_cast<string>(
+                                    this->PaginationItemOffset + static_cast<uint_fast64_t>(i)))));
             table->elementAt(i, 1)->addWidget(new WText(WString::fromUTF8(inbox)));
             table->elementAt(i, 2)->addWidget(new WText(subscriptionTypeName));
             table->elementAt(i, 3)->addWidget(new WText(pendingConfirmTypeName));
@@ -551,7 +557,9 @@ void CmsSubscribers::Impl::ReEvaluatePaginationButtons()
                               / static_cast<double>(this->PaginationItemsPerPageLimit)));
         for (uint_fast64_t i = 0; i < numberOfPages; ++i) {
             WPushButton *button = new WPushButton(
-                        WString::fromUTF8(boost::lexical_cast<std::string>(i + 1)));
+                        CDate::DateConv::FormatToPersianNums(boost::lexical_cast<std::string>(i + 1)));
+            button->setAttributeValue(
+                        "page-offset", WString::fromUTF8(boost::lexical_cast<std::string>(i)));
 
             if (i != this->PaginationPageOffset) {
                 button->setStyleClass("btn btn-default");
