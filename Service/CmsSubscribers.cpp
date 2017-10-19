@@ -509,9 +509,9 @@ void CmsSubscribers::Impl::FillDataTable(const CmsSubscribers::Impl::Table &tabl
             WString rowNumber;
             if (cgiEnv->GetInformation().Client.Language.Code
                     != CgiEnv::InformationRecord::ClientRecord::LanguageCode::Fa) {
-                rowNumber = WString(lexical_cast<wstring>(i));
+                rowNumber = WString(lexical_cast<wstring>(this->PaginationItemOffset + i));
             } else {
-                rowNumber = WString(CDate::DateConv::FormatToPersianNums(lexical_cast<wstring>(i)));
+                rowNumber = WString(CDate::DateConv::FormatToPersianNums(lexical_cast<wstring>(this->PaginationItemOffset + i)));
             }
 
             table->elementAt(i, 0)->addWidget(new WText(rowNumber));
