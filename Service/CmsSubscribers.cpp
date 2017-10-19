@@ -486,7 +486,7 @@ void CmsSubscribers::Impl::FillDataTable(const CmsSubscribers::Impl::Table &tabl
             this->GetDate(joinDate, joinDateFormatted);
             this->GetDate(updateDate, updateDateFormatted);
 
-            table->elementAt(i, 0)->addWidget(new WText(WString::fromUTF8(lexical_cast<string>(this->PaginationItemOffset) + static_cast<uint_fast64_t>(i))));
+            table->elementAt(i, 0)->addWidget(new WText(WString::fromUTF8(lexical_cast<string>(this->PaginationItemOffset + static_cast<uint_fast64_t>(i)))));
             table->elementAt(i, 1)->addWidget(new WText(WString::fromUTF8(inbox)));
             table->elementAt(i, 2)->addWidget(new WText(subscriptionTypeName));
             table->elementAt(i, 3)->addWidget(new WText(pendingConfirmTypeName));
