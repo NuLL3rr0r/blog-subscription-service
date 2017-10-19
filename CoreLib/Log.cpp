@@ -55,7 +55,7 @@ struct Log::Impl
 public:
     struct ETypeHasher
     {
-        std::size_t operator()(const EType &t) const
+        std::size_t operator()(const Log::EType &t) const
         {
             return std::hash<unsigned char>()(static_cast<unsigned char>(t));
         }
