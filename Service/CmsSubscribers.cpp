@@ -259,26 +259,46 @@ CmsSubscribers::Impl::~Impl() = default;
 
 void CmsSubscribers::Impl::OnAllButtonPressed()
 {
+    this->PaginationTotalItems = 0;
+    this->PaginationItemOffset = 0;
+    this->PaginationPageOffset = 0;
+
     FillDataTable(Table::All);
 }
 
 void CmsSubscribers::Impl::OnEnFaButtonPressed()
 {
+    this->PaginationTotalItems = 0;
+    this->PaginationItemOffset = 0;
+    this->PaginationPageOffset = 0;
+
     FillDataTable(Table::EnFa);
 }
 
 void CmsSubscribers::Impl::OnEnButtonPressed()
 {
+    this->PaginationTotalItems = 0;
+    this->PaginationItemOffset = 0;
+    this->PaginationPageOffset = 0;
+
     FillDataTable(Table::En);
 }
 
 void CmsSubscribers::Impl::OnFaButtonPressed()
 {
+    this->PaginationTotalItems = 0;
+    this->PaginationItemOffset = 0;
+    this->PaginationPageOffset = 0;
+
     FillDataTable(Table::Fa);
 }
 
 void CmsSubscribers::Impl::OnInactiveButtonPressed()
 {
+    this->PaginationTotalItems = 0;
+    this->PaginationItemOffset = 0;
+    this->PaginationPageOffset = 0;
+
     FillDataTable(Table::Inactive);
 }
 
@@ -303,6 +323,10 @@ void CmsSubscribers::Impl::OnItemsPerPageComboBoxChanged(Wt::WComboBox *comboBox
         }
 
         if (this->PaginationItemsPerPageLimit < 0) {
+            this->PaginationTotalItems = 0;
+            this->PaginationPageOffset = 0;
+            this->PaginationItemOffset = 0;
+
             this->FillDataTable(this->PaginationTableType);
 
             return;
@@ -417,9 +441,6 @@ void CmsSubscribers::Impl::FillDataTable(const CmsSubscribers::Impl::Table &tabl
 
     try {
         this->PaginationTableType = tableType;
-        this->PaginationTotalItems = 0;
-        this->PaginationItemOffset = 0;
-        this->PaginationPageOffset = 0;
 
         SubscribersTableContainer->clear();
 
