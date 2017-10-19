@@ -286,6 +286,11 @@ void CmsSubscribers::Impl::OnItemsPerPageComboBoxChanged(Wt::WComboBox *comboBox
             return;
         }
 
+        if (this->PaginationItemsPerPageLimit < 0) {
+            this->FillDataTable(this->PaginationTableType);
+            return;
+        }
+
         this->PaginationPageOffset = static_cast<uint_fast64_t>(
                     std::floor(this->PaginationItemOffset
                                / static_cast<double>(this->PaginationItemsPerPageLimit)));
@@ -518,6 +523,10 @@ void CmsSubscribers::Impl::ReEvaluatePaginationButtons()
 
     try {
         this->PaginationButtonsContainer->clear();
+
+        if (this->PaginationItemsPerPageLimit < 0) {
+            return;
+        }
 
         uint_fast64_t numberOfPages = static_cast<uint_fast64_t>(
                     std::ceil(this->PaginationTotalItems
