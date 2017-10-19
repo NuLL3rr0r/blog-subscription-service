@@ -215,6 +215,14 @@
     <message id="cms-subscribers-pending-cancel">Pending Cancel</message>
     <message id="cms-subscribers-join-date">Join Date</message>
     <message id="cms-subscribers-update-date">Update Date</message>
+    <message id="cms-subscribers-number-of-items-per-page">Number of items per page</message>
+    <message id="cms-subscribers-number-of-items-per-page-10">10</message>
+    <message id="cms-subscribers-number-of-items-per-page-25">25</message>
+    <message id="cms-subscribers-number-of-items-per-page-50">50</message>
+    <message id="cms-subscribers-number-of-items-per-page-100">100</message>
+    <message id="cms-subscribers-number-of-items-per-page-500">500</message>
+    <message id="cms-subscribers-number-of-items-per-page-1000">1000</message>
+    <message id="cms-subscribers-number-of-items-per-page-all">All</message>
     <message id="cms-contacts-page-title">Edit Contacts</message>
     <message id="cms-contacts-recipient-name-en">Recipient Name (En)</message>
     <message id="cms-contacts-recipient-name-en-placeholder">Recipient Name in English</message>

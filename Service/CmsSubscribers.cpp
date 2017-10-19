@@ -33,13 +33,17 @@
  */
 
 
+#include <vector>
+#include <cmath>
 #include <ctime>
 #include <boost/exception/diagnostic_information.hpp>
 #include <boost/format.hpp>
 #include <boost/lexical_cast.hpp>
 #include <pqxx/pqxx>
 #include <Wt/WApplication>
+#include <Wt/WComboBox>
 #include <Wt/WPushButton>
+#include <Wt/WSignalMapper>
 #include <Wt/WString>
 #include <Wt/WTable>
 #include <Wt/WTemplate>
@@ -78,6 +82,15 @@ public:
 public:
     WContainerWidget *SubscribersTableContainer;
 
+    std::vector<std::pair<Wt::WString, int>> PaginationOptions;
+    int PaginationOptionsDefaultIndex;
+    Table PaginationTableType;
+    uint_fast64_t PaginationTotalItems;
+    int PaginationItemsPerPageLimit;
+    uint_fast64_t PaginationItemOffset;
+    uint_fast64_t PaginationPageOffset;
+    Div *PaginationButtonsContainer;
+
 public:
     Impl();
     ~Impl();
@@ -89,11 +102,16 @@ public:
     void OnFaButtonPressed();
     void OnInactiveButtonPressed();
 
+    void OnItemsPerPageComboBoxChanged(Wt::WComboBox *comboBox);
+    void OnPaginiationButtonPressed(Wt::WPushButton *button);
+
 private:
     void GetDate(const std::string &timeSinceEpoch, Wt::WString &out_date);
     void GetSubscriptionTypeName(const std::string &type, Wt::WString &out_name);
 
     void FillDataTable(const CmsSubscribers::Impl::Table &table);
+
+    void ReEvaluatePaginationButtons();
 };
 
 CmsSubscribers::CmsSubscribers()
@@ -144,6 +162,22 @@ WWidget *CmsSubscribers::Layout()
             WPushButton *inactiveSubscribersPushButton = new WPushButton(tr("cms-subscribers-inactive"));
             inactiveSubscribersPushButton->setStyleClass("btn btn-default");
 
+            WComboBox* itemsPerPageComboBox = new WComboBox();
+            itemsPerPageComboBox->setWidth(WLength(100.0, WLength::Pixel));
+
+            for (const pair<WString, int> &it : m_pimpl->PaginationOptions) {
+                itemsPerPageComboBox->addItem(it.first);
+            }
+
+            itemsPerPageComboBox->setCurrentIndex(m_pimpl->PaginationOptionsDefaultIndex);
+            m_pimpl->PaginationItemsPerPageLimit = boost::lexical_cast<int>(itemsPerPageComboBox->currentText());
+
+            WSignalMapper<WComboBox *> *itemsPerPageSignalMapper = new WSignalMapper<WComboBox *>(this);
+            itemsPerPageSignalMapper->mapped().connect(m_pimpl.get(), &CmsSubscribers::Impl::OnItemsPerPageComboBoxChanged);
+            itemsPerPageSignalMapper->mapConnect(itemsPerPageComboBox->changed(), itemsPerPageComboBox);
+
+            m_pimpl->PaginationButtonsContainer = new Div("PaginationButtonsContainer", "pagination-buttons-container");
+
             m_pimpl->SubscribersTableContainer = new Div("SubscribersTableContainer", "subscribers-table-container");
 
             tmpl->bindWidget("subscribers-title", new WText(tr("cms-subscribers-page-title")));
@@ -155,6 +189,10 @@ WWidget *CmsSubscribers::Layout()
             tmpl->bindWidget("english-subscribers-button", englishSubscribersPushButton);
             tmpl->bindWidget("farsi-subscribers-button", farsiSubscribersPushButton);
             tmpl->bindWidget("inactive-subscribers-button", inactiveSubscribersPushButton);
+
+            tmpl->bindWidget("items-per-page-text", new WText(tr("cms-subscribers-number-of-items-per-page")));
+            tmpl->bindWidget("items-per-page-select", itemsPerPageComboBox);
+            tmpl->bindWidget("pagination-buttons", m_pimpl->PaginationButtonsContainer);
 
             allSubscribersPushButton->clicked().connect(m_pimpl.get(), &CmsSubscribers::Impl::OnAllButtonPressed);
             englishFarsiSubscribersPushButton->clicked().connect(m_pimpl.get(), &CmsSubscribers::Impl::OnEnFaButtonPressed);
@@ -182,6 +220,21 @@ WWidget *CmsSubscribers::Layout()
 }
 
 CmsSubscribers::Impl::Impl()
+    : PaginationOptions {
+            { tr("cms-subscribers-number-of-items-per-page-10"), 10 },
+            { tr("cms-subscribers-number-of-items-per-page-25"), 25 },
+            { tr("cms-subscribers-number-of-items-per-page-50"), 50 },
+            { tr("cms-subscribers-number-of-items-per-page-100"), 100 },
+            { tr("cms-subscribers-number-of-items-per-page-500"), 500 },
+            { tr("cms-subscribers-number-of-items-per-page-1000"), 1000 },
+            { tr("cms-subscribers-number-of-items-per-page-all"), -1 }
+      },
+      PaginationOptionsDefaultIndex (2),
+      PaginationTableType(Table::All),
+      PaginationTotalItems(0),
+      PaginationItemsPerPageLimit(-1),
+      PaginationItemOffset(0),
+      PaginationPageOffset(0)
 {
 
 }
@@ -211,6 +264,75 @@ void CmsSubscribers::Impl::OnFaButtonPressed()
 void CmsSubscribers::Impl::OnInactiveButtonPressed()
 {
     FillDataTable(Table::Inactive);
+}
+
+void CmsSubscribers::Impl::OnItemsPerPageComboBoxChanged(Wt::WComboBox *comboBox)
+{
+    CgiRoot *cgiRoot = static_cast<CgiRoot *>(WApplication::instance());
+    CgiEnv *cgiEnv = cgiRoot->GetCgiEnvInstance();
+
+    try {
+        WString value(comboBox->currentText());
+
+        bool found = false;
+        for (const pair<WString, int> &it : this->PaginationOptions) {
+            if (value == it.first) {
+                this->PaginationItemsPerPageLimit = it.second;
+                found = true;
+            }
+        }
+
+        if (!found) {
+            return;
+        }
+
+        this->PaginationPageOffset = static_cast<uint_fast64_t>(
+                    std::floor(this->PaginationItemOffset
+                               / static_cast<double>(this->PaginationItemsPerPageLimit)));
+        this->PaginationItemOffset = this->PaginationPageOffset
+                * static_cast<uint_fast64_t>(this->PaginationItemsPerPageLimit);
+
+        this->FillDataTable(this->PaginationTableType);
+    }
+
+    catch (const boost::exception &ex) {
+        LOG_ERROR(boost::diagnostic_information(ex), cgiEnv->GetInformation().ToJson());
+    }
+
+    catch (const std::exception &ex) {
+        LOG_ERROR(ex.what(), cgiEnv->GetInformation().ToJson());
+    }
+
+    catch (...) {
+        LOG_ERROR(UNKNOWN_ERROR, cgiEnv->GetInformation().ToJson());
+    }
+}
+
+void CmsSubscribers::Impl::OnPaginiationButtonPressed(Wt::WPushButton *button)
+{
+    CgiRoot *cgiRoot = static_cast<CgiRoot *>(WApplication::instance());
+    CgiEnv *cgiEnv = cgiRoot->GetCgiEnvInstance();
+
+    try {
+        this->PaginationPageOffset =
+                boost::lexical_cast<uint_fast64_t>(button->text().toUTF8()) - 1;
+        this->PaginationItemOffset = this->PaginationPageOffset
+                * static_cast<uint_fast64_t>(this->PaginationItemsPerPageLimit);
+
+        this->FillDataTable(this->PaginationTableType);
+    }
+
+    catch (const boost::exception &ex) {
+        LOG_ERROR(boost::diagnostic_information(ex), cgiEnv->GetInformation().ToJson());
+    }
+
+    catch (const std::exception &ex) {
+        LOG_ERROR(ex.what(), cgiEnv->GetInformation().ToJson());
+    }
+
+    catch (...) {
+        LOG_ERROR(UNKNOWN_ERROR, cgiEnv->GetInformation().ToJson());
+    }
 }
 
 void CmsSubscribers::Impl::GetDate(const std::string &timeSinceEpoch, Wt::WString &out_date)
@@ -270,6 +392,8 @@ void CmsSubscribers::Impl::FillDataTable(const CmsSubscribers::Impl::Table &tabl
     CgiEnv *cgiEnv = cgiRoot->GetCgiEnvInstance();
 
     try {
+        this->PaginationTableType = tableType;
+
         SubscribersTableContainer->clear();
 
         WTable *table = new WTable(SubscribersTableContainer);
@@ -285,32 +409,39 @@ void CmsSubscribers::Impl::FillDataTable(const CmsSubscribers::Impl::Table &tabl
         table->elementAt(0, 6)->addWidget(new WText(tr("cms-subscribers-update-date")));
         table->elementAt(0, 7)->addWidget(new WText(tr("cms-subscribers-uuid")));
 
+        std::string paginationPhrase;
+        if (this->PaginationItemsPerPageLimit > -1) {
+            paginationPhrase = (format("LIMIT %1% OFFSET %2%")
+                                % boost::lexical_cast<std::string>(this->PaginationItemsPerPageLimit)
+                                % boost::lexical_cast<std::string>(this->PaginationItemOffset)).str();
+        }
+
         string query;
         switch (tableType) {
         case Table::All:
-            query.assign((format("SELECT inbox, uuid, subscription, pending_confirm, pending_cancel, join_date, update_date"
-                                 " FROM \"%1%\" ORDER BY inbox COLLATE \"en_US.UTF-8\" ASC;")
-                          % Pool::Database().GetTableName("SUBSCRIBERS")).str());
+            query.assign((format("SELECT count(*) over(), inbox, uuid, subscription, pending_confirm, pending_cancel, join_date, update_date"
+                                 " FROM \"%1%\" ORDER BY inbox COLLATE \"en_US.UTF-8\" ASC %2%;")
+                          % Pool::Database().GetTableName("SUBSCRIBERS") % paginationPhrase).str());
             break;
         case Table::EnFa:
-            query.assign((format("SELECT inbox, uuid, subscription, pending_confirm, pending_cancel, join_date, update_date"
-                                 " FROM \"%1%\" WHERE subscription = 'en_fa' ORDER BY inbox COLLATE \"en_US.UTF-8\" ASC;")
-                          % Pool::Database().GetTableName("SUBSCRIBERS")).str());
+            query.assign((format("SELECT count(*) over(), inbox, uuid, subscription, pending_confirm, pending_cancel, join_date, update_date"
+                                 " FROM \"%1%\" WHERE subscription = 'en_fa' ORDER BY inbox COLLATE \"en_US.UTF-8\" ASC %2%;")
+                          % Pool::Database().GetTableName("SUBSCRIBERS") % paginationPhrase).str());
             break;
         case Table::En:
-            query.assign((format("SELECT inbox, uuid, subscription, pending_confirm, pending_cancel, join_date, update_date"
-                                 " FROM \"%1%\" WHERE subscription = 'en' ORDER BY inbox COLLATE \"en_US.UTF-8\" ASC;")
-                          % Pool::Database().GetTableName("SUBSCRIBERS")).str());
+            query.assign((format("SELECT count(*) over(), inbox, uuid, subscription, pending_confirm, pending_cancel, join_date, update_date"
+                                 " FROM \"%1%\" WHERE subscription = 'en' ORDER BY inbox COLLATE \"en_US.UTF-8\" ASC %2%;")
+                          % Pool::Database().GetTableName("SUBSCRIBERS") % paginationPhrase).str());
             break;
         case Table::Fa:
-            query.assign((format("SELECT inbox, uuid, subscription, pending_confirm, pending_cancel, join_date, update_date"
-                                 " FROM \"%1%\" WHERE subscription = 'fa' ORDER BY inbox COLLATE \"en_US.UTF-8\" ASC;")
-                          % Pool::Database().GetTableName("SUBSCRIBERS")).str());
+            query.assign((format("SELECT count(*) over(), inbox, uuid, subscription, pending_confirm, pending_cancel, join_date, update_date"
+                                 " FROM \"%1%\" WHERE subscription = 'fa' ORDER BY inbox COLLATE \"en_US.UTF-8\" ASC %2%;")
+                          % Pool::Database().GetTableName("SUBSCRIBERS") % paginationPhrase).str());
             break;
         case Table::Inactive:
-            query.assign((format("SELECT inbox, uuid, subscription, pending_confirm, pending_cancel, join_date, update_date"
-                                 " FROM \"%1%\" WHERE subscription = 'none' ORDER BY inbox COLLATE \"en_US.UTF-8\" ASC;")
-                          % Pool::Database().GetTableName("SUBSCRIBERS")).str());
+            query.assign((format("SELECT count(*) over(), inbox, uuid, subscription, pending_confirm, pending_cancel, join_date, update_date"
+                                 " FROM \"%1%\" WHERE subscription = 'none' ORDER BY inbox COLLATE \"en_US.UTF-8\" ASC %2%;")
+                          % Pool::Database().GetTableName("SUBSCRIBERS") % paginationPhrase).str());
             break;
         }
 
@@ -325,6 +456,8 @@ void CmsSubscribers::Impl::FillDataTable(const CmsSubscribers::Impl::Table &tabl
         int i = 0;
         for (const auto & row : r) {
             ++i;
+
+            this->PaginationTotalItems = boost::lexical_cast<uint_fast64_t>(row["count"].c_str());
 
             const string inbox(row["inbox"].c_str());
             const string uuid(row["uuid"].c_str());
@@ -357,10 +490,54 @@ void CmsSubscribers::Impl::FillDataTable(const CmsSubscribers::Impl::Table &tabl
             table->elementAt(i, 6)->addWidget(new WText(updateDateFormatted));
             table->elementAt(i, 7)->addWidget(new WText(WString::fromUTF8(uuid)));
         }
+
+        this->ReEvaluatePaginationButtons();
     }
 
     catch (const pqxx::sql_error &ex) {
         LOG_ERROR(ex.what(), ex.query(), cgiEnv->GetInformation().ToJson());
+    }
+
+    catch (const boost::exception &ex) {
+        LOG_ERROR(boost::diagnostic_information(ex), cgiEnv->GetInformation().ToJson());
+    }
+
+    catch (const std::exception &ex) {
+        LOG_ERROR(ex.what(), cgiEnv->GetInformation().ToJson());
+    }
+
+    catch (...) {
+        LOG_ERROR(UNKNOWN_ERROR, cgiEnv->GetInformation().ToJson());
+    }
+}
+
+void CmsSubscribers::Impl::ReEvaluatePaginationButtons()
+{
+    CgiRoot *cgiRoot = static_cast<CgiRoot *>(WApplication::instance());
+    CgiEnv *cgiEnv = cgiRoot->GetCgiEnvInstance();
+
+    try {
+        this->PaginationButtonsContainer->clear();
+
+        uint_fast64_t numberOfPages = static_cast<uint_fast64_t>(
+                    std::ceil(this->PaginationTotalItems
+                              / static_cast<double>(this->PaginationItemsPerPageLimit)));
+        for (uint_fast64_t i = 0; i < numberOfPages; ++i) {
+            WPushButton *button = new WPushButton(
+                        WString::fromUTF8(boost::lexical_cast<std::string>(i + 1)));
+
+            if (i != this->PaginationPageOffset) {
+                button->setStyleClass("btn btn-default");
+            } else {
+                button->setStyleClass("btn btn-primary");
+            }
+
+            this->PaginationButtonsContainer->addWidget(button);
+
+            WSignalMapper<WPushButton *> *buttonSignalMapper = new WSignalMapper<WPushButton *>(this);
+            buttonSignalMapper->mapped().connect(this, &CmsSubscribers::Impl::OnPaginiationButtonPressed);
+            buttonSignalMapper->mapConnect(button->clicked(), button);
+        }
     }
 
     catch (const boost::exception &ex) {

@@ -210,6 +210,14 @@
     <message id="cms-subscribers-pending-cancel">منتظر لغو</message>
     <message id="cms-subscribers-join-date">تاریخ پیوستن</message>
     <message id="cms-subscribers-update-date">تاریخ بروزرسانی</message>
+    <message id="cms-subscribers-number-of-items-per-page">تعداد مخاطبین در هر صفحه</message>
+    <message id="cms-subscribers-number-of-items-per-page-10">۱۰</message>
+    <message id="cms-subscribers-number-of-items-per-page-25">۲۵</message>
+    <message id="cms-subscribers-number-of-items-per-page-50">۵۰</message>
+    <message id="cms-subscribers-number-of-items-per-page-100">۱۰۰</message>
+    <message id="cms-subscribers-number-of-items-per-page-500">۵۰۰</message>
+    <message id="cms-subscribers-number-of-items-per-page-1000">۱۰۰۰</message>
+    <message id="cms-subscribers-number-of-items-per-page-all">تمامی مخاطبین</message>
     <message id="cms-contacts-page-title">ویرایش تماس ها</message>
     <message id="cms-contacts-recipient-name-en">نام گیرنده (EN)</message>
     <message id="cms-contacts-recipient-name-en-placeholder">نام گیرنده به انگلیسی</message>

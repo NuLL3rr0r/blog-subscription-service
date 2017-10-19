@@ -15,6 +15,25 @@
             </div>
 
             <div class="clearfix"></div>
+
+            <div>
+                <div class="pull-right">
+                    <div class="form-group">
+                        <label for="${recipient-fa-input-id}" class="control-label">
+                            ${items-per-page-text}
+                        </label>
+                        <div>
+                            ${items-per-page-select}
+                        </div>
+                    </div>
+                </div>
+
+                <div class="pull-left">
+                    ${pagination-buttons}
+                </div>
+            </div>
+
+            <div class="clearfix"></div>
         </div>
 
         <div class="clearfix"></div>
