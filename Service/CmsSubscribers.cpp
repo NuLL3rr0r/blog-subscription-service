@@ -169,8 +169,23 @@ WWidget *CmsSubscribers::Layout()
                 itemsPerPageComboBox->addItem(it.first);
             }
 
-            itemsPerPageComboBox->setCurrentIndex(m_pimpl->PaginationOptionsDefaultIndex);
-            m_pimpl->PaginationItemsPerPageLimit = boost::lexical_cast<int>(itemsPerPageComboBox->currentText());
+            {
+                itemsPerPageComboBox->setCurrentIndex(m_pimpl->PaginationOptionsDefaultIndex);
+
+                WString value(itemsPerPageComboBox->currentText());
+
+                bool found = false;
+                for (const pair<WString, int> &it : m_pimpl->PaginationOptions) {
+                    if (value == it.first) {
+                        m_pimpl->PaginationItemsPerPageLimit = it.second;
+                        found = true;
+                    }
+                }
+
+                if (!found) {
+                    m_pimpl->PaginationItemsPerPageLimit = -1;
+                }
+            }
 
             WSignalMapper<WComboBox *> *itemsPerPageSignalMapper = new WSignalMapper<WComboBox *>(this);
             itemsPerPageSignalMapper->mapped().connect(m_pimpl.get(), &CmsSubscribers::Impl::OnItemsPerPageComboBoxChanged);
