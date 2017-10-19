@@ -192,6 +192,7 @@ WWidget *CmsSubscribers::Layout()
 
             tmpl->bindWidget("items-per-page-text", new WText(tr("cms-subscribers-number-of-items-per-page")));
             tmpl->bindWidget("items-per-page-select", itemsPerPageComboBox);
+            tmpl->bindString("items-per-page-select-id", itemsPerPageComboBox->id());
             tmpl->bindWidget("pagination-buttons", m_pimpl->PaginationButtonsContainer);
 
             allSubscribersPushButton->clicked().connect(m_pimpl.get(), &CmsSubscribers::Impl::OnAllButtonPressed);

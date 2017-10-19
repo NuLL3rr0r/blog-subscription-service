@@ -19,7 +19,7 @@
             <div>
                 <div class="pull-left">
                     <div class="form-group">
-                        <label for="${recipient-fa-input-id}" class="control-label">
+                        <label for="${items-per-page-select-id}" class="control-label">
                             ${items-per-page-text}
                         </label>
                         <div>
