@@ -453,7 +453,7 @@ void CmsSubscribers::Impl::FillDataTable(const CmsSubscribers::Impl::Table &tabl
 
         result r = txn.exec(query);
 
-        int i = 0;
+        int i = this->PaginationItemOffset;
         for (const auto & row : r) {
             ++i;
 
