@@ -85,8 +85,8 @@ public:
     std::vector<std::pair<Wt::WString, int>> PaginationOptions;
     int PaginationOptionsDefaultIndex;
     Table PaginationTableType;
-    uint_fast64_t PaginationTotalItems;
     int PaginationItemsPerPageLimit;
+    uint_fast64_t PaginationTotalItems;
     uint_fast64_t PaginationItemOffset;
     uint_fast64_t PaginationPageOffset;
     Div *PaginationButtonsContainer;
@@ -247,8 +247,8 @@ CmsSubscribers::Impl::Impl()
       },
       PaginationOptionsDefaultIndex (2),
       PaginationTableType(Table::All),
-      PaginationTotalItems(0),
       PaginationItemsPerPageLimit(-1),
+      PaginationTotalItems(0),
       PaginationItemOffset(0),
       PaginationPageOffset(0)
 {
@@ -259,26 +259,46 @@ CmsSubscribers::Impl::~Impl() = default;
 
 void CmsSubscribers::Impl::OnAllButtonPressed()
 {
+    this->PaginationTotalItems = 0;
+    this->PaginationItemOffset = 0;
+    this->PaginationPageOffset = 0;
+
     FillDataTable(Table::All);
 }
 
 void CmsSubscribers::Impl::OnEnFaButtonPressed()
 {
+    this->PaginationTotalItems = 0;
+    this->PaginationItemOffset = 0;
+    this->PaginationPageOffset = 0;
+
     FillDataTable(Table::EnFa);
 }
 
 void CmsSubscribers::Impl::OnEnButtonPressed()
 {
+    this->PaginationTotalItems = 0;
+    this->PaginationItemOffset = 0;
+    this->PaginationPageOffset = 0;
+
     FillDataTable(Table::En);
 }
 
 void CmsSubscribers::Impl::OnFaButtonPressed()
 {
+    this->PaginationTotalItems = 0;
+    this->PaginationItemOffset = 0;
+    this->PaginationPageOffset = 0;
+
     FillDataTable(Table::Fa);
 }
 
 void CmsSubscribers::Impl::OnInactiveButtonPressed()
 {
+    this->PaginationTotalItems = 0;
+    this->PaginationItemOffset = 0;
+    this->PaginationPageOffset = 0;
+
     FillDataTable(Table::Inactive);
 }
 
@@ -303,9 +323,12 @@ void CmsSubscribers::Impl::OnItemsPerPageComboBoxChanged(Wt::WComboBox *comboBox
         }
 
         if (this->PaginationItemsPerPageLimit < 0) {
+            this->PaginationTotalItems = 0;
             this->PaginationPageOffset = 0;
             this->PaginationItemOffset = 0;
+
             this->FillDataTable(this->PaginationTableType);
+
             return;
         }
 
