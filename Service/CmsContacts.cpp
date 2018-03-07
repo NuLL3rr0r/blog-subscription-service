@@ -358,7 +358,7 @@ void CmsContacts::Impl::OnCellSaveButtonPressed(Wt::WInPlaceEdit *inPlaceEdit)
             r = txn.exec(query);
 
             if (!r.empty()) {
-                const result::tuple row(r[0]);
+                const pqxx::row row(r[0]);
                 const string recipientKey(row["recipient"].c_str());
 
                 if (recipient != recipientKey) {
@@ -477,7 +477,7 @@ void CmsContacts::Impl::OnEraseButtonPressed(Wt::WPushButton *button)
             result r = txn.exec(query);
 
             if (!r.empty()) {
-                const result::tuple row(r[0]);
+                const pqxx::row row(r[0]);
                 const string recipient_fa(row["recipient_fa"].c_str());
                 question = tr("cms-contacts-erase-confirm-question").arg(WString::fromUTF8(recipient_fa));
             }

@@ -159,7 +159,7 @@ WWidget *CmsSettings::Layout()
             result r = txn.exec(query);
 
             if (!r.empty()) {
-                const result::tuple row(r[0]);
+                const pqxx::row row(r[0]);
                 const string homepage_url_en(row["homepage_url_en"].c_str());
                 const string homepage_url_fa(row["homepage_url_fa"].c_str());
                 const string homepage_title_en(row["homepage_title_en"].c_str());

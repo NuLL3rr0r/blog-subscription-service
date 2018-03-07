@@ -360,7 +360,7 @@ void ContactForm::Impl::OnContactFormSubmitted()
             result r = txn.exec(query);
 
             if (!r.empty()) {
-                const result::tuple row(r[0]);
+                const pqxx::row row(r[0]);
                 email.assign(row["address"].c_str());
             }
         } else {
@@ -377,7 +377,7 @@ void ContactForm::Impl::OnContactFormSubmitted()
             result r = txn.exec(query);
 
             if (!r.empty()) {
-                const result::tuple row(r[0]);
+                const pqxx::row row(r[0]);
                 email.assign(row["email"].c_str());
             }
         }

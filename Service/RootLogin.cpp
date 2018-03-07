@@ -160,7 +160,7 @@ RootLogin::RootLogin()
 
                 string expiry("0");
                 if (!r.empty()) {
-                    const result::tuple row(r[0]);
+                    const pqxx::row row(r[0]);
                     expiry = row["expiry"].c_str();
                 }
 
@@ -189,7 +189,7 @@ RootLogin::RootLogin()
                         r = txn.exec(query);
 
                         if (!r.empty()) {
-                            const result::tuple row(r[0]);
+                            const pqxx::row row(r[0]);
 
                             CgiEnv::InformationRecord::ClientRecord::SessionRecord record;
                             record.UserId = row["user_id"].c_str();
@@ -443,7 +443,7 @@ void RootLogin::Impl::OnLoginFormSubmitted()
         result r = txn.exec(query);
 
         if (!r.empty()) {
-            const result::tuple row(r[0]);
+            const pqxx::row row(r[0]);
 
             userId = row["user_id"].c_str();
             username = row["username"].c_str();
@@ -553,7 +553,7 @@ void RootLogin::Impl::OnLoginFormSubmitted()
             r = txn.exec(query);
 
             if (!r.empty()) {
-                const result::tuple row(r[0]);
+                const pqxx::row row(r[0]);
 
                 record.LastLogin.Time = lexical_cast<time_t>(row["login_time"].c_str());
                 record.LastLogin.IPAddress = row["ip_address"].c_str();
@@ -667,7 +667,7 @@ void RootLogin::Impl::OnPasswordRecoveryFormSubmitted()
         CDate::Now n(CDate::Timezone::UTC);
         time_t expiry = n.RawTime() + Pool::Storage().ResetPwdLifespan();
 
-        const result::tuple row(r[0]);
+        const pqxx::row row(r[0]);
         string userId(row["user_id"].c_str());
         string username(row["username"].c_str());
 
@@ -797,7 +797,7 @@ void RootLogin::Impl::OnGoToHomePageButtonPressed()
 
         string homePageUrl;
         if (!r.empty()) {
-            const result::tuple row(r[0]);
+            const pqxx::row row(r[0]);
             homePageUrl.assign(row[0].c_str());
         }
 

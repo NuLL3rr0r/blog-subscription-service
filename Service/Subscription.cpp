@@ -289,7 +289,7 @@ void Subscription::Impl::OnSubscribeFormSubmitted()
                                     "inbox, uuid, subscription, pending_confirm, pending_cancel, join_date, update_date",
             { inbox, uuid, "none", pendingConfirm, "none", date, date });
         } else {
-            const result::tuple row(r[0]);
+            const pqxx::row row(r[0]);
             uuid.assign(row["uuid"].c_str());
 
             Pool::Database().Update("SUBSCRIBERS",
@@ -631,7 +631,7 @@ Wt::WWidget *Subscription::Impl::GetConfirmationPage()
         CDate::Now n(CDate::Timezone::UTC);
         string date(lexical_cast<std::string>(n.RawTime()));
 
-        const result::tuple row(r[0]);
+        const pqxx::row row(r[0]);
         const string inbox(row["inbox"].c_str());
         const string subscription(row["subscription"].c_str());
         const string pendingConfirm(row["pending_confirm"].c_str());
@@ -804,7 +804,7 @@ Wt::WWidget *Subscription::Impl::GetUnsubscribeForm()
             return tmpl;
         }
 
-        const result::tuple row(r[0]);
+        const pqxx::row row(r[0]);
         const string inbox(row["inbox"].c_str());
         const string subscription(row["subscription"].c_str());
 
@@ -1040,7 +1040,7 @@ Wt::WWidget *Subscription::Impl::GetCancellationPage()
             return tmpl;
         }
 
-        const result::tuple row(r[0]);
+        const pqxx::row row(r[0]);
         const string inbox(row["inbox"].c_str());
         const string subscription(row["subscription"].c_str());
         const string pendingCancel(row["pending_cancel"].c_str());
@@ -1191,7 +1191,7 @@ void Subscription::Impl::GetMessageTemplate(WTemplate *tmpl, const Wt::WString &
             result r = txn.exec(query);
 
             if (!r.empty()) {
-                const result::tuple row(r[0]);
+                const pqxx::row row(r[0]);
                 const string homePageUrl(row[0].c_str());
                 const string homePageTitle(row[1].c_str());
 
@@ -1353,7 +1353,7 @@ void Subscription::Impl::SendMessage(const Message &type, const string &uuid, co
             string homePageUrl;
             string homePageTitle;
             if (!r.empty()) {
-                const result::tuple row(r[0]);
+                const pqxx::row row(r[0]);
                 homePageUrl.assign(row[0].c_str());
                 homePageTitle.assign(row[1].c_str());
             }

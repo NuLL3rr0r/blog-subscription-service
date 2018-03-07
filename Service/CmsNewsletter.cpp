@@ -363,7 +363,7 @@ void CmsNewsletter::Impl::OnSendConfirmDialogClosed(Wt::StandardButton button)
                 string homePageUrl;
                 string homePageTitle;
                 if (!r.empty()) {
-                    const result::tuple row(r[0]);
+                    const pqxx::row row(r[0]);
                     homePageUrl.assign(row[0].c_str());
                     homePageTitle.assign(row[1].c_str());
                 }

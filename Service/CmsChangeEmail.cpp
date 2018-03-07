@@ -207,7 +207,7 @@ void CmsChangeEmail::Impl::OnEmailChangeFormSubmitted()
         result r = txn.exec(query);
 
         if (!r.empty()) {
-            const result::tuple row(r[0]);
+            const pqxx::row row(r[0]);
 
             string hashedPwd(row["pwd"].c_str());
             Pool::Crypto().Decrypt(hashedPwd, hashedPwd);

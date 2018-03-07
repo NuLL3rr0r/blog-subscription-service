@@ -307,7 +307,7 @@ void Cms::Impl::ValidateSession()
 
         string expiry("0");
         if (!r.empty()) {
-            const result::tuple row(r[0]);
+            const pqxx::row row(r[0]);
             expiry = row["expiry"].c_str();
         }
 
