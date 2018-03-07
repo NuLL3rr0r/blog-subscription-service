@@ -245,7 +245,7 @@ IF ( CXX_GCC )
         ENDIF (  )
     ENDIF (  )
 
-    SET ( GCC_CXX_FLAGS_WARN_LEVEL "-Wall -Wextra -Wno-unused-parameter" )
+    SET ( GCC_CXX_FLAGS_WARN_LEVEL "-Wall -Wextra -Wno-unused-parameter -Wno-date-time" )
     SET ( GCC_CXX_FLAGS_ISO_CPP "-pedantic" )
     SET ( GCC_CXX_FLAGS_USE_PIPE "-pipe" )
 
@@ -314,12 +314,8 @@ IF ( CXX_CLANG )
         ENDIF (  )
     ENDIF (  )
 
-    SET ( CLANG_CXX_FLAGS_WARN_LEVEL "-Weverything -Wno-c++98-compat -Wno-c++98-compat-pedantic -Wno-global-constructors -Wno-exit-time-destructors -Wno-padded -Wno-weak-vtables" )
+    SET ( CLANG_CXX_FLAGS_WARN_LEVEL "-Weverything -Wno-c++98-compat -Wno-c++98-compat-pedantic -Wno-global-constructors -Wno-exit-time-destructors -Wno-padded -Wno-weak-vtables -Wno-date-time" )
     SET ( CLANG_CXX_FLAGS_ISO_CPP "-pedantic" )
-
-    IF ( CLANG_MINOR GREATER 6 )
-        SET ( CLANG_CXX_FLAGS_WARN_LEVEL "${CLANG_CXX_FLAGS_WARN_LEVEL} -Wno-date-time" )
-    ENDIF (  )
 
     IF ( CMAKE_BUILD_TYPE MATCHES "ClangMinSizeRel"
             OR CMAKE_BUILD_TYPE MATCHES "ClangMaxSpeedRel"
