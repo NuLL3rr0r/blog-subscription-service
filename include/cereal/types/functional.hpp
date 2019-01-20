@@ -2,7 +2,7 @@
     \brief Support for types found in \<functional\>
     \ingroup STLSupport */
 /*
-  Copyright (c) 2016, Randolph Voorhies, Shane Grant
+  Copyright (c) 2016 - 2019, Randolph Voorhies, Shane Grant
   All rights reserved.
 
   Redistribution and use in source and binary forms, with or without
