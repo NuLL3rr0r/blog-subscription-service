@@ -154,11 +154,11 @@ WWidget *ContactForm::Layout()
                 if (cgiEnv->GetInformation().Client.Language.Code
                         == CgiEnv::InformationRecord::ClientRecord::LanguageCode::Fa) {
                     query.assign((format("SELECT recipient_fa, is_default"
-                                         " FROM \"%1%\" ORDER BY recipient_fa COLLATE \"en_US.UTF-8\" ASC;")
+                                         " FROM \"%1%\" ORDER BY recipient_fa ASC;")
                                   % Pool::Database().GetTableName("CONTACTS")).str());
                 } else {
                     query.assign((format("SELECT recipient, is_default"
-                                         " FROM \"%1%\" ORDER BY recipient COLLATE \"en_US.UTF-8\" ASC;")
+                                         " FROM \"%1%\" ORDER BY recipient ASC;")
                                   % Pool::Database().GetTableName("CONTACTS")).str());
                 }
 

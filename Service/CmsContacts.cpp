@@ -584,7 +584,7 @@ void CmsContacts::Impl::FillContactsDataTable()
         pqxx::work txn(*conn.get());
 
         string query((format("SELECT recipient, recipient_fa, address, is_default"
-                             " FROM \"%1%\" ORDER BY recipient COLLATE \"en_US.UTF-8\" ASC;")
+                             " FROM \"%1%\" ORDER BY recipient ASC;")
                       % Pool::Database().GetTableName("CONTACTS")).str());
         LOG_INFO("Running query...", query, cgiEnv->GetInformation().ToJson());
 

@@ -468,27 +468,27 @@ void CmsSubscribers::Impl::FillDataTable(const CmsSubscribers::Impl::Table &tabl
         switch (tableType) {
         case Table::All:
             query.assign((format("SELECT count(*) over(), inbox, uuid, subscription, pending_confirm, pending_cancel, join_date, update_date"
-                                 " FROM \"%1%\" ORDER BY inbox COLLATE \"en_US.UTF-8\" ASC %2%;")
+                                 " FROM \"%1%\" ORDER BY inbox ASC %2%;")
                           % Pool::Database().GetTableName("SUBSCRIBERS") % paginationPhrase).str());
             break;
         case Table::EnFa:
             query.assign((format("SELECT count(*) over(), inbox, uuid, subscription, pending_confirm, pending_cancel, join_date, update_date"
-                                 " FROM \"%1%\" WHERE subscription = 'en_fa' ORDER BY inbox COLLATE \"en_US.UTF-8\" ASC %2%;")
+                                 " FROM \"%1%\" WHERE subscription = 'en_fa' ORDER BY inbox ASC %2%;")
                           % Pool::Database().GetTableName("SUBSCRIBERS") % paginationPhrase).str());
             break;
         case Table::En:
             query.assign((format("SELECT count(*) over(), inbox, uuid, subscription, pending_confirm, pending_cancel, join_date, update_date"
-                                 " FROM \"%1%\" WHERE subscription = 'en' ORDER BY inbox COLLATE \"en_US.UTF-8\" ASC %2%;")
+                                 " FROM \"%1%\" WHERE subscription = 'en' ORDER BY inbox ASC %2%;")
                           % Pool::Database().GetTableName("SUBSCRIBERS") % paginationPhrase).str());
             break;
         case Table::Fa:
             query.assign((format("SELECT count(*) over(), inbox, uuid, subscription, pending_confirm, pending_cancel, join_date, update_date"
-                                 " FROM \"%1%\" WHERE subscription = 'fa' ORDER BY inbox COLLATE \"en_US.UTF-8\" ASC %2%;")
+                                 " FROM \"%1%\" WHERE subscription = 'fa' ORDER BY inbox ASC %2%;")
                           % Pool::Database().GetTableName("SUBSCRIBERS") % paginationPhrase).str());
             break;
         case Table::Inactive:
             query.assign((format("SELECT count(*) over(), inbox, uuid, subscription, pending_confirm, pending_cancel, join_date, update_date"
-                                 " FROM \"%1%\" WHERE subscription = 'none' ORDER BY inbox COLLATE \"en_US.UTF-8\" ASC %2%;")
+                                 " FROM \"%1%\" WHERE subscription = 'none' ORDER BY inbox ASC %2%;")
                           % Pool::Database().GetTableName("SUBSCRIBERS") % paginationPhrase).str());
             break;
         }
