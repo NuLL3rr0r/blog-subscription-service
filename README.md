@@ -25,7 +25,7 @@ More comes when it's ready.
 * cURLpp
 * GeoIP
 * Git (Optional, required by CMake during the build process to extract the commit hash as part of the version number)
-* Gulp (Upon finding Gulp automatically installs: autoprefixer, minify-html, imagemin, minify-css, sass, uglify)
+* Gulp < 4.0.0 (Upon finding Gulp automatically installs: autoprefixer, minify-html, imagemin, minify-css, sass, uglify)
 * jQuery (Included)
 * libb64
 * libcurl
