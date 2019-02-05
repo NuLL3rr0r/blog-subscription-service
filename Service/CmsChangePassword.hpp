@@ -51,7 +51,7 @@ private:
 
 public:
     explicit CmsChangePassword();
-    virtual ~CmsChangePassword();
+    virtual ~CmsChangePassword() override;
 
 private:
     Wt::WWidget *Layout() override;

@@ -51,7 +51,7 @@ private:
 
 public:
     explicit RootLogin();
-    virtual ~RootLogin();
+    virtual ~RootLogin() override;
 
 private:
     Wt::WWidget *Layout() override;

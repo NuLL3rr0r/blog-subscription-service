@@ -51,7 +51,7 @@ private:
 
 public:
     explicit CmsSubscribers();
-    virtual ~CmsSubscribers();
+    virtual ~CmsSubscribers() override;
 
 private:
     Wt::WWidget *Layout() override;

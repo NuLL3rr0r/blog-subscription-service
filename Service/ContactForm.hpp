@@ -51,7 +51,7 @@ private:
 
 public:
     explicit ContactForm();
-    virtual ~ContactForm();
+    virtual ~ContactForm() override;
 
 private:
     Wt::WWidget *Layout() override;

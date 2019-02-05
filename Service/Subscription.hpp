@@ -51,7 +51,7 @@ private:
 
 public:
     explicit Subscription();
-    virtual ~Subscription();
+    virtual ~Subscription() override;
 
 private:
     Wt::WWidget *Layout() override;

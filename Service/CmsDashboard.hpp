@@ -51,7 +51,7 @@ private:
 
 public:
     explicit CmsDashboard();
-    virtual ~CmsDashboard();
+    virtual ~CmsDashboard() override;
 
 private:
     Wt::WWidget *Layout() override;

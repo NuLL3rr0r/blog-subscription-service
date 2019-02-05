@@ -51,7 +51,7 @@ private:
 
 public:
     explicit CmsSettings();
-    virtual ~CmsSettings();
+    virtual ~CmsSettings() override;
 
 private:
     Wt::WWidget *Layout() override;

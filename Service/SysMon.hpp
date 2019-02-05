@@ -52,7 +52,7 @@ private:
 
 public:
     explicit SysMon();
-    virtual ~SysMon();
+    virtual ~SysMon() override;
 
 public:
     void Pause();

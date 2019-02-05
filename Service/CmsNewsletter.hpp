@@ -51,7 +51,7 @@ private:
 
 public:
     explicit CmsNewsletter();
-    virtual ~CmsNewsletter();
+    virtual ~CmsNewsletter() override;
 
 private:
     Wt::WWidget *Layout() override;

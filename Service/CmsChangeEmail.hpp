@@ -51,7 +51,7 @@ private:
 
 public:
     explicit CmsChangeEmail();
-    virtual ~CmsChangeEmail();
+    virtual ~CmsChangeEmail() override;
 
 private:
     Wt::WWidget *Layout() override;

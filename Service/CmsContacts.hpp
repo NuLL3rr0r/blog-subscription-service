@@ -51,7 +51,7 @@ private:
 
 public:
     explicit CmsContacts();
-    virtual ~CmsContacts();
+    virtual ~CmsContacts() override;
 
 private:
     Wt::WWidget *Layout() override;
