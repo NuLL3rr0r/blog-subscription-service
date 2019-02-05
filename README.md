@@ -182,7 +182,7 @@ And perhaps these lines (although you can change them at run-time, later):
 
     SET (INITAL_EN_HOME_PAGE_URL "http://www.babaei.net/" CACHE STRING "" )
     SET (INITAL_FA_HOME_PAGE_URL "http://fa.babaei.net/" CACHE STRING "" )
-    SET (INITAL_EN_HOME_PAGE_TITLE "The blog of Mohammad S. Babaei" CACHE STRING "" )
+    SET (INITAL_EN_HOME_PAGE_TITLE "The blog of Mamadou Babaei" CACHE STRING "" )
     SET (INITAL_FA_HOME_PAGE_TITLE "وبلاگ محمد صادق بابائی" CACHE STRING "" )
 
 
@@ -417,7 +417,7 @@ Add the following [cron jobs](http://www.babaei.net/blog/2015/06/11/the-proper-w
 
 (The MIT License)
 
-Copyright (c) 2016 Mohammad S. Babaei
+Copyright (c) 2016 - 2019 - 2019 Mamadou Babaei
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the ‘Software’), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
 

@@ -1,6 +1,6 @@
 #  (The MIT License)
 #
-#  Copyright (c) 2016 Mohammad S. Babaei
+#  Copyright (c) 2016 - 2019 Mamadou Babaei
 #
 #  Permission is hereby granted, free of charge, to any person obtaining a copy
 #  of this software and associated documentation files (the "Software"), to deal
@@ -22,7 +22,7 @@
 
 
 SET ( PRODUCT_COMPANY_NAME "babaei.net" )
-SET ( PRODUCT_COPYRIGHT_HOLDER "Mohammad S. Babaei" )
+SET ( PRODUCT_COPYRIGHT_HOLDER "Mamadou Babaei" )
 SET ( PRODUCT_COPYRIGHT_YEAR "2016" )
 SET ( PRODUCT_COPYRIGHT "(C) ${PRODUCT_COPYRIGHT_YEAR} ${PRODUCT_COPYRIGHT_HOLDER}" )
 
