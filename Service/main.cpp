@@ -290,6 +290,9 @@ void InitializeDatabase()
                                                 " request_location_charset TEXT, "
                                                 " request_location_continent_code TEXT, "
                                                 " request_location_netmask TEXT, "
+                                                " request_location_asn TEXT, "
+                                                " request_location_aso TEXT, "
+                                                " request_location_raw_data JSONB, "
                                                 " request_user_agent TEXT, "
                                                 " request_referer TEXT, "
                                                 " utilization_time TIMESTAMPTZ NOT NULL DEFAULT TIMESTAMPTZ $token$'EPOCH'''$token$, "
@@ -308,6 +311,9 @@ void InitializeDatabase()
                                                 " utilization_location_charset TEXT, "
                                                 " utilization_location_continent_code TEXT, "
                                                 " utilization_location_netmask TEXT, "
+                                                " utilization_location_aso TEXT, "
+                                                " utilization_location_asn TEXT, "
+                                                " utilization_location_raw_data JSONB, "
                                                 " utilization_user_agent TEXT, "
                                                 " utilization_referer TEXT ");
 
@@ -331,6 +337,9 @@ void InitializeDatabase()
                                                 " location_charset INTEGER, "
                                                 " location_continent_code TEXT, "
                                                 " location_netmask INTEGER, "
+                                                " location_asn INTEGER, "
+                                                " location_aso TEXT, "
+                                                " location_raw_data JSONB, "
                                                 " user_agent TEXT, "
                                                 " referer TEXT ");
 

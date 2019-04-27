@@ -35,6 +35,9 @@
 
 #include <sstream>
 #include <unordered_map>
+#include <cstdint>
+#include <cstdio>
+#include <cstring>
 #include <boost/algorithm/string.hpp>
 #include <boost/bimap.hpp>
 #include <boost/bimap/unordered_set_of.hpp>
@@ -49,18 +52,41 @@
 #include <Wt/WEnvironment>
 #include <cereal/archives/json.hpp>
 #include <cereal/types/common.hpp>
-#include <GeoIP.h>
-#include <GeoIPCity.h>
+#include <maxminddb.h>
 #include <CoreLib/Crypto.hpp>
+#include <CoreLib/Defines.hpp>
+#include <CoreLib/Exception.hpp>
 #include <CoreLib/FileSystem.hpp>
 #include <CoreLib/Log.hpp>
 #include <CoreLib/make_unique.hpp>
 #include <CoreLib/Utility.hpp>
 #include "CgiEnv.hpp"
+#include "Exception.hpp"
 #include "Pool.hpp"
 
 #define     UNKNOWN_ERROR                   "Unknown error!"
 #define     GEO_LOCATION_INITIALIZE_ERROR   "Failed to initialize GeoIP record!"
+
+#define     CITY_DATABASE_NAME              "GeoLite2-City.mmdb"
+#define     CITY_DATABASE_PATH_USR          "/usr/share/GeoIP/" CITY_DATABASE_NAME
+#define     CITY_DATABASE_PATH_USR_LOCAL    "/usr/local/share/GeoIP/" CITY_DATABASE_NAME
+
+#define     COUNTRY_DATABASE_NAME           "GeoLite2-Country.mmdb"
+#define     COUNTRY_DATABASE_PATH_USR       "/usr/share/GeoIP/" COUNTRY_DATABASE_NAME
+#define     COUNTRY_DATABASE_PATH_USR_LOCAL "/usr/local/share/GeoIP/" COUNTRY_DATABASE_NAME
+
+#define     ASN_DATABASE_NAME               "GeoLite2-ASN.mmdb"
+#define     ASN_DATABASE_PATH_USR           "/usr/share/GeoIP/" ASN_DATABASE_NAME
+#define     ASN_DATABASE_PATH_USR_LOCAL     "/usr/local/share/GeoIP/" ASN_DATABASE_NAME
+
+#if SIZE_MAX == UINT32_MAX
+#define MAYBE_CHECK_SIZE_OVERFLOW(lhs, rhs, error) \
+    if ((lhs) > (rhs)) {                           \
+        return error;                              \
+    }
+#else
+#define MAYBE_CHECK_SIZE_OVERFLOW(...)
+#endif
 
 using namespace std;
 using namespace Wt;
@@ -70,6 +96,86 @@ using namespace Service;
 
 struct CgiEnv::Impl
 {
+public:
+    FORCEINLINE static const char* GetGeoLite2CityDatabase()
+    {
+#if defined ( __FreeBSD__ )
+        static const char* database = CITY_DATABASE_PATH_USR_LOCAL;
+#elif defined ( __gnu_linux__ ) || defined ( __linux__ )
+        static const char* database = CITY_DATABASE_PATH_USR;
+#else /* defined ( __FreeBSD__ ) */
+        static const char* database =
+                FileSystem::FileExists(CITY_DATABASE_PATH_USR_LOCAL)
+                ? FileSystem::FileExists(CITY_DATABASE_PATH_USR_LOCAL)
+                : FileSystem::FileExists(CITY_DATABASE_PATH_USR);
+#endif /* defined ( __FreeBSD__ ) */
+
+        if (!FileSystem::FileExists(database)) {
+            LOG_ERROR("Cannot find MaxMind database file!", database);
+        }
+
+        return database;
+    }
+
+    FORCEINLINE static const char* GetGeoLite2CountryDatabase()
+    {
+#if defined ( __FreeBSD__ )
+        static const char* database = COUNTRY_DATABASE_PATH_USR_LOCAL;
+#elif defined ( __gnu_linux__ ) || defined ( __linux__ )
+        static const char* database = COUNTRY_DATABASE_PATH_USR;
+#else /* defined ( __FreeBSD__ ) */
+        static const char* database =
+                FileSystem::FileExists(COUNTRY_DATABASE_PATH_USR_LOCAL)
+                ? FileSystem::FileExists(COUNTRY_DATABASE_PATH_USR_LOCAL)
+                : FileSystem::FileExists(COUNTRY_DATABASE_PATH_USR);
+#endif /* defined ( __FreeBSD__ ) */
+
+        if (!FileSystem::FileExists(database)) {
+            LOG_ERROR("Cannot find MaxMind database file!", database);
+        }
+
+        return database;
+    }
+
+    FORCEINLINE static const char* GetGeoLite2ASNDatabase()
+    {
+#if defined ( __FreeBSD__ )
+        static const char* database = ASN_DATABASE_PATH_USR_LOCAL;
+#elif defined ( __gnu_linux__ ) || defined ( __linux__ )
+        static const char* database = ASN_DATABASE_PATH_USR;
+#else /* defined ( __FreeBSD__ ) */
+        static const char* database =
+                FileSystem::FileExists(ASN_DATABASE_PATH_USR_LOCAL)
+                ? FileSystem::FileExists(ASN_DATABASE_PATH_USR_LOCAL)
+                : FileSystem::FileExists(ASN_DATABASE_PATH_USR);
+#endif /* defined ( __FreeBSD__ ) */
+
+        if (!FileSystem::FileExists(database)) {
+            LOG_ERROR("Cannot find MaxMind database file!", database);
+        }
+
+        return database;
+    }
+
+    static const char* TranslateMaxMindError(int errorCode);
+
+    FORCEINLINE static char *BytesToHex(uint8_t *bytes, uint32_t size)
+    {
+        char *hexString;
+        MAYBE_CHECK_SIZE_OVERFLOW(size, SIZE_MAX / 2 - 1, nullptr);
+
+        hexString = static_cast<char *>(malloc((size * 2) + 1));
+        if (!hexString) {
+            return nullptr;
+        }
+
+        for (uint32_t i = 0; i < size; ++i) {
+            sprintf(hexString + (2 * i), "%02X", bytes[i]);
+        }
+
+        return hexString;
+    }
+
 public:
     typedef boost::bimap<boost::bimaps::unordered_set_of<Service::CgiEnv::InformationRecord::ClientRecord::LanguageCode>,
     boost::bimaps::unordered_set_of<std::string>> LanguageStringBiMap;
@@ -85,8 +191,6 @@ public:
     CgiEnv::InformationRecord Information;
 
 public:
-    static std::string CStrToStr(const char *cstr);
-
     template <typename _T>
     static std::string RecordToJson(const _T instance, bool pretty = false)
     {
@@ -135,12 +239,168 @@ public:
         return "";
     }
 
-
 public:
     explicit Impl();
     ~Impl();
 
     void Initialize();
+
+    MMDB_entry_data_list_s *DumpEntryDataList(
+            boost::property_tree::ptree &out_entryTree,
+            MMDB_entry_data_list_s *out_entryDataList,
+            int& out_status) const;
+
+    FORCEINLINE bool GetGeoData(const std::string &database,
+                                const std::string &ipAddress,
+                                boost::property_tree::ptree &out_tree) const
+    {
+        bool result = false;
+
+        try {
+            MMDB_entry_data_list_s *out_entryDataList = nullptr;
+
+            MMDB_s mmdb;
+            int openStatus = MMDB_open(database.c_str(), MMDB_MODE_MMAP, &mmdb);
+
+            if (openStatus == MMDB_SUCCESS) {
+                int gaiError;
+                int mmdbError;
+
+                MMDB_lookup_result_s lookupResult =
+                        MMDB_lookup_string(&mmdb, ipAddress.c_str(),
+                                           &gaiError, &mmdbError);
+
+                if (gaiError == 0) {
+                    if (mmdbError == MMDB_SUCCESS) {
+                        if (lookupResult.found_entry) {
+                            int statusGetEntryDataList =
+                                    MMDB_get_entry_data_list(&lookupResult.entry,
+                                                             &out_entryDataList);
+
+                            if (statusGetEntryDataList == MMDB_SUCCESS) {
+                                if (out_entryDataList) {
+//                                    { /// DEBUG DUMP
+//                                        FILE *stream;
+//                                        char *buffer;
+//                                        size_t length;
+
+//                                        stream = open_memstream(&buffer, &length);
+
+//                                        if (stream) {
+//                                            int statusDumpEntryData =
+//                                                    MMDB_dump_entry_data_list(stream, out_entryDataList, 2);
+
+//                                            if (statusDumpEntryData == MMDB_SUCCESS) {
+//                                                fflush(stream);
+
+//                                                std::string data(buffer, length);
+
+//                                                LOG_DEBUG(data);
+//                                            } else {
+//                                                LOG_ERROR(ipAddress, "Geo dump entry data error!");
+//                                            }
+//                                        } else {
+//                                            LOG_ERROR(ipAddress, "Geo stream open error!");
+//                                        }
+//                                    }
+
+                                    MMDB_entry_data_list_s *firstEntry = out_entryDataList;
+                                    int status;
+
+                                    (void)DumpEntryDataList(out_tree, firstEntry, status);
+
+                                    if (status == MMDB_SUCCESS) {
+                                        result = true;
+                                    } else {
+                                        LOG_ERROR(ipAddress, "Failed to dump geo entry data list!");
+                                    }
+                                } else {
+                                    LOG_ERROR(ipAddress, "Geo null entry data list error!");
+                                }
+
+                                MMDB_free_entry_data_list(out_entryDataList);
+                            } else {
+                                LOG_ERROR(ipAddress,
+                                          "Geo lookup error!",
+                                          CgiEnv::Impl::TranslateMaxMindError(statusGetEntryDataList));
+                            }
+                        } else {
+                            LOG_ERROR(ipAddress, "No geo data entry was found!");
+                        }
+                    } else {
+                        LOG_ERROR(ipAddress,
+                                  (boost::format("Geo error from libmaxminddb: '%1%!'")
+                                   % gaiError).str())
+                    }
+                } else {
+                    LOG_ERROR(ipAddress,
+                              (boost::format("Geo error from getaddrinfo: '%1%'!")
+                               % gaiError).str())
+                }
+
+                MMDB_close(&mmdb);
+            } else {
+                LOG_ERROR(ipAddress, CgiEnv::Impl::TranslateMaxMindError(openStatus));
+            }
+        }
+
+        catch (const Service::Exception<std::string> &ex) {
+            LOG_ERROR(GEO_LOCATION_INITIALIZE_ERROR, ex.What());
+        }
+
+        catch (const CoreLib::Exception<std::string> &ex) {
+            LOG_ERROR(GEO_LOCATION_INITIALIZE_ERROR, ex.What());
+        }
+
+        catch (const boost::exception &ex) {
+            LOG_ERROR(GEO_LOCATION_INITIALIZE_ERROR, boost::diagnostic_information(ex));
+        }
+
+        return result;
+    }
+
+    FORCEINLINE bool GetGeoCityData(const std::string &ipAddress,
+                                    boost::property_tree::ptree &out_data) const
+    {
+        return GetGeoData(Impl::GetGeoLite2CityDatabase(),
+                          ipAddress, out_data);
+    }
+
+    FORCEINLINE bool GetGeoCountryData(const std::string &ipAddress,
+                                       boost::property_tree::ptree &out_data) const
+    {
+        return GetGeoData(Impl::GetGeoLite2CountryDatabase(),
+                          ipAddress, out_data);
+    }
+
+    FORCEINLINE bool GetGeoASNData(const std::string &ipAddress,
+                                   boost::property_tree::ptree &out_data) const
+    {
+        return GetGeoData(Impl::GetGeoLite2ASNDatabase(),
+                          ipAddress, out_data);
+    }
+
+    template <typename _T>
+    bool GetGeoValue(
+            const boost::property_tree::ptree &tree,
+            const std::string &key,
+            _T &out_value) const
+    {
+        if (tree.get_child_optional("GeoLite2-City." + key)) {
+            out_value = tree.get<_T>("GeoLite2-City." + key);
+            return true;
+
+        } else if (tree.get_child_optional("GeoLite2-Country." + key)) {
+            out_value = tree.get<_T>("GeoLite2-Country." + key);
+            return true;
+
+        } else if (tree.get_child_optional("GeoLite2-ASN." + key)) {
+            out_value = tree.get<_T>("GeoLite2-ASN." + key);
+            return true;
+        }
+
+        return false;
+    }
 
     void FillGeoLocationRecord();
 };
@@ -295,7 +555,7 @@ void CgiEnv::SetSessionEmail(const std::string &email)
 
 void CgiEnv::AddSubscriptionLanguage(const CgiEnv::InformationRecord::SubscriptionRecord::Language &lang)
 {
-     m_pimpl->Information.Subscription.Languages.push_back(lang);
+    m_pimpl->Information.Subscription.Languages.push_back(lang);
 }
 
 void CgiEnv::SetSubscriptionAction(const CgiEnv::InformationRecord::SubscriptionRecord::Action &action)
@@ -308,9 +568,56 @@ void CgiEnv::SetSubscriptionInbox(const std::string &inbox)
     m_pimpl->Information.Subscription.Inbox.assign(inbox);
 }
 
-string CgiEnv::Impl::CStrToStr(const char *cstr)
+const char* CgiEnv::Impl::TranslateMaxMindError(int errorCode)
 {
-    return cstr != NULL ? cstr : "";
+    switch (errorCode) {
+
+    case MMDB_SUCCESS:
+        return "Success (not an error)!";
+
+    case MMDB_FILE_OPEN_ERROR:
+        return "Error opening the specified MaxMind DB file!";
+
+    case MMDB_CORRUPT_SEARCH_TREE_ERROR:
+        return "The MaxMind DB file's search tree is corrupt!";
+
+    case MMDB_INVALID_METADATA_ERROR:
+        return "The MaxMind DB file contains invalid metadata!";
+
+    case MMDB_IO_ERROR:
+        return "An attempt to read data from the MaxMind DB file failed!";
+
+    case MMDB_OUT_OF_MEMORY_ERROR:
+        return "A memory allocation call failed!";
+
+    case MMDB_UNKNOWN_DATABASE_FORMAT_ERROR:
+        return "The MaxMind DB file is in a format this library can't handle"
+               " (unknown record size or binary format version)!";
+
+    case MMDB_INVALID_DATA_ERROR:
+        return "The MaxMind DB file's data section contains bad data (unknown"
+               " data type or corrupt data)!";
+
+    case MMDB_INVALID_LOOKUP_PATH_ERROR:
+        return "The lookup path contained an invalid value (like a negative"
+               " integer for an array index)!";
+
+    case MMDB_LOOKUP_PATH_DOES_NOT_MATCH_DATA_ERROR:
+        return "The lookup path does not match the data (key that doesn't exist,"
+               " array index bigger than the array, expected array or map where"
+               " none exists)!";
+
+    case MMDB_INVALID_NODE_NUMBER_ERROR:
+        return "The MMDB_read_node function was called with a node number that"
+               " does not exist in the search tree!";
+
+    case MMDB_IPV6_LOOKUP_IN_IPV4_DATABASE_ERROR:
+        return "You attempted to look up an IPv6 address in an IPv4-only"
+               " database!";
+
+    default:
+        return "Unknown error code!";
+    }
 }
 
 CgiEnv::Impl::Impl()
@@ -461,45 +768,249 @@ void CgiEnv::Impl::Initialize()
     this->FillGeoLocationRecord();
 }
 
+MMDB_entry_data_list_s *CgiEnv::Impl::DumpEntryDataList(
+        boost::property_tree::ptree &out_entryTree,
+        MMDB_entry_data_list_s *out_entryDataList,
+        int &out_status) const
+{
+    switch (out_entryDataList->entry_data.type) {
+    case MMDB_DATA_TYPE_ARRAY: {
+        uint32_t size = out_entryDataList->entry_data.data_size;
+
+        for (out_entryDataList = out_entryDataList->next;
+             size && out_entryDataList; --size) {
+            boost::property_tree::ptree itemTree;
+
+            out_entryDataList = DumpEntryDataList(itemTree, out_entryDataList, out_status);
+
+            out_entryTree.push_back(std::make_pair("", itemTree));
+
+            if (out_status != MMDB_SUCCESS) {
+                return nullptr;
+            }
+        }
+    } break;
+    case MMDB_DATA_TYPE_BOOLEAN: {
+        bool value = out_entryDataList->entry_data.boolean;
+        out_entryTree.put_value(boost::lexical_cast<std::string>(value));
+        out_entryDataList = out_entryDataList->next;
+    } break;
+    case MMDB_DATA_TYPE_BYTES: {
+        char *hexBuffer =
+            Impl::BytesToHex((uint8_t *)out_entryDataList->entry_data.bytes,
+                         out_entryDataList->entry_data.data_size);
+
+        if (!hexBuffer) {
+            out_status = MMDB_OUT_OF_MEMORY_ERROR;
+            return nullptr;
+        }
+
+        std::string value(hexBuffer);
+        free(hexBuffer);
+        out_entryTree.put_value(value);
+
+        out_entryDataList = out_entryDataList->next;
+    } break;
+    case MMDB_DATA_TYPE_DOUBLE: {
+        double value = out_entryDataList->entry_data.double_value;
+        out_entryTree.put_value(boost::lexical_cast<std::string>(value));
+        out_entryDataList = out_entryDataList->next;
+    } break;
+    case MMDB_DATA_TYPE_FLOAT: {
+        float value = out_entryDataList->entry_data.float_value;
+        out_entryTree.put_value(boost::lexical_cast<std::string>(value));
+        out_entryDataList = out_entryDataList->next;
+    } break;
+    case MMDB_DATA_TYPE_INT32: {
+        int32_t value = out_entryDataList->entry_data.int32;
+        out_entryTree.put_value(boost::lexical_cast<std::string>(value));
+        out_entryDataList = out_entryDataList->next;
+    } break;
+    case MMDB_DATA_TYPE_MAP: {
+        uint32_t size = out_entryDataList->entry_data.data_size;
+
+        for (out_entryDataList = out_entryDataList->next;
+             size && out_entryDataList; --size) {
+
+            if (out_entryDataList->entry_data.type
+                    != MMDB_DATA_TYPE_UTF8_STRING) {
+                out_status = MMDB_INVALID_DATA_ERROR;
+                return nullptr;
+            }
+
+            const char *keyBuffer = static_cast<const char *>(
+                        out_entryDataList->entry_data.utf8_string);
+            if (!keyBuffer) {
+                out_status = MMDB_OUT_OF_MEMORY_ERROR;
+                return nullptr;
+            }
+
+            const uint32_t keySize = out_entryDataList->entry_data.data_size;
+            std::string key(keyBuffer, keySize);
+
+            out_entryDataList = out_entryDataList->next;
+            boost::property_tree::ptree subTree;
+            out_entryDataList = DumpEntryDataList(subTree, out_entryDataList, out_status);
+
+            if (out_status != MMDB_SUCCESS) {
+                return nullptr;
+            }
+
+            out_entryTree.add_child(key, subTree);
+        }
+    } break;
+    case MMDB_DATA_TYPE_UINT16: {
+        uint16_t value = out_entryDataList->entry_data.uint16;
+        out_entryTree.put_value(boost::lexical_cast<std::string>(value));
+        out_entryDataList = out_entryDataList->next;
+    } break;
+    case MMDB_DATA_TYPE_UINT32: {
+        uint32_t value = out_entryDataList->entry_data.uint32;
+        out_entryTree.put_value(boost::lexical_cast<std::string>(value));
+        out_entryDataList = out_entryDataList->next;
+    } break;
+    case MMDB_DATA_TYPE_UINT64: {
+        uint64_t value = out_entryDataList->entry_data.uint64;
+        out_entryTree.put_value(boost::lexical_cast<std::string>(value));
+        out_entryDataList = out_entryDataList->next;
+    } break;
+    case MMDB_DATA_TYPE_UINT128: {
+        mmdb_uint128_t value = out_entryDataList->entry_data.uint128;
+        out_entryTree.put_value(boost::lexical_cast<std::string>(value));
+        out_entryDataList = out_entryDataList->next;
+    } break;
+    case MMDB_DATA_TYPE_UTF8_STRING: {
+        const char *buffer = static_cast<const char *>(
+                    out_entryDataList->entry_data.utf8_string);
+
+        if (!buffer) {
+            out_status = MMDB_OUT_OF_MEMORY_ERROR;
+            return nullptr;
+        }
+
+        const uint32_t size = out_entryDataList->entry_data.data_size;
+        std::string value(buffer, size);
+        out_entryTree.put_value(value);
+
+        out_entryDataList = out_entryDataList->next;
+    } break;
+    default: {
+        out_status = MMDB_INVALID_DATA_ERROR;
+        return nullptr;
+    } break;
+    }
+
+    out_status = MMDB_SUCCESS;
+
+    return out_entryDataList;
+}
+
 void CgiEnv::Impl::FillGeoLocationRecord()
 {
     try {
-        GeoIP *geoLiteCity;
-#if defined ( __FreeBSD__ )
-        if (FileSystem::FileExists("/usr/local/share/GeoIP/GeoLiteCity.dat")) {
-            geoLiteCity = GeoIP_open("/usr/local/share/GeoIP/GeoLiteCity.dat", GEOIP_STANDARD);
-#elif  defined ( __gnu_linux__ ) || defined ( __linux__ )
-        if (FileSystem::FileExists("/usr/share/GeoIP/GeoLiteCity.dat")) {
-            geoLiteCity = GeoIP_open("/usr/share/GeoIP/GeoLiteCity.dat", GEOIP_STANDARD);
-#else
-        if (FileSystem::FileExists("/usr/local/share/GeoIP/GeoLiteCity.dat")) {
-            geoLiteCity = GeoIP_open("/usr/local/share/GeoIP/GeoLiteCity.dat", GEOIP_STANDARD);
-        } else if (FileSystem::FileExists("/usr/share/GeoIP/GeoLiteCity.dat")) {
-            geoLiteCity = GeoIP_open("/usr/share/GeoIP/GeoLiteCity.dat", GEOIP_STANDARD);
-#endif  // defined ( __FreeBSD__ )
-        } else {
-            LOG_ERROR(GEO_LOCATION_INITIALIZE_ERROR, "");
-            return;
+        const char *ipAddress = this->Information.Client.IPAddress.c_str();
+
+        boost::property_tree::ptree cityTree;
+        (void)this->GetGeoCityData(ipAddress, cityTree);
+
+        boost::property_tree::ptree countryTree;
+        (void)this->GetGeoCountryData(ipAddress, countryTree);
+
+        boost::property_tree::ptree asnTree;
+        (void)this->GetGeoASNData(ipAddress, asnTree);
+
+        boost::property_tree::ptree fullTree;
+        fullTree.add_child("GeoLite2-City", cityTree);
+        fullTree.add_child("GeoLite2-Country", countryTree);
+        fullTree.add_child("GeoLite2-ASN", asnTree);
+
+        if (!this->GetGeoValue<std::string>(
+                    fullTree, std::string("country.iso_code"),
+                    this->Information.Client.GeoLocation.CountryCode)) {
+            this->Information.Client.GeoLocation.CountryCode = "";
         }
 
-        GeoIPRecordTag *record = GeoIP_record_by_name(geoLiteCity, this->Information.Client.IPAddress.c_str());
+        this->Information.Client.GeoLocation.CountryCode3 = "";
 
-        if (record != NULL) {
-            this->Information.Client.GeoLocation.CountryCode = CStrToStr(record->country_code);
-            this->Information.Client.GeoLocation.CountryCode3 = CStrToStr(record->country_code3);
-            this->Information.Client.GeoLocation.CountryName = CStrToStr(record->country_name);
-            this->Information.Client.GeoLocation.Region = CStrToStr(record->region);
-            this->Information.Client.GeoLocation.City = CStrToStr(record->city);
-            this->Information.Client.GeoLocation.PostalCode = CStrToStr(record->postal_code);
-            this->Information.Client.GeoLocation.Latitude = record->latitude;
-            this->Information.Client.GeoLocation.Longitude = record->longitude;
-            this->Information.Client.GeoLocation.MetroCode = record->metro_code;
-            this->Information.Client.GeoLocation.DmaCode = record->dma_code;
-            this->Information.Client.GeoLocation.AreaCode = record->area_code;
-            this->Information.Client.GeoLocation.Charset = record->charset;
-            this->Information.Client.GeoLocation.ContinentCode = record->continent_code;
-            this->Information.Client.GeoLocation.Netmask = record->netmask;
+        if (!this->GetGeoValue<std::string>(
+                    fullTree, std::string("country.names.en"),
+                    this->Information.Client.GeoLocation.CountryName)) {
+            this->Information.Client.GeoLocation.CountryName = "";
         }
+
+        /// NOTE
+        /// .. reads the arrays fist element
+        if (!this->GetGeoValue<std::string>(
+                    fullTree, std::string("subdivisions..names.en"),
+                    this->Information.Client.GeoLocation.Region)) {
+            this->Information.Client.GeoLocation.Region = "";
+        }
+
+        if (this->GetGeoValue<std::string>(
+                    fullTree, std::string("city.names.en"),
+                    this->Information.Client.GeoLocation.City)) {
+            this->Information.Client.GeoLocation.City = "";
+        }
+
+        if (this->GetGeoValue<std::string>(
+                    fullTree, std::string("postal.code"),
+                    this->Information.Client.GeoLocation.PostalCode)) {
+            this->Information.Client.GeoLocation.PostalCode = "";
+        }
+
+        if (!this->GetGeoValue<float>(
+                    fullTree, std::string("location.latitude"),
+                    this->Information.Client.GeoLocation.Latitude)) {
+            this->Information.Client.GeoLocation.Latitude = 0.0f;
+        }
+
+        if (!this->GetGeoValue<float>(
+                    fullTree, std::string("location.longitude"),
+                    this->Information.Client.GeoLocation.Longitude)) {
+            this->Information.Client.GeoLocation.Longitude = 0.0f;
+        }
+
+        if (!this->GetGeoValue<int>(
+                    fullTree, std::string("location.metro_code"),
+                    this->Information.Client.GeoLocation.MetroCode)) {
+            this->Information.Client.GeoLocation.MetroCode = -1;
+        }
+
+        this->Information.Client.GeoLocation.DmaCode = -1;
+        this->Information.Client.GeoLocation.AreaCode = -1;
+        this->Information.Client.GeoLocation.Charset = -1;
+
+        if (!this->GetGeoValue<std::string>(
+                    fullTree, std::string("continent.code"),
+                    this->Information.Client.GeoLocation.ContinentCode)) {
+            this->Information.Client.GeoLocation.ContinentCode = "";
+        }
+
+        this->Information.Client.GeoLocation.Netmask = -1;
+
+        if (!this->GetGeoValue<int>(
+                    fullTree, std::string("autonomous_system_number"),
+                    this->Information.Client.GeoLocation.ASN)) {
+            this->Information.Client.GeoLocation.ASN = -1;
+        }
+
+        if (!this->GetGeoValue<std::string>(
+                    fullTree, std::string("autonomous_system_organization"),
+                    this->Information.Client.GeoLocation.ASO)) {
+            this->Information.Client.GeoLocation.ASO = "";
+        }
+
+        std::stringstream ss;
+        boost::property_tree::write_json(ss, fullTree, false);
+        this->Information.Client.GeoLocation.RawData.assign(ss.str());
+    }
+
+    catch (const Service::Exception<std::string> &ex) {
+        LOG_ERROR(GEO_LOCATION_INITIALIZE_ERROR, ex.What());
+    }
+
+    catch (const CoreLib::Exception<std::string> &ex) {
+        LOG_ERROR(GEO_LOCATION_INITIALIZE_ERROR, ex.What());
     }
 
     catch (const boost::exception &ex) {

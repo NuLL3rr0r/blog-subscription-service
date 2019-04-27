@@ -51,8 +51,8 @@
 #include <boost/foreach.hpp>
 #include <boost/format.hpp>
 #include <boost/lexical_cast.hpp>
-#include <boost/property_tree/ptree.hpp>
 #include <boost/property_tree/json_parser.hpp>
+#include <boost/property_tree/ptree.hpp>
 #include <CoreLib/CoreLib.hpp>
 #include <CoreLib/Exception.hpp>
 #include <CoreLib/FileSystem.hpp>

@@ -183,13 +183,13 @@ IF ( BUILD_SERVICE )
                 COMMAND ${CMAKE_COMMAND} -E copy_if_different
                     "${CURLPP_LIBRARY}" "${CMAKE_CURRENT_BINARY_DIR}"
                 COMMAND ${CMAKE_COMMAND} -E copy_if_different
-                    "${GEOIP_LIBRARY}" "${CMAKE_CURRENT_BINARY_DIR}"
-                COMMAND ${CMAKE_COMMAND} -E copy_if_different
                     "${LIBB64_LIBRARY}" "${CMAKE_CURRENT_BINARY_DIR}"
                 COMMAND ${CMAKE_COMMAND} -E copy_if_different
                     "${LIBCURL_LIBRARY}" "${CMAKE_CURRENT_BINARY_DIR}"
                 COMMAND ${CMAKE_COMMAND} -E copy_if_different
                     "${LIBZIP_LIBRARY}" "${CMAKE_CURRENT_BINARY_DIR}"
+                COMMAND ${CMAKE_COMMAND} -E copy_if_different
+                    "${MAXMINDDB_LIBRARY}" "${CMAKE_CURRENT_BINARY_DIR}"
                 COMMAND ${CMAKE_COMMAND} -E copy_if_different
                     "${PGSQL_LIBRARY}" "${CMAKE_CURRENT_BINARY_DIR}"
                 COMMAND ${CMAKE_COMMAND} -E copy_if_different

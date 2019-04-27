@@ -58,7 +58,7 @@ void UpdateDatabase(const std::string &url, const std::string &gzFile, const std
 int main(int argc, char **argv)
 {
     try {
-        /// Gracefully handling SIGTERM
+ /*       /// Gracefully handling SIGTERM
         void (*prev_fn)(int);
         prev_fn = signal(SIGTERM, Terminate);
         if (prev_fn == SIG_IGN)
@@ -129,7 +129,7 @@ int main(int argc, char **argv)
 #endif
 
         UpdateDatabase(GEO_LITE_COUNTRY_DB_URL, countryFile, countryDbFile);
-        UpdateDatabase(GEO_LITE_CITY_DB_URL, cityFile, cityDbFile);
+        UpdateDatabase(GEO_LITE_CITY_DB_URL, cityFile, cityDbFile);*/
     }
 
     catch (CoreLib::Exception<std::string> &ex) {

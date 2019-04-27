@@ -103,6 +103,9 @@ public:
                 int Charset;
                 std::string ContinentCode;
                 int Netmask;
+                int ASN;
+                std::string ASO;
+                std::string RawData;
 
             public:
                 void ToJson(std::string &out_string) const;
@@ -116,7 +119,8 @@ public:
                     archive(CEREAL_NVP(CountryCode), CEREAL_NVP(CountryCode3), CEREAL_NVP(CountryName),
                             CEREAL_NVP(Region), CEREAL_NVP(City), CEREAL_NVP(PostalCode),
                             CEREAL_NVP(Latitude), CEREAL_NVP(Longitude), CEREAL_NVP(MetroCode), CEREAL_NVP(DmaCode),
-                            CEREAL_NVP(AreaCode), CEREAL_NVP(Charset), CEREAL_NVP(ContinentCode), CEREAL_NVP(Netmask));
+                            CEREAL_NVP(AreaCode), CEREAL_NVP(Charset), CEREAL_NVP(ContinentCode), CEREAL_NVP(Netmask),
+                            CEREAL_NVP(ASN), CEREAL_NVP(ASO), CEREAL_NVP(RawData));
                 }
             };
 

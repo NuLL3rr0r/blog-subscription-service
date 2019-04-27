@@ -61,8 +61,9 @@ SET ( CEREAL_THREAD_SAFE 1 CACHE STRING "" )
 
 SET ( LIBB64_BUFFERSIZE "16777216" CACHE STRING "" )
 
-SET ( GEO_LITE_COUNTRY_DB_URL "http://geolite.maxmind.com/download/geoip/database/GeoLiteCountry/GeoIP.dat.gz" CACHE STRING "" )
-SET ( GEO_LITE_CITY_DB_URL "http://geolite.maxmind.com/download/geoip/database/GeoLiteCity.dat.gz" CACHE STRING "" )
+SET ( GEOLITE2_CITY_MMDB_URL "https://geolite.maxmind.com/download/geoip/database/GeoLite2-City.tar.gz" CACHE STRING "" )
+SET ( GEOLITE2_COUNTRY_MMDB_URL "https://geolite.maxmind.com/download/geoip/database/GeoLite2-Country.tar.gz" CACHE STRING "" )
+SET ( GEOLITE2_ASN_MMDB_URL "https://geolite.maxmind.com/download/geoip/database/GeoLite2-ASN.tar.gz" CACHE STRING "" )
 
 SET ( APPLICATION_TEMP_PATH "../tmp" )
 
