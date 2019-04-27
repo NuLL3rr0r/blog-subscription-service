@@ -70,16 +70,7 @@
                             <td>
                                 ${client-location-country-code}
                             </td>
-                        <tr>
-                        <tr valign="top">
-                            <td>
-                                کد ۳ رقمی کشور
-                            </td>
-                            <td width="8"></td>
-                            <td>
-                                ${client-location-country-code3}
-                            </td>
-                        <tr>
+                        </tr>
                         <tr valign="top">
                             <td>
                                 نام کشور
@@ -88,7 +79,7 @@
                             <td>
                                 ${client-location-country-name}
                             </td>
-                        <tr>
+                        </tr>
                         <tr valign="top">
                             <td>
                                 منطقه
@@ -97,7 +88,7 @@
                             <td>
                                 ${client-location-region}
                             </td>
-                        <tr>
+                        </tr>
                         <tr valign="top">
                             <td>
                                 شهر
@@ -106,7 +97,7 @@
                             <td>
                                 ${client-location-city}
                             </td>
-                        <tr>
+                        </tr>
                         <tr valign="top">
                             <td>
                                 کد پستی
@@ -115,7 +106,7 @@
                             <td>
                                 ${client-location-postal-code}
                             </td>
-                        <tr>
+                        </tr>
                         <tr valign="top">
                             <td>
                                 عرض جغرافیایی
@@ -124,7 +115,7 @@
                             <td>
                                 ${client-location-latitude}
                             </td>
-                        <tr>
+                        </tr>
                         <tr valign="top">
                             <td>
                                 طول جغرافیایی
@@ -133,7 +124,7 @@
                             <td>
                                 ${client-location-longitude}
                             </td>
-                        <tr>
+                        </tr>
                         <tr valign="top">
                             <td>
                                 کد مترو
@@ -142,34 +133,7 @@
                             <td>
                                 ${client-location-metro-code}
                             </td>
-                        <tr>
-                        <tr valign="top">
-                            <td>
-                                کد DMA
-                            </td>
-                            <td width="8"></td>
-                            <td>
-                                ${client-location-dma-code}
-                            </td>
-                        <tr>
-                        <tr valign="top">
-                            <td>
-                                کد منطقه
-                            </td>
-                            <td width="8"></td>
-                            <td>
-                                ${client-location-area-code}
-                            </td>
-                        <tr>
-                        <tr valign="top">
-                            <td>
-                                مجموعه کاراکتر
-                            </td>
-                            <td width="8"></td>
-                            <td>
-                                ${client-location-charset}
-                            </td>
-                        <tr>
+                        </tr>
                         <tr valign="top">
                             <td>
                                 قاره
@@ -178,16 +142,34 @@
                             <td>
                                 ${client-location-continent-code}
                             </td>
-                        <tr>
+                        </tr>
                         <tr valign="top">
                             <td>
-                                پوشش شبکه
+                                شماره سیستم مستقل
                             </td>
                             <td width="8"></td>
                             <td>
-                                ${client-location-netmask}
+                                ${client-location-asn}
                             </td>
-                        <tr>
+                        </tr>
+                        <tr valign="top">
+                            <td>
+                                سازمان سیستم مستقل
+                            </td>
+                            <td width="8"></td>
+                            <td>
+                                ${client-location-aso}
+                            </td>
+                        </tr>
+                        <tr valign="top">
+                            <td>
+                                اطلاعات خام جغرافیایی
+                            </td>
+                            <td width="8"></td>
+                            <td>
+                                ${client-location-raw-data}
+                            </td>
+                        </tr>
                     </table>
                 </td>
             </tr>

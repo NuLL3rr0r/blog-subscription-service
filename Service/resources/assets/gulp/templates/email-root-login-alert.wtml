@@ -66,17 +66,7 @@
                                             ${client-location-country-code}
                                         </span>
                                     </td>
-                                <tr>
-                                <tr valign="top">
-                                    <td>
-                                        Country Code 3
-                                    </td>
-                                    <td style="padding-left: 16px; padding-bottom: 8px;">
-                                        <span style="color: #900; font-weight: normal;">
-                                            ${client-location-country-code3}
-                                        </span>
-                                    </td>
-                                <tr>
+                                </tr>
                                 <tr valign="top">
                                     <td>
                                         Country Name
@@ -86,7 +76,7 @@
                                             ${client-location-country-name}
                                         </span>
                                     </td>
-                                <tr>
+                                </tr>
                                 <tr valign="top">
                                     <td>
                                         Region
@@ -96,7 +86,7 @@
                                             ${client-location-region}
                                         </span>
                                     </td>
-                                <tr>
+                                </tr>
                                 <tr valign="top">
                                     <td>
                                         City
@@ -106,7 +96,7 @@
                                             ${client-location-city}
                                         </span>
                                     </td>
-                                <tr>
+                                </tr>
                                 <tr valign="top">
                                     <td>
                                         Postal Code
@@ -116,7 +106,7 @@
                                             ${client-location-postal-code}
                                         </span>
                                     </td>
-                                <tr>
+                                </tr>
                                 <tr valign="top">
                                     <td>
                                         Latitude
@@ -126,7 +116,7 @@
                                             ${client-location-latitude}
                                         </span>
                                     </td>
-                                <tr>
+                                </tr>
                                 <tr valign="top">
                                     <td>
                                         Longitude
@@ -136,7 +126,7 @@
                                             ${client-location-longitude}
                                         </span>
                                     </td>
-                                <tr>
+                                </tr>
                                 <tr valign="top">
                                     <td>
                                         Metro Code
@@ -146,37 +136,7 @@
                                             ${client-location-metro-code}
                                         </span>
                                     </td>
-                                <tr>
-                                <tr valign="top">
-                                    <td>
-                                        DMA Code
-                                    </td>
-                                    <td style="padding-left: 16px; padding-bottom: 8px;">
-                                        <span style="color: #900; font-weight: normal;">
-                                            ${client-location-dma-code}
-                                        </span>
-                                    </td>
-                                <tr>
-                                <tr valign="top">
-                                    <td>
-                                        Area Code
-                                    </td>
-                                    <td style="padding-left: 16px; padding-bottom: 8px;">
-                                        <span style="color: #900; font-weight: normal;">
-                                            ${client-location-area-code}
-                                        </span>
-                                    </td>
-                                <tr>
-                                <tr valign="top">
-                                    <td>
-                                        Charset
-                                    </td>
-                                    <td style="padding-left: 16px; padding-bottom: 8px;">
-                                        <span style="color: #900; font-weight: normal;">
-                                            ${client-location-charset}
-                                        </span>
-                                    </td>
-                                <tr>
+                                </tr>
                                 <tr valign="top">
                                     <td>
                                         Continent
@@ -186,17 +146,37 @@
                                             ${client-location-continent-code}
                                         </span>
                                     </td>
-                                <tr>
+                                </tr>
                                 <tr valign="top">
                                     <td>
-                                        Netmask
+                                        Autonomous System Number
                                     </td>
                                     <td style="padding-left: 16px; padding-bottom: 8px;">
                                         <span style="color: #900; font-weight: normal;">
-                                            ${client-location-netmask}
+                                            ${client-location-asn}
                                         </span>
                                     </td>
-                                <tr>
+                                </tr>
+                                <tr valign="top">
+                                    <td>
+                                        Autonomous System Organization
+                                    </td>
+                                    <td style="padding-left: 16px; padding-bottom: 8px;">
+                                        <span style="color: #900; font-weight: normal;">
+                                            ${client-location-aso}
+                                        </span>
+                                    </td>
+                                </tr>
+                                <tr valign="top">
+                                    <td>
+                                        Raw Geo Data
+                                    </td>
+                                    <td style="padding-left: 16px; padding-bottom: 8px;">
+                                        <span style="color: #900; font-weight: normal;">
+                                            ${client-location-raw-data}
+                                        </span>
+                                    </td>
+                                </tr>
                             </table>
                         </span>
                     </td>

@@ -66,17 +66,7 @@
                                             ${client-location-country-code}
                                         </span>
                                     </td>
-                                <tr>
-                                <tr valign="top">
-                                    <td>
-                                        کد ۳ رقمی کشور
-                                    </td>
-                                    <td style="direction: ltr; padding-right: 16px; padding-bottom: 8px;">
-                                        <span style="color: #900; font-weight: normal;">
-                                            ${client-location-country-code3}
-                                        </span>
-                                    </td>
-                                <tr>
+                                </tr>
                                 <tr valign="top">
                                     <td>
                                         نام کشور
@@ -86,7 +76,7 @@
                                             ${client-location-country-name}
                                         </span>
                                     </td>
-                                <tr>
+                                </tr>
                                 <tr valign="top">
                                     <td>
                                         منطقه
@@ -96,7 +86,7 @@
                                             ${client-location-region}
                                         </span>
                                     </td>
-                                <tr>
+                                </tr>
                                 <tr valign="top">
                                     <td>
                                         شهر
@@ -106,7 +96,7 @@
                                             ${client-location-city}
                                         </span>
                                     </td>
-                                <tr>
+                                </tr>
                                 <tr valign="top">
                                     <td>
                                         کد پستی
@@ -116,7 +106,7 @@
                                             ${client-location-postal-code}
                                         </span>
                                     </td>
-                                <tr>
+                                </tr>
                                 <tr valign="top">
                                     <td>
                                         عرض جغرافیایی
@@ -126,7 +116,7 @@
                                             ${client-location-latitude}
                                         </span>
                                     </td>
-                                <tr>
+                                </tr>
                                 <tr valign="top">
                                     <td>
                                         طول جغرافیایی
@@ -136,7 +126,7 @@
                                             ${client-location-longitude}
                                         </span>
                                     </td>
-                                <tr>
+                                </tr>
                                 <tr valign="top">
                                     <td>
                                         کد مترو
@@ -146,37 +136,7 @@
                                             ${client-location-metro-code}
                                         </span>
                                     </td>
-                                <tr>
-                                <tr valign="top">
-                                    <td>
-                                        کد DMA
-                                    </td>
-                                    <td style="direction: ltr; padding-right: 16px; padding-bottom: 8px;">
-                                        <span style="color: #900; font-weight: normal;">
-                                            ${client-location-dma-code}
-                                        </span>
-                                    </td>
-                                <tr>
-                                <tr valign="top">
-                                    <td>
-                                        کد منطقه
-                                    </td>
-                                    <td style="direction: ltr; padding-right: 16px; padding-bottom: 8px;">
-                                        <span style="color: #900; font-weight: normal;">
-                                            ${client-location-area-code}
-                                        </span>
-                                    </td>
-                                <tr>
-                                <tr valign="top">
-                                    <td>
-                                        مجموعه کاراکتر
-                                    </td>
-                                    <td style="direction: ltr; padding-right: 16px; padding-bottom: 8px;">
-                                        <span style="color: #900; font-weight: normal;">
-                                            ${client-location-charset}
-                                        </span>
-                                    </td>
-                                <tr>
+                                </tr>
                                 <tr valign="top">
                                     <td>
                                         قاره
@@ -186,18 +146,38 @@
                                             ${client-location-continent-code}
                                         </span>
                                     </td>
-                                <tr>
-                                <tr valign="top">
-                                    <td>
-                                        پوشش شبکه
-                                    </td>
-                                    <td style="direction: ltr; padding-right: 16px; padding-bottom: 8px;">
-                                        <span style="color: #900; font-weight: normal;">
-                                            ${client-location-netmask}
-                                        </span>
-                                    </td>
-                                <tr>
+                                </tr>
                             </table>
+                            <tr valign="top">
+                                <td>
+                                    شماره سیستم مستقل
+                                </td>
+                                <td style="padding-left: 16px; padding-bottom: 8px;">
+                                    <span style="color: #900; font-weight: normal;">
+                                        ${client-location-asn}
+                                    </span>
+                                </td>
+                            </tr>
+                            <tr valign="top">
+                                <td>
+                                    سازمان سیستم مستقل
+                                </td>
+                                <td style="padding-left: 16px; padding-bottom: 8px;">
+                                    <span style="color: #900; font-weight: normal;">
+                                        ${client-location-aso}
+                                    </span>
+                                </td>
+                            </tr>
+                            <tr valign="top">
+                                <td>
+                                    اطلاعات خام جغرافیایی
+                                </td>
+                                <td style="padding-left: 16px; padding-bottom: 8px;">
+                                    <span style="color: #900; font-weight: normal;">
+                                        ${client-location-raw-data}
+                                    </span>
+                                </td>
+                            </tr>
                         </span>
                     </td>
                 </tr>

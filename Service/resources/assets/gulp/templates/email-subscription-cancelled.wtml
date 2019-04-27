@@ -70,16 +70,7 @@
                             <td>
                                 ${client-location-country-code}
                             </td>
-                        <tr>
-                        <tr valign="top">
-                            <td>
-                                Country Code 3
-                            </td>
-                            <td width="8"></td>
-                            <td>
-                                ${client-location-country-code3}
-                            </td>
-                        <tr>
+                        </tr>
                         <tr valign="top">
                             <td>
                                 Country Name
@@ -88,7 +79,7 @@
                             <td>
                                 ${client-location-country-name}
                             </td>
-                        <tr>
+                        </tr>
                         <tr valign="top">
                             <td>
                                 Region
@@ -97,7 +88,7 @@
                             <td>
                                 ${client-location-region}
                             </td>
-                        <tr>
+                        </tr>
                         <tr valign="top">
                             <td>
                                 City
@@ -106,7 +97,7 @@
                             <td>
                                 ${client-location-city}
                             </td>
-                        <tr>
+                        </tr>
                         <tr valign="top">
                             <td>
                                 Postal Code
@@ -115,7 +106,7 @@
                             <td>
                                 ${client-location-postal-code}
                             </td>
-                        <tr>
+                        </tr>
                         <tr valign="top">
                             <td>
                                 Latitude
@@ -124,7 +115,7 @@
                             <td>
                                 ${client-location-latitude}
                             </td>
-                        <tr>
+                        </tr>
                         <tr valign="top">
                             <td>
                                 Longitude
@@ -133,7 +124,7 @@
                             <td>
                                 ${client-location-longitude}
                             </td>
-                        <tr>
+                        </tr>
                         <tr valign="top">
                             <td>
                                 Metro Code
@@ -142,34 +133,7 @@
                             <td>
                                 ${client-location-metro-code}
                             </td>
-                        <tr>
-                        <tr valign="top">
-                            <td>
-                                DMA Code
-                            </td>
-                            <td width="8"></td>
-                            <td>
-                                ${client-location-dma-code}
-                            </td>
-                        <tr>
-                        <tr valign="top">
-                            <td>
-                                Area Code
-                            </td>
-                            <td width="8"></td>
-                            <td>
-                                ${client-location-area-code}
-                            </td>
-                        <tr>
-                        <tr valign="top">
-                            <td>
-                                Charset
-                            </td>
-                            <td width="8"></td>
-                            <td>
-                                ${client-location-charset}
-                            </td>
-                        <tr>
+                        </tr>
                         <tr valign="top">
                             <td>
                                 Continent
@@ -178,16 +142,34 @@
                             <td>
                                 ${client-location-continent-code}
                             </td>
-                        <tr>
+                        </tr>
                         <tr valign="top">
                             <td>
-                                Netmask
+                                Autonomous System Number
                             </td>
                             <td width="8"></td>
                             <td>
-                                ${client-location-netmask}
+                                ${client-location-asn}
                             </td>
-                        <tr>
+                        </tr>
+                        <tr valign="top">
+                            <td>
+                                Autonomous System Organization
+                            </td>
+                            <td width="8"></td>
+                            <td>
+                                ${client-location-aso}
+                            </td>
+                        </tr>
+                        <tr valign="top">
+                            <td>
+                                Raw Geo Data
+                            </td>
+                            <td width="8"></td>
+                            <td>
+                                ${client-location-raw-data}
+                            </td>
+                        </tr>
                     </table>
                 </td>
             </tr>

@@ -158,6 +158,9 @@
     <message id="cms-dashboard-last-login-info-location-charset">Charset</message>
     <message id="cms-dashboard-last-login-info-location-continent-code">Continent</message>
     <message id="cms-dashboard-last-login-info-location-netmask">Netmask</message>
+    <message id="cms-dashboard-last-login-info-location-asn">Autonomous System Number</message>
+    <message id="cms-dashboard-last-login-info-location-aso">Autonomous System Organization</message>
+    <message id="cms-dashboard-last-login-info-location-raw-data">Raw Geo Data</message>
     <message id="cms-dashboard-last-login-info-user-agent">User Agent</message>
     <message id="cms-dashboard-last-login-info-referer">Referer</message>
     <message id="cms-dashboard-last-login-info-time">Time (UTC)</message>

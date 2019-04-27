@@ -491,8 +491,6 @@ void ContactForm::Impl::SendUserMessageEmail(const std::string &to, const CDate:
                      % algorithm::trim_copy(DateConv::DateTimeString(n))).str());
         replace_all(htmlData, "${client-location-country-code}",
                     cgiEnv->GetInformation().Client.GeoLocation.CountryCode);
-        replace_all(htmlData, "${client-location-country-code3}",
-                    cgiEnv->GetInformation().Client.GeoLocation.CountryCode3);
         replace_all(htmlData, "${client-location-country-name}",
                     cgiEnv->GetInformation().Client.GeoLocation.CountryName);
         replace_all(htmlData, "${client-location-region}",
@@ -507,16 +505,14 @@ void ContactForm::Impl::SendUserMessageEmail(const std::string &to, const CDate:
                     lexical_cast<string>(cgiEnv->GetInformation().Client.GeoLocation.Longitude));
         replace_all(htmlData, "${client-location-metro-code}",
                     lexical_cast<string>(cgiEnv->GetInformation().Client.GeoLocation.MetroCode));
-        replace_all(htmlData, "${client-location-dma-code}",
-                    lexical_cast<string>(cgiEnv->GetInformation().Client.GeoLocation.DmaCode));
-        replace_all(htmlData, "${client-location-area-code}",
-                    lexical_cast<string>(cgiEnv->GetInformation().Client.GeoLocation.AreaCode));
-        replace_all(htmlData, "${client-location-charset}",
-                    lexical_cast<string>(cgiEnv->GetInformation().Client.GeoLocation.Charset));
         replace_all(htmlData, "${client-location-continent-code}",
                     cgiEnv->GetInformation().Client.GeoLocation.ContinentCode);
-        replace_all(htmlData, "${client-location-netmask}",
-                    lexical_cast<string>(cgiEnv->GetInformation().Client.GeoLocation.Netmask));
+        replace_all(htmlData, "${client-location-asn}",
+                    lexical_cast<string>(cgiEnv->GetInformation().Client.GeoLocation.ASN));
+        replace_all(htmlData, "${client-location-aso}",
+                    lexical_cast<string>(cgiEnv->GetInformation().Client.GeoLocation.ASO));
+        replace_all(htmlData, "${client-location-raw-data}",
+                    lexical_cast<string>(cgiEnv->GetInformation().Client.GeoLocation.RawData));
 
         CoreLib::Mail *mail = new CoreLib::Mail(from, to,
                     (format(tr("home-contact-form-email-subject").toUTF8())

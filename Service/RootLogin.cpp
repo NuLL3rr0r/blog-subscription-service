@@ -176,6 +176,7 @@ RootLogin::RootLogin()
                                              " t2.location_postal_code, t2.location_latitude, t2.location_longitude,"
                                              " t2.location_metro_code, t2.location_dma_code, t2.location_area_code,"
                                              " t2.location_charset, t2.location_continent_code, t2.location_netmask,"
+                                             " t2.location_asn, t2.location_aso, t.location_raw_data, "
                                              " t2.user_agent, t2.referer"
                                              " FROM \"%1%\" t1"
                                              " INNER JOIN \"%2%\" t2 ON t1.user_id = t2.user_id"
@@ -211,6 +212,9 @@ RootLogin::RootLogin()
                             record.LastLogin.GeoLocation.Charset = lexical_cast<int>(row["location_charset"].c_str());
                             record.LastLogin.GeoLocation.ContinentCode = row["location_continent_code"].c_str();
                             record.LastLogin.GeoLocation.Netmask = lexical_cast<int>(row["location_netmask"].c_str());
+                            record.LastLogin.GeoLocation.ASN = lexical_cast<int>(row["location_asn"].c_str());
+                            record.LastLogin.GeoLocation.ASO = lexical_cast<int>(row["location_aso"].c_str());
+                            record.LastLogin.GeoLocation.RawData = lexical_cast<int>(row["location_raw_data"].c_str());
                             record.LastLogin.UserAgent = row["user_agent"].c_str();
                             record.LastLogin.Referer = row["referer"].c_str();
 
@@ -481,7 +485,9 @@ void RootLogin::Impl::OnLoginFormSubmitted()
                                             " utilization_location_metro_code = %12%, utilization_location_dma_code = %13%,"
                                             " utilization_location_area_code = %14%, utilization_location_charset = %15%,"
                                             " utilization_location_continent_code = %16%, utilization_location_netmask = %17%,"
-                                            " utilization_user_agent = %18%, utilization_referer = %19%"
+                                            " utilization_location_asn = %18%, utilization_location_aso = %19%,"
+                                            " location_raw_data = %20%,"
+                                            " utilization_user_agent = %21%, utilization_referer = %22%"
                                             " WHERE user_id = %20%;")
                               % txn.esc(Service::Pool::Database().GetTableName("ROOT_CREDENTIALS_RECOVERY"))
                               % txn.esc(lexical_cast<string>(n.RawTime()))
@@ -499,7 +505,9 @@ void RootLogin::Impl::OnLoginFormSubmitted()
                               % txn.quote(lexical_cast<string>(cgiEnv->GetInformation().Client.GeoLocation.AreaCode))
                               % txn.quote(lexical_cast<string>(cgiEnv->GetInformation().Client.GeoLocation.Charset))
                               % txn.quote(cgiEnv->GetInformation().Client.GeoLocation.ContinentCode)
-                              % txn.quote(lexical_cast<string>(cgiEnv->GetInformation().Client.GeoLocation.Netmask))
+                              % txn.quote(lexical_cast<string>(cgiEnv->GetInformation().Client.GeoLocation.ASN))
+                              % txn.quote(cgiEnv->GetInformation().Client.GeoLocation.ASO)
+                              % txn.quote(cgiEnv->GetInformation().Client.GeoLocation.RawData)
                               % txn.quote(cgiEnv->GetInformation().Client.UserAgent)
                               % txn.quote(cgiEnv->GetInformation().Client.Referer)
                               % txn.quote(userId)).str());
@@ -540,6 +548,7 @@ void RootLogin::Impl::OnLoginFormSubmitted()
                                  " t2.location_postal_code, t2.location_latitude, t2.location_longitude,"
                                  " t2.location_metro_code, t2.location_dma_code, t2.location_area_code,"
                                  " t2.location_charset, t2.location_continent_code, t2.location_netmask,"
+                                 " t2.location_asn, t2.location_aso, t2.location_raw_data,"
                                  " t2.user_agent, t2.referer"
                                  " FROM \"%1%\" t1"
                                  " INNER JOIN \"%2%\" t2 ON t1.user_id = t2.user_id"
@@ -571,6 +580,9 @@ void RootLogin::Impl::OnLoginFormSubmitted()
                 record.LastLogin.GeoLocation.Charset = lexical_cast<int>(row["location_charset"].c_str());
                 record.LastLogin.GeoLocation.ContinentCode = row["location_continent_code"].c_str();
                 record.LastLogin.GeoLocation.Netmask = lexical_cast<int>(row["location_netmask"].c_str());
+                record.LastLogin.GeoLocation.ASN = lexical_cast<int>(row["location_asn"].c_str());
+                record.LastLogin.GeoLocation.ASO = row["location_aso"].c_str();
+                record.LastLogin.GeoLocation.RawData = row["location_raw_data"].c_str();
                 record.LastLogin.UserAgent = row["user_agent"].c_str();
                 record.LastLogin.Referer = row["referer"].c_str();
             }
@@ -705,6 +717,7 @@ void RootLogin::Impl::OnPasswordRecoveryFormSubmitted()
                                     " request_location_postal_code, request_location_latitude, request_location_longitude,"
                                     " request_location_metro_code, request_location_dma_code, request_location_area_code,"
                                     " request_location_charset, request_location_continent_code, request_location_netmask,"
+                                    " request_location_asn, request_location_aso, request_location_raw_data,"
                                     " request_user_agent, request_referer )"
                                     " VALUES ( %2%, %3%, TO_TIMESTAMP( %4% )::TIMESTAMPTZ, %5%, TO_TIMESTAMP( %6% )::TIMESTAMPTZ,"
                                     " %7%, %8%, %9%, %10%, %11%, %12%, %13%, %14%, %15%, %16%, %17%, %18%, %19%, %20%, %21%, %22%, %23% );")
@@ -729,6 +742,9 @@ void RootLogin::Impl::OnPasswordRecoveryFormSubmitted()
                       % txn.quote(lexical_cast<string>(cgiEnv->GetInformation().Client.GeoLocation.Charset))
                       % txn.quote(cgiEnv->GetInformation().Client.GeoLocation.ContinentCode)
                       % txn.quote(lexical_cast<string>(cgiEnv->GetInformation().Client.GeoLocation.Netmask))
+                      % txn.quote(lexical_cast<string>(cgiEnv->GetInformation().Client.GeoLocation.ASN))
+                      % txn.quote(cgiEnv->GetInformation().Client.GeoLocation.ASO)
+                      % txn.quote(cgiEnv->GetInformation().Client.GeoLocation.RawData)
                       % txn.quote(cgiEnv->GetInformation().Client.UserAgent)
                       % txn.quote(cgiEnv->GetInformation().Client.Referer)).str());
         LOG_INFO("Running query...", query, cgiEnv->GetInformation().ToJson());
@@ -952,9 +968,10 @@ void RootLogin::Impl::PreserveSessionData(const CDate::Now &n, const bool saveLo
                                     " location_postal_code, location_latitude, location_longitude,"
                                     " location_metro_code, location_dma_code, location_area_code,"
                                     " location_charset, location_continent_code, location_netmask,"
+                                    " location_asn, location_aso, location_raw_data,"
                                     " user_agent, referer )"
                                     " VALUES ( %2%, %3%, TO_TIMESTAMP( %4% )::TIMESTAMPTZ, TO_TIMESTAMP( %5% )::TIMESTAMPTZ,"
-                                    " %6%, %7%, %8%, %9%, %10%, %11%, %12%, %13%, %14%, %15%, %16%, %17%, %18%, %19%, %20%, %21%, %22% );")
+                                    " %6%, %7%, %8%, %9%, %10%, %11%, %12%, %13%, %14%, %15%, %16%, %17%, %18%, %19%, %20%, %21%, %22%, , %23%, , %24%, , %25% );")
                       % txn.esc(Service::Pool::Database().GetTableName("ROOT_SESSIONS"))
                       % txn.quote(token)
                       % txn.quote(cgiEnv->GetInformation().Client.Session.UserId)
@@ -975,6 +992,9 @@ void RootLogin::Impl::PreserveSessionData(const CDate::Now &n, const bool saveLo
                       % txn.quote(lexical_cast<string>(cgiEnv->GetInformation().Client.GeoLocation.Charset))
                       % txn.quote(cgiEnv->GetInformation().Client.GeoLocation.ContinentCode)
                       % txn.quote(lexical_cast<string>(cgiEnv->GetInformation().Client.GeoLocation.Netmask))
+                      % txn.quote(lexical_cast<string>(cgiEnv->GetInformation().Client.GeoLocation.ASN))
+                      % txn.quote(cgiEnv->GetInformation().Client.GeoLocation.ASO)
+                      % txn.quote(cgiEnv->GetInformation().Client.GeoLocation.RawData)
                       % txn.quote(cgiEnv->GetInformation().Client.UserAgent)
                       % txn.quote(cgiEnv->GetInformation().Client.Referer)).str());
         LOG_INFO("Running query...", query, cgiEnv->GetInformation().ToJson());
@@ -1042,8 +1062,6 @@ void RootLogin::Impl::SendLoginAlertEmail(const CDate::Now &n)
                      % algorithm::trim_copy(DateConv::DateTimeString(n))).str());
         replace_all(htmlData, "${client-location-country-code}",
                     cgiEnv->GetInformation().Client.GeoLocation.CountryCode);
-        replace_all(htmlData, "${client-location-country-code3}",
-                    cgiEnv->GetInformation().Client.GeoLocation.CountryCode3);
         replace_all(htmlData, "${client-location-country-name}",
                     cgiEnv->GetInformation().Client.GeoLocation.CountryName);
         replace_all(htmlData, "${client-location-region}",
@@ -1058,16 +1076,14 @@ void RootLogin::Impl::SendLoginAlertEmail(const CDate::Now &n)
                     lexical_cast<string>(cgiEnv->GetInformation().Client.GeoLocation.Longitude));
         replace_all(htmlData, "${client-location-metro-code}",
                     lexical_cast<string>(cgiEnv->GetInformation().Client.GeoLocation.MetroCode));
-        replace_all(htmlData, "${client-location-dma-code}",
-                    lexical_cast<string>(cgiEnv->GetInformation().Client.GeoLocation.DmaCode));
-        replace_all(htmlData, "${client-location-area-code}",
-                    lexical_cast<string>(cgiEnv->GetInformation().Client.GeoLocation.AreaCode));
-        replace_all(htmlData, "${client-location-charset}",
-                    lexical_cast<string>(cgiEnv->GetInformation().Client.GeoLocation.Charset));
         replace_all(htmlData, "${client-location-continent-code}",
                     cgiEnv->GetInformation().Client.GeoLocation.ContinentCode);
-        replace_all(htmlData, "${client-location-netmask}",
-                    lexical_cast<string>(cgiEnv->GetInformation().Client.GeoLocation.Netmask));
+        replace_all(htmlData, "${client-location-asn}",
+                    lexical_cast<string>(cgiEnv->GetInformation().Client.GeoLocation.ASN));
+        replace_all(htmlData, "${client-location-aso}",
+                    cgiEnv->GetInformation().Client.GeoLocation.ASO);
+        replace_all(htmlData, "${client-location-raw-data}",
+                    cgiEnv->GetInformation().Client.GeoLocation.RawData);
 
         LOG_INFO("Sending login alert email...", cgiEnv->GetInformation().ToJson(););
 
@@ -1113,8 +1129,6 @@ void RootLogin::Impl::SendPasswordRecoveryEmail(const std::string &email,
                     algorithm::trim_copy(DateConv::DateTimeString(n)));
         replace_all(htmlData, "${client-location-country-code}",
                     cgiEnv->GetInformation().Client.GeoLocation.CountryCode);
-        replace_all(htmlData, "${client-location-country-code3}",
-                    cgiEnv->GetInformation().Client.GeoLocation.CountryCode3);
         replace_all(htmlData, "${client-location-country-name}",
                     cgiEnv->GetInformation().Client.GeoLocation.CountryName);
         replace_all(htmlData, "${client-location-region}",
@@ -1129,16 +1143,14 @@ void RootLogin::Impl::SendPasswordRecoveryEmail(const std::string &email,
                     lexical_cast<string>(cgiEnv->GetInformation().Client.GeoLocation.Longitude));
         replace_all(htmlData, "${client-location-metro-code}",
                     lexical_cast<string>(cgiEnv->GetInformation().Client.GeoLocation.MetroCode));
-        replace_all(htmlData, "${client-location-dma-code}",
-                    lexical_cast<string>(cgiEnv->GetInformation().Client.GeoLocation.DmaCode));
-        replace_all(htmlData, "${client-location-area-code}",
-                    lexical_cast<string>(cgiEnv->GetInformation().Client.GeoLocation.AreaCode));
-        replace_all(htmlData, "${client-location-charset}",
-                    lexical_cast<string>(cgiEnv->GetInformation().Client.GeoLocation.Charset));
         replace_all(htmlData, "${client-location-continent-code}",
                     cgiEnv->GetInformation().Client.GeoLocation.ContinentCode);
-        replace_all(htmlData, "${client-location-netmask}",
-                    lexical_cast<string>(cgiEnv->GetInformation().Client.GeoLocation.Netmask));
+        replace_all(htmlData, "${client-location-asn}",
+                    lexical_cast<string>(cgiEnv->GetInformation().Client.GeoLocation.ASN));
+        replace_all(htmlData, "${client-location-aso}",
+                    cgiEnv->GetInformation().Client.GeoLocation.ASO);
+        replace_all(htmlData, "${client-location-raw-data}",
+                    cgiEnv->GetInformation().Client.GeoLocation.RawData);
 
         LOG_INFO("Sending password recovery email...", email, username, cgiEnv->GetInformation().ToJson(););
 

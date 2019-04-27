@@ -124,7 +124,6 @@ WWidget *CmsDashboard::Layout()
             tmpl->bindWidget("last-login-time-label", new WText(tr("cms-dashboard-last-login-info-time")));
             tmpl->bindWidget("last-login-location-label", new WText(tr("cms-dashboard-last-login-info-location")));
             tmpl->bindWidget("last-login-location-country-code-label", new WText(tr("cms-dashboard-last-login-info-location-country-code")));
-            tmpl->bindWidget("last-login-location-country-code3-label", new WText(tr("cms-dashboard-last-login-info-location-country-code3")));
             tmpl->bindWidget("last-login-location-country-name-label", new WText(tr("cms-dashboard-last-login-info-location-country-name")));
             tmpl->bindWidget("last-login-location-region-label", new WText(tr("cms-dashboard-last-login-info-location-region")));
             tmpl->bindWidget("last-login-location-city-label", new WText(tr("cms-dashboard-last-login-info-location-city")));
@@ -132,11 +131,10 @@ WWidget *CmsDashboard::Layout()
             tmpl->bindWidget("last-login-location-latitude-label", new WText(tr("cms-dashboard-last-login-info-location-latitude")));
             tmpl->bindWidget("last-login-location-longitude-label", new WText(tr("cms-dashboard-last-login-info-location-longitude")));
             tmpl->bindWidget("last-login-location-metro-code-label", new WText(tr("cms-dashboard-last-login-info-location-metro-code")));
-            tmpl->bindWidget("last-login-location-dma-code-label", new WText(tr("cms-dashboard-last-login-info-location-dma-code")));
-            tmpl->bindWidget("last-login-location-area-code-label", new WText(tr("cms-dashboard-last-login-info-location-area-code")));
-            tmpl->bindWidget("last-login-location-charset-label", new WText(tr("cms-dashboard-last-login-info-location-charset")));
             tmpl->bindWidget("last-login-location-continent-code-label", new WText(tr("cms-dashboard-last-login-info-location-continent-code")));
-            tmpl->bindWidget("last-login-location-netmask-label", new WText(tr("cms-dashboard-last-login-info-location-netmask")));
+            tmpl->bindWidget("last-login-location-asn-label", new WText(tr("cms-dashboard-last-login-info-location-asn")));
+            tmpl->bindWidget("last-login-location-aso-label", new WText(tr("cms-dashboard-last-login-info-location-aso")));
+            tmpl->bindWidget("last-login-location-raw-data-label", new WText(tr("cms-dashboard-last-login-info-location-raw-data")));
 
             tmpl->bindWidget("last-login-ip", new WText(WString::fromUTF8(cgiEnv->GetInformation().Client.Session.LastLogin.IPAddress)));
             tmpl->bindWidget("last-login-user-agent", new WText(WString::fromUTF8(cgiEnv->GetInformation().Client.Session.LastLogin.UserAgent)));
@@ -147,8 +145,6 @@ WWidget *CmsDashboard::Layout()
                                   % algorithm::trim_copy(DateConv::DateTimeString(cgiEnv->GetInformation().Client.Session.LastLogin.Time, CDate::Timezone::UTC))).str())));
             tmpl->bindWidget("last-login-location-country-code", new WText(
                                  WString::fromUTF8(cgiEnv->GetInformation().Client.Session.LastLogin.GeoLocation.CountryCode)));
-            tmpl->bindWidget("last-login-location-country-code3", new WText(
-                                 WString::fromUTF8(cgiEnv->GetInformation().Client.Session.LastLogin.GeoLocation.CountryCode3)));
             tmpl->bindWidget("last-login-location-country-name", new WText(
                                  WString::fromUTF8(cgiEnv->GetInformation().Client.Session.LastLogin.GeoLocation.CountryName)));
             tmpl->bindWidget("last-login-location-region", new WText(
@@ -163,16 +159,14 @@ WWidget *CmsDashboard::Layout()
                                  WString::fromUTF8(lexical_cast<string>(cgiEnv->GetInformation().Client.Session.LastLogin.GeoLocation.Longitude))));
             tmpl->bindWidget("last-login-location-metro-code", new WText(
                                  WString::fromUTF8(lexical_cast<string>(cgiEnv->GetInformation().Client.Session.LastLogin.GeoLocation.MetroCode))));
-            tmpl->bindWidget("last-login-location-dma-code", new WText(
-                                 WString::fromUTF8(lexical_cast<string>(cgiEnv->GetInformation().Client.Session.LastLogin.GeoLocation.DmaCode))));
-            tmpl->bindWidget("last-login-location-area-code", new WText(
-                                 WString::fromUTF8(lexical_cast<string>(cgiEnv->GetInformation().Client.Session.LastLogin.GeoLocation.AreaCode))));
-            tmpl->bindWidget("last-login-location-charset", new WText(
-                                 WString::fromUTF8(lexical_cast<string>(cgiEnv->GetInformation().Client.Session.LastLogin.GeoLocation.Charset))));
             tmpl->bindWidget("last-login-location-continent-code", new WText(
                                  WString::fromUTF8(cgiEnv->GetInformation().Client.Session.LastLogin.GeoLocation.ContinentCode)));
-            tmpl->bindWidget("last-login-location-netmask", new WText(
-                                 WString::fromUTF8(lexical_cast<string>(cgiEnv->GetInformation().Client.Session.LastLogin.GeoLocation.Netmask))));
+            tmpl->bindWidget("last-login-location-asn", new WText(
+                                 WString::fromUTF8(lexical_cast<string>(cgiEnv->GetInformation().Client.Session.LastLogin.GeoLocation.ASN))));
+            tmpl->bindWidget("last-login-location-aso", new WText(
+                                 WString::fromUTF8(lexical_cast<string>(cgiEnv->GetInformation().Client.Session.LastLogin.GeoLocation.ASO))));
+            tmpl->bindWidget("last-login-location-raw-data", new WText(
+                                 WString::fromUTF8(lexical_cast<string>(cgiEnv->GetInformation().Client.Session.LastLogin.GeoLocation.RawData))));
 
             tmpl->bindWidget("force-terminate-all-sessions", forceTerminateAllSessionsPushButton);
 

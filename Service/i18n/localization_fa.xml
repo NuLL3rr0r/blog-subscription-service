@@ -154,6 +154,9 @@
     <message id="cms-dashboard-last-login-info-location-charset">مجموعه کاراکتر</message>
     <message id="cms-dashboard-last-login-info-location-continent-code">قاره</message>
     <message id="cms-dashboard-last-login-info-location-netmask">پوشش شبکه</message>
+    <message id="cms-dashboard-last-login-info-location-asn">شماره سیستم مستقل</message>
+    <message id="cms-dashboard-last-login-info-location-aso">سازمان سیستم مستقل</message>
+    <message id="cms-dashboard-last-login-info-location-raw-data">اطلاعات خام جغرافیایی</message>
     <message id="cms-dashboard-last-login-info-user-agent">شناسه مرورگر</message>
     <message id="cms-dashboard-last-login-info-referer">ارجاع دهنده</message>
     <message id="cms-dashboard-last-login-info-time"> زمان (گرینویچ)</message>

@@ -85,15 +85,7 @@
                                     <td>
                                         ${last-login-location-country-code}
                                     </td>
-                                <tr>
-                                <tr valign="top">
-                                    <td>
-                                        ${last-login-location-country-code3-label}
-                                    </td>
-                                    <td>
-                                        ${last-login-location-country-code3}
-                                    </td>
-                                <tr>
+                                </tr>
                                 <tr valign="top">
                                     <td>
                                         ${last-login-location-country-name-label}
@@ -101,7 +93,7 @@
                                     <td>
                                         ${last-login-location-country-name}
                                     </td>
-                                <tr>
+                                </tr>
                                 <tr valign="top">
                                     <td>
                                         ${last-login-location-region-label}
@@ -109,7 +101,7 @@
                                     <td>
                                         ${last-login-location-region}
                                     </td>
-                                <tr>
+                                </tr>
                                 <tr valign="top">
                                     <td>
                                         ${last-login-location-city-label}
@@ -117,7 +109,7 @@
                                     <td>
                                         ${last-login-location-city}
                                     </td>
-                                <tr>
+                                </tr>
                                 <tr valign="top">
                                     <td>
                                         ${last-login-location-postal-code-label}
@@ -125,7 +117,7 @@
                                     <td>
                                         ${last-login-location-postal-code}
                                     </td>
-                                <tr>
+                                </tr>
                                 <tr valign="top">
                                     <td>
                                         ${last-login-location-latitude-label}
@@ -133,7 +125,7 @@
                                     <td>
                                         ${last-login-location-latitude}
                                     </td>
-                                <tr>
+                                </tr>
                                 <tr valign="top">
                                     <td>
                                         ${last-login-location-longitude-label}
@@ -141,7 +133,7 @@
                                     <td>
                                         ${last-login-location-longitude}
                                     </td>
-                                <tr>
+                                </tr>
                                 <tr valign="top">
                                     <td>
                                         ${last-login-location-metro-code-label}
@@ -149,31 +141,7 @@
                                     <td>
                                         ${last-login-location-metro-code}
                                     </td>
-                                <tr>
-                                <tr valign="top">
-                                    <td>
-                                        ${last-login-location-dma-code-label}
-                                    </td>
-                                    <td>
-                                        ${last-login-location-dma-code}
-                                    </td>
-                                <tr>
-                                <tr valign="top">
-                                    <td>
-                                        ${last-login-location-area-code-label}
-                                    </td>
-                                    <td>
-                                        ${last-login-location-area-code}
-                                    </td>
-                                <tr>
-                                <tr valign="top">
-                                    <td>
-                                        ${last-login-location-charset-label}
-                                    </td>
-                                    <td>
-                                        ${last-login-location-charset}
-                                    </td>
-                                <tr>
+                                </tr>
                                 <tr valign="top">
                                     <td>
                                         ${last-login-location-continent-code-label}
@@ -181,15 +149,31 @@
                                     <td>
                                         ${last-login-location-continent-code}
                                     </td>
-                                <tr>
+                                </tr>
                                 <tr valign="top">
                                     <td>
-                                        ${last-login-location-netmask-label}
+                                        ${last-login-location-asn-label}
                                     </td>
                                     <td>
-                                        ${last-login-location-netmask}
+                                        ${last-login-location-asn}
                                     </td>
-                                <tr>
+                                </tr>
+                                <tr valign="top">
+                                    <td>
+                                        ${last-login-location-aso-label}
+                                    </td>
+                                    <td>
+                                        ${last-login-location-aso}
+                                    </td>
+                                </tr>
+                                <tr valign="top">
+                                    <td>
+                                        ${last-login-location-raw-data-label}
+                                    </td>
+                                    <td>
+                                        ${last-login-location-raw-data}
+                                    </td>
+                                </tr>
                             </table>
                         </span>
                     </td>
