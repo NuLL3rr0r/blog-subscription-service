@@ -159,7 +159,8 @@ public:
 
     static const char* TranslateMaxMindError(int errorCode);
 
-    FORCEINLINE static char *BytesToHex(uint8_t *bytes, uint32_t size)
+    FORCEINLINE static char *BytesToHex(
+            const uint8_t *bytes, const uint32_t size)
     {
         char *hexString;
         MAYBE_CHECK_SIZE_OVERFLOW(size, SIZE_MAX / 2 - 1, nullptr);
@@ -797,7 +798,8 @@ MMDB_entry_data_list_s *CgiEnv::Impl::DumpEntryDataList(
     } break;
     case MMDB_DATA_TYPE_BYTES: {
         char *hexBuffer =
-            Impl::BytesToHex((uint8_t *)out_entryDataList->entry_data.bytes,
+            Impl::BytesToHex(static_cast<const uint8_t *>(
+                                 out_entryDataList->entry_data.bytes),
                          out_entryDataList->entry_data.data_size);
 
         if (!hexBuffer) {
@@ -897,7 +899,7 @@ MMDB_entry_data_list_s *CgiEnv::Impl::DumpEntryDataList(
     default: {
         out_status = MMDB_INVALID_DATA_ERROR;
         return nullptr;
-    } break;
+    }
     }
 
     out_status = MMDB_SUCCESS;
