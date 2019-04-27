@@ -32,7 +32,7 @@ SET_PROPERTY( CACHE CMAKE_BUILD_TYPE PROPERTY STRINGS "None" "Debug" "Release" "
 
 # Reduces executables size by using GNU strip (GNU Binutils).
 # Note that this is GNU toolchain only"
-SET ( GCC_STRIP_EXECUTABLES "YES" CACHE STRINGS "" )
+SET ( GCC_STRIP_EXECUTABLES "YES" CACHE STRING "" )
 SET_PROPERTY( CACHE GCC_STRIP_EXECUTABLES PROPERTY STRINGS "YES" "NO" )
 
 SET ( APP_ROOT_DIR /srv/babaei.net/subscribe CACHE PATH "" )
