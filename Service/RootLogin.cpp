@@ -972,7 +972,7 @@ void RootLogin::Impl::PreserveSessionData(const CDate::Now &n, const bool saveLo
                                     " location_asn, location_aso, location_raw_data,"
                                     " user_agent, referer )"
                                     " VALUES ( %2%, %3%, TO_TIMESTAMP( %4% )::TIMESTAMPTZ, TO_TIMESTAMP( %5% )::TIMESTAMPTZ,"
-                                    " %6%, %7%, %8%, %9%, %10%, %11%, %12%, %13%, %14%, %15%, %16%, %17%, %18%, %19%, %20%, %21%, %22%, , %23%, , %24%, , %25% );")
+                                    " %6%, %7%, %8%, %9%, %10%, %11%, %12%, %13%, %14%, %15%, %16%, %17%, %18%, %19%, %20%, %21%, %22%, , %23%, , %24%, %25% );")
                       % txn.esc(Service::Pool::Database().GetTableName("ROOT_SESSIONS"))
                       % txn.quote(token)
                       % txn.quote(cgiEnv->GetInformation().Client.Session.UserId)
