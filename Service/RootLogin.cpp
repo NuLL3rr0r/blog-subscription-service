@@ -720,7 +720,7 @@ void RootLogin::Impl::OnPasswordRecoveryFormSubmitted()
                                     " request_location_asn, request_location_aso, request_location_raw_data,"
                                     " request_user_agent, request_referer )"
                                     " VALUES ( %2%, %3%, TO_TIMESTAMP( %4% )::TIMESTAMPTZ, %5%, TO_TIMESTAMP( %6% )::TIMESTAMPTZ,"
-                                    " %7%, %8%, %9%, %10%, %11%, %12%, %13%, %14%, %15%, %16%, %17%, %18%, %19%, %20%, %21%, %22%, %23%, %24%, %25% );")
+                                    " %7%, %8%, %9%, %10%, %11%, %12%, %13%, %14%, %15%, %16%, %17%, %18%, %19%, %20%, %21%, %22%, %23%, %24%, %25%, %26% );")
                       % txn.esc(Service::Pool::Database().GetTableName("ROOT_CREDENTIALS_RECOVERY"))
                       % txn.quote(token)
                       % txn.quote(userId)
