@@ -176,7 +176,7 @@ RootLogin::RootLogin()
                                              " t2.location_postal_code, t2.location_latitude, t2.location_longitude,"
                                              " t2.location_metro_code, t2.location_dma_code, t2.location_area_code,"
                                              " t2.location_charset, t2.location_continent_code, t2.location_netmask,"
-                                             " t2.location_asn, t2.location_aso, t.location_raw_data, "
+                                             " t2.location_asn, t2.location_aso, t2.location_raw_data, "
                                              " t2.user_agent, t2.referer"
                                              " FROM \"%1%\" t1"
                                              " INNER JOIN \"%2%\" t2 ON t1.user_id = t2.user_id"
