@@ -82,7 +82,8 @@ static int UnTarCopyData(archive *ar, archive *aw)
             return r;
         }
 
-        r = archive_write_data_block(aw, buffer, size, offset);
+        r = static_cast<int>(
+                    archive_write_data_block(aw, buffer, size, offset));
 
         if (r != ARCHIVE_OK) {
             /// archive_write_data_block() failed!
