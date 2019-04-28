@@ -38,6 +38,8 @@
 
 
 #include <string>
+#include <cstdlib>
+#include "Defines.hpp"
 
 namespace CoreLib {
 class FileSystem;
@@ -57,6 +59,12 @@ public:
 
     static bool Read(const std::string &file, std::string &out_data);
     static bool Write(const std::string &file, const std::string &data);
+
+    FORCEINLINE static std::string CreateTempDir()
+    {
+        char pattern[] = "/tmp/XXXXXXXX";
+        return mkdtemp(pattern);
+    }
 };
 
 
