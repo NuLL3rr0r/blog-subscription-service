@@ -41,24 +41,26 @@ var minifyCss = require('gulp-minify-css');
 var sass = require('gulp-sass');
 var uglify = require('gulp-uglify');
 
-gulp.task('fonts', function() {
+gulp.task('fonts', function(done) {
     gulp.src('fonts/**/*')
         .pipe(imagemin({
         })).on('error', errorHandler)
         .pipe(gulp.dest('./output/www/fonts/')
     );
+
+    done();
 });
 
-gulp.task('images', function() {
+gulp.task('images', function(done) {
     gulp.src('favicon.ico')
         .pipe(gulp.dest('./output/www/')
     );
-    gulp.src('favicon.png')
-        .pipe(imagemin({
-            optimizationLevel: 7
-        })).on('error', errorHandler)
-        .pipe(gulp.dest('./output/www/')
-    );
+//    gulp.src('favicon.png')
+//        .pipe(imagemin({
+//            optimizationLevel: 7
+//        })).on('error', errorHandler)
+//        .pipe(gulp.dest('./output/www/')
+//    );
     gulp.src('images/**/*.{gif,jpg,png,svg}')
         .pipe(imagemin({
             multipass: true,
@@ -67,9 +69,11 @@ gulp.task('images', function() {
         })).on('error', errorHandler)
         .pipe(gulp.dest('./output/www/img/')
     );
+
+    done();
 });
 
-gulp.task('scripts', function() {
+gulp.task('scripts', function(done) {
     gulp.src(['javascripts/**/*.js', '!javascripts/**/*.min.js'])
         .pipe(uglify()).on('error', errorHandler)
         .pipe(gulp.dest('./output/www/js/')
@@ -77,9 +81,11 @@ gulp.task('scripts', function() {
     gulp.src(['javascripts/**/*.min.js'])
         .pipe(gulp.dest('./output/www/js/')
     );
+
+    done();
 });
 
-gulp.task('styles', function() {
+gulp.task('styles', function(done) {
     gulp.src('stylesheets/**/*.scss')
         .pipe(sass()).on('error', errorHandler)
         .pipe(autoprefixer('last 2 versions')).on('error', errorHandler)
@@ -93,6 +99,8 @@ gulp.task('styles', function() {
         .pipe(minifyCss()).on('error', errorHandler)
         .pipe(gulp.dest('./output/www/css/')
     );
+
+    done();
 });
 
 gulp.task('templates', function() {
@@ -100,9 +108,11 @@ gulp.task('templates', function() {
         .pipe(minifyHtml()).on('error', errorHandler)
         .pipe(gulp.dest('./output/templates/')
     );
+
+    done();
 });
 
-gulp.task('wt-resources', function() {
+gulp.task('wt-resources', function(done) {
     // Images
     gulp.src('resources/**/*.{gif,jpg,png,svg}')
         .pipe(imagemin({
@@ -135,10 +145,12 @@ gulp.task('wt-resources', function() {
     gulp.src(['resources/**/*.min.css', 'resources/**/*.min.js'])
         .pipe(gulp.dest('./output/www/resources/')
     );
+
+    done();
 });
 
-// do not add 'templates', because minifyHtml will mess up all HTML attributes with an variable value (e.g. ${})
-gulp.task('default', ['scripts', 'styles', 'fonts', 'images', 'wt-resources']);
+// do not add 'templates', because minifyHtml will mess up all HTML attributes with a variable value (e.g. ${})
+gulp.task('default', gulp.parallel('scripts', 'styles', 'fonts', 'images', 'wt-resources'));
 
 // Public error handler
 function errorHandler (error) {
