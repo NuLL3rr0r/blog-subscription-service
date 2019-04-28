@@ -488,7 +488,7 @@ void RootLogin::Impl::OnLoginFormSubmitted()
                                             " utilization_location_asn = %18%, utilization_location_aso = %19%,"
                                             " location_raw_data = %20%,"
                                             " utilization_user_agent = %21%, utilization_referer = %22%"
-                                            " WHERE user_id = %20%;")
+                                            " WHERE user_id = %23%;")
                               % txn.esc(Service::Pool::Database().GetTableName("ROOT_CREDENTIALS_RECOVERY"))
                               % txn.esc(lexical_cast<string>(n.RawTime()))
                               % txn.quote(cgiEnv->GetInformation().Client.IPAddress)
