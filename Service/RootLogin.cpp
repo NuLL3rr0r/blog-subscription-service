@@ -486,7 +486,7 @@ void RootLogin::Impl::OnLoginFormSubmitted()
                                             " utilization_location_area_code = %14%, utilization_location_charset = %15%,"
                                             " utilization_location_continent_code = %16%, utilization_location_netmask = %17%,"
                                             " utilization_location_asn = %18%, utilization_location_aso = %19%,"
-                                            " location_raw_data = %20%,"
+                                            " utilization_location_raw_data = %20%,"
                                             " utilization_user_agent = %21%, utilization_referer = %22%"
                                             " WHERE user_id = %23%;")
                               % txn.esc(Service::Pool::Database().GetTableName("ROOT_CREDENTIALS_RECOVERY"))
