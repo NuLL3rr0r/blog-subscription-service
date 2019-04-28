@@ -37,9 +37,17 @@
 #include <fstream>
 #include <iterator>
 #include <vector>
+#include <cstdio>
+#include <cstdlib>
+#include <cstring>
 #include <fcntl.h>
+#include <sys/stat.h>
+#include <sys/types.h>
+#include <unistd.h>
 #include <boost/filesystem.hpp>
 #include <boost/format.hpp>
+#include <archive.h>
+#include <archive_entry.h>
 #include <zip.h>
 #include "Archiver.hpp"
 #include "Compression.hpp"
@@ -49,6 +57,40 @@
 using namespace std;
 using namespace boost;
 using namespace CoreLib;
+
+static int UnTarCopyData(archive *ar, archive *aw)
+{
+    int r;
+    const void *buffer;
+
+    size_t size;
+
+#if ARCHIVE_VERSION_NUMBER >= 3000000
+    int64_t offset;
+#else
+    off_t offset;
+#endif
+
+    for (;;) {
+        r = archive_read_data_block(ar, &buffer, &size, &offset);
+
+        if (r == ARCHIVE_EOF) {
+            return (ARCHIVE_OK);
+        }
+
+        if (r != ARCHIVE_OK) {
+            return r;
+        }
+
+        r = archive_write_data_block(aw, buffer, size, offset);
+
+        if (r != ARCHIVE_OK) {
+            /// archive_write_data_block() failed!
+            //archive_error_string(aw));
+            return r;
+        }
+    }
+}
 
 bool Archiver::UnGzip(const std::string &archive, const std::string &extractedFile)
 {
@@ -87,6 +129,86 @@ bool Archiver::UnGzip(const std::string &archive, const std::string &extractedFi
     ofs.close();
 
     return true;
+}
+
+bool Archiver::UnTar(const std::string &archivePath, const std::string &extractDirectory)
+{
+    string error;
+    return UnTar(archivePath, extractDirectory, error);
+}
+
+bool Archiver::UnTar(const std::string &archivePath, const std::string &extractDirectory,
+                     std::string &out_error)
+{
+    out_error.clear();
+    bool success = false;
+
+    int flags = ARCHIVE_EXTRACT_TIME;
+    //    flags |= ARCHIVE_EXTRACT_PERM;
+    //    flags |= ARCHIVE_EXTRACT_ACL;
+    //    flags |= ARCHIVE_EXTRACT_FFLAGS;
+
+    archive *a = archive_read_new();
+    archive *ext = archive_write_disk_new();
+
+    archive_write_disk_set_options(ext, flags);
+    archive_read_support_format_tar(a);
+
+    int r;
+    if ((r = archive_read_open_filename(a, archivePath.c_str(), 10240))) {
+        out_error.assign(
+                    (format("Archiver::UnTar: archive_read_open_filename() failed: %1%; %2")
+                     % r % archive_error_string(a)).str());
+    } else {
+        archive_entry *entry;
+
+        for (;;) {
+            r = archive_read_next_header(a, &entry);
+
+            if (r == ARCHIVE_EOF) {
+                success = true;
+                break;
+            }
+
+            if (r != ARCHIVE_OK) {
+                out_error.assign(
+                            (format("Archiver::UnTar: archive_read_next_header() failed: %1%; %2")
+                             % 1 % archive_error_string(a)).str());
+            } else {
+                const char *file = archive_entry_pathname(entry);
+                const std::string filePath =
+                        (boost::filesystem::path(extractDirectory)
+                        / boost::filesystem::path(file)).string();
+                archive_entry_set_pathname(entry, filePath.c_str());
+
+                r = archive_write_header(ext, entry);
+
+                if (r != ARCHIVE_OK) {
+                    out_error +=
+                            (format("Archiver::UnTar: archive_write_header() failed: %1%; %2\n")
+                             % archive_error_string(ext)).str();
+                } else {
+                    (void)UnTarCopyData(a, ext);
+
+                    r = archive_write_finish_entry(ext);
+
+                    if (r != ARCHIVE_OK) {
+                        out_error +=
+                                (format("Archiver::UnTar: archive_write_finish_entry() failed: %1%; %2\n")
+                                 % 1 % archive_error_string(ext)).str();
+                    }
+                }
+            }
+        }
+    }
+
+    archive_read_close(a);
+    archive_read_free(a);
+
+    archive_write_close(ext);
+    archive_write_free(ext);
+
+    return success;
 }
 
 bool Archiver::UnZip(const std::string &archive, const std::string &extractionPath)

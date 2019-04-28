@@ -50,6 +50,10 @@ public:
     static bool UnGzip(const std::string &archive, const std::string &extractedFile,
                        std::string &out_error);
 
+    static bool UnTar(const std::string &archive, const std::string &extractDirectory);
+    static bool UnTar(const std::string &archive, const std::string &extractDirectory,
+                       std::string &out_error);
+
     static bool UnZip(const std::string &archive, const std::string &extractionPath);
     static bool UnZip(const std::string &archive, const std::string &extractionPath,
                       std::string &out_error);
