@@ -213,8 +213,8 @@ RootLogin::RootLogin()
                             record.LastLogin.GeoLocation.ContinentCode = row["location_continent_code"].c_str();
                             record.LastLogin.GeoLocation.Netmask = lexical_cast<int>(row["location_netmask"].c_str());
                             record.LastLogin.GeoLocation.ASN = lexical_cast<int>(row["location_asn"].c_str());
-                            record.LastLogin.GeoLocation.ASO = lexical_cast<int>(row["location_aso"].c_str());
-                            record.LastLogin.GeoLocation.RawData = lexical_cast<int>(row["location_raw_data"].c_str());
+                            record.LastLogin.GeoLocation.ASO = row["location_aso"].c_str();
+                            record.LastLogin.GeoLocation.RawData = row["location_raw_data"].c_str();
                             record.LastLogin.UserAgent = row["user_agent"].c_str();
                             record.LastLogin.Referer = row["referer"].c_str();
 
