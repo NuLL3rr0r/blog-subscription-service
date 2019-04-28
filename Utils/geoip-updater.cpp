@@ -41,8 +41,10 @@
 #include <boost/algorithm/string.hpp>
 #include <boost/exception/diagnostic_information.hpp>
 #include <boost/filesystem.hpp>
+#include <boost/foreach.hpp>
 #include <CoreLib/Archiver.hpp>
 #include <CoreLib/CoreLib.hpp>
+#include <CoreLib/Defines.hpp>
 #include <CoreLib/Exception.hpp>
 #include <CoreLib/FileSystem.hpp>
 #include <CoreLib/Http.hpp>
@@ -51,14 +53,76 @@
 
 #define     UNKNOWN_ERROR           "Unknown error!"
 
+#define     CITY_DATABASE_NAME              "GeoLite2-City.mmdb"
+#define     CITY_DATABASE_PATH_USR          "/usr/share/GeoIP/" CITY_DATABASE_NAME
+#define     CITY_DATABASE_PATH_USR_LOCAL    "/usr/local/share/GeoIP/" CITY_DATABASE_NAME
+
+#define     COUNTRY_DATABASE_NAME           "GeoLite2-Country.mmdb"
+#define     COUNTRY_DATABASE_PATH_USR       "/usr/share/GeoIP/" COUNTRY_DATABASE_NAME
+#define     COUNTRY_DATABASE_PATH_USR_LOCAL "/usr/local/share/GeoIP/" COUNTRY_DATABASE_NAME
+
+#define     ASN_DATABASE_NAME               "GeoLite2-ASN.mmdb"
+#define     ASN_DATABASE_PATH_USR           "/usr/share/GeoIP/" ASN_DATABASE_NAME
+#define     ASN_DATABASE_PATH_USR_LOCAL     "/usr/local/share/GeoIP/" ASN_DATABASE_NAME
+
 [[ noreturn ]] void Terminate(int signo);
 
-void UpdateDatabase(const std::string &url, const std::string &gzFile, const std::string &dbFile);
+FORCEINLINE static const char* GetGeoLite2CityDatabase()
+{
+#if defined ( __FreeBSD__ )
+    static const char* database = CITY_DATABASE_PATH_USR_LOCAL;
+#elif defined ( __gnu_linux__ ) || defined ( __linux__ )
+    static const char* database = CITY_DATABASE_PATH_USR;
+#else /* defined ( __FreeBSD__ ) */
+    static const char* database =
+            CoreLib::FileSystem::FileExists(CITY_DATABASE_PATH_USR_LOCAL)
+            ? CoreLib::FileSystem::FileExists(CITY_DATABASE_PATH_USR_LOCAL)
+            : CoreLib::FileSystem::FileExists(CITY_DATABASE_PATH_USR);
+#endif /* defined ( __FreeBSD__ ) */
+
+    return database;
+}
+
+FORCEINLINE static const char* GetGeoLite2CountryDatabase()
+{
+#if defined ( __FreeBSD__ )
+    static const char* database = COUNTRY_DATABASE_PATH_USR_LOCAL;
+#elif defined ( __gnu_linux__ ) || defined ( __linux__ )
+    static const char* database = COUNTRY_DATABASE_PATH_USR;
+#else /* defined ( __FreeBSD__ ) */
+    static const char* database =
+            CoreLib::FileSystem::FileExists(COUNTRY_DATABASE_PATH_USR_LOCAL)
+            ? CoreLib::FileSystem::FileExists(COUNTRY_DATABASE_PATH_USR_LOCAL)
+            : CoreLib::FileSystem::FileExists(COUNTRY_DATABASE_PATH_USR);
+#endif /* defined ( __FreeBSD__ ) */
+
+    return database;
+}
+
+FORCEINLINE static const char* GetGeoLite2ASNDatabase()
+{
+#if defined ( __FreeBSD__ )
+    static const char* database = ASN_DATABASE_PATH_USR_LOCAL;
+#elif defined ( __gnu_linux__ ) || defined ( __linux__ )
+    static const char* database = ASN_DATABASE_PATH_USR;
+#else /* defined ( __FreeBSD__ ) */
+    static const char* database =
+            CoreLib::FileSystem::FileExists(ASN_DATABASE_PATH_USR_LOCAL)
+            ? CoreLib::FileSystem::FileExists(ASN_DATABASE_PATH_USR_LOCAL)
+            : CoreLib::FileSystem::FileExists(ASN_DATABASE_PATH_USR);
+#endif /* defined ( __FreeBSD__ ) */
+
+    return database;
+}
+
+void UpdateDatabase(const std::string &url,
+                    const std::string &tag,
+                    const std::string &dbFile);
 
 int main(int argc, char **argv)
 {
     try {
- /*       /// Gracefully handling SIGTERM
+        /// Gracefully handling SIGTERM
         void (*prev_fn)(int);
         prev_fn = signal(SIGTERM, Terminate);
         if (prev_fn == SIG_IGN)
@@ -111,25 +175,16 @@ int main(int argc, char **argv)
         }
 
 
-        const std::string downloadPath((boost::filesystem::path(appPath)
-                                        / boost::filesystem::path("..")
-                                        / boost::filesystem::path("tmp")
-                                        ).string());
-        const std::string countryFile((boost::filesystem::path(downloadPath)
-                                       / boost::filesystem::path("GeoIP.dat.gz")).string());
-        const std::string cityFile((boost::filesystem::path(downloadPath)
-                                    / boost::filesystem::path("GeoLiteCity.dat.gz")).string());
+        const std::string cityTag("GeoLite2-City");
+        const std::string countryTag("GeoLite2-Country");
+        const std::string asnTag("GeoLite2-ASN");
 
-#if defined ( __FreeBSD__ )
-        const std::string countryDbFile("/usr/local/share/GeoIP/GeoIP.dat");
-        const std::string cityDbFile("/usr/local/share/GeoIP/GeoLiteCity.dat");
-#elif defined ( __linux )
-        const std::string countryDbFile("/usr/share/GeoIP/GeoIP.dat");
-        const std::string cityDbFile("/usr/share/GeoIP/GeoLiteCity.dat");
-#endif
-
-        UpdateDatabase(GEO_LITE_COUNTRY_DB_URL, countryFile, countryDbFile);
-        UpdateDatabase(GEO_LITE_CITY_DB_URL, cityFile, cityDbFile);*/
+        UpdateDatabase(GEOLITE2_CITY_MMDB_URL,
+                       cityTag, GetGeoLite2CityDatabase());
+        UpdateDatabase(GEOLITE2_COUNTRY_MMDB_URL,
+                       countryTag, GetGeoLite2CountryDatabase());
+        UpdateDatabase(GEOLITE2_ASN_MMDB_URL,
+                       asnTag, GetGeoLite2ASNDatabase());
     }
 
     catch (CoreLib::Exception<std::string> &ex) {
@@ -158,28 +213,96 @@ void Terminate(int signo)
     exit(signo);
 }
 
-void UpdateDatabase(const std::string &url, const std::string &gzFile, const std::string &dbFile)
+void UpdateDatabase(const std::string &url,
+                    const std::string &tag,
+                    const std::string &targetMmdbFile)
 {
-    bool rc;
-    std::string error;
+    const std::string tempDir(CoreLib::FileSystem::CreateTempDir());
 
-    LOG_INFO("Downloading...", url);
-    rc = CoreLib::Http::Download(url, gzFile);
+    const std::string gzipFile((boost::filesystem::path(tempDir)
+                                / boost::filesystem::path(tag)).string() + ".tar.gz");
 
-    if (!rc) {
-        LOG_ERROR(url, "Download failed!");
-        return;
+    {
+        LOG_INFO(url, gzipFile, "Downloading...");
+
+        if (CoreLib::Http::Download(url, gzipFile)) {
+            LOG_INFO(url, gzipFile, "Download operation succeeded!");
+        } else {
+            LOG_ERROR(url, gzipFile, "Download operation failed!");
+            return;
+        }
     }
 
-    LOG_INFO(gzFile, "Uncompressing...");
+    const std::string tarFile((boost::filesystem::path(tempDir)
+                               / boost::filesystem::path(tag)).string() + ".tar");
 
-    std::string err;
-    if (CoreLib::Archiver::UnGzip(gzFile, dbFile, err)) {
-        LOG_INFO(dbFile, "Successfully Updated!");
-    } else {
-        LOG_INFO(dbFile, err, "Update operation failed!");
+    {
+        LOG_INFO(gzipFile, tarFile, "Uncompressing...");
+
+        std::string err;
+        if (CoreLib::Archiver::UnGzip(gzipFile, tarFile, err)) {
+            LOG_INFO(gzipFile, tarFile, "Uncompress operation succeeded!");
+        } else {
+            LOG_INFO(gzipFile, tarFile, err, "Uncompress operation failed!");
+            return;
+        }
     }
 
-    CoreLib::FileSystem::Erase(gzFile);
+    {
+        LOG_INFO(tarFile, tempDir, "Extacting tar archive...");
+
+        std::string err;
+        if (CoreLib::Archiver::UnTar(tarFile, tempDir, err)) {
+            LOG_INFO(tarFile, tempDir, "Tar archive exraction succeeded!");
+        } else {
+            LOG_INFO(tarFile, tempDir, err, "Tar archive exraction failed!");
+            return;
+        }
+    }
+
+    {
+        LOG_INFO(tempDir, targetMmdbFile, "Copying mmdb file...");
+
+        boost::filesystem::directory_iterator it{
+            boost::filesystem::path(tempDir)};
+
+        BOOST_FOREACH(const boost::filesystem::path  &p, std::make_pair(
+                          it,  boost::filesystem::directory_iterator{}))
+        {
+            if(boost::filesystem::is_directory(p))
+            {
+                std::string targetPath(boost::filesystem::path(
+                                           targetMmdbFile).parent_path().string());
+
+                if (!CoreLib::FileSystem::DirExists(targetPath)) {
+                    if (!CoreLib::FileSystem::CreateDir(targetPath)) {
+                        LOG_INFO(targetPath, targetMmdbFile,
+                                 "Failed to create target path!");
+
+                        CoreLib::FileSystem::Erase(tempDir, true);
+
+                        return;
+                    }
+                }
+
+                std::string sourceMmdbFile(
+                            (p / boost::filesystem::path(tag + ".mmdb")).string());
+
+                if (CoreLib::FileSystem::FileExists(sourceMmdbFile)) {
+                    if (CoreLib::FileSystem::CopyFile(
+                                sourceMmdbFile, targetMmdbFile, true)) {
+                        LOG_INFO(sourceMmdbFile, targetMmdbFile,
+                                 "Copying mmdb file succeeded!");
+                    } else {
+                        LOG_INFO(sourceMmdbFile, targetMmdbFile,
+                                 "Copying mmdb file failed!");
+                    }
+                }
+            }
+        }
+    }
+
+    LOG_INFO(targetMmdbFile, "Successfully updated!");
+
+    CoreLib::FileSystem::Erase(tempDir, true);
 }
-
