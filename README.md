@@ -414,6 +414,10 @@ Add the following [cron jobs](http://www.babaei.net/blog/2015/06/11/the-proper-w
 ![Contact Form](/Screenshots/013.png?raw=true "Contact Form")
 
 
+## User Guide
+
+[Visit this blog post for more information](https://www.babaei.net/blog/my-reddit-wallpaper-downloader-script).
+
 ## License
 
 (The MIT License)
