@@ -1103,7 +1103,6 @@ void RootLogin::Impl::SendPasswordRecoveryEmail(const std::string &email,
                                                 const std::string &username, const std::string &password,
                                                 const CDate::Now &n)
 {
-    LOG_DEBUG(password);
     CgiRoot *cgiRoot = static_cast<CgiRoot *>(WApplication::instance());
     CgiEnv *cgiEnv = cgiRoot->GetCgiEnvInstance();
 
