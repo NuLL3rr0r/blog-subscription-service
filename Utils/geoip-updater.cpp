@@ -149,7 +149,7 @@ int main(int argc, char **argv)
                                  (boost::filesystem::path(appPath)
                                   / boost::filesystem::path("..")
                                   / boost::filesystem::path("log")).string(),
-                                 "SpawnWtHttpd");
+                                 "GeoUpdater");
 
 
         /// Acquiring process lock
