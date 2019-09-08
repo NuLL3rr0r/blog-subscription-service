@@ -1,0 +1,22 @@
+<div style="direction: ltr; max-width: 800px; margin: 0 auto; overflow: hidden; font-family: 'Bitstream Vera Sans', arial, helvetica, sans-serif; font-size: 14px; letter-spacing: 0;">
+    <div style="background: #fff; padding: 24px; line-height: 2.4em;">
+        <h3>
+            Please Confirm To Cancel Your Subscription
+        </h3>
+
+        <p>
+            Cancel your subscription by clicking on the following link:
+        </p>
+
+        <div style="text-align: center;">
+            <a href="${cancel-link}" style="text-decoration: none;">
+                Yes, cancel my subscription.
+            </a>
+        </div>
+
+        <p>
+            If you received this email by mistake, simply ignore it.
+            Your subscription won't be canceled if you don't click the link above.
+        </p>
+    </div>
+</div>

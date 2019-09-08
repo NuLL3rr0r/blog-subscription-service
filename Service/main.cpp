@@ -105,15 +105,15 @@ int main(int argc, char **argv)
 
 
         /// Initializing log system
-#if NO_LOG_FILES
+#if GDPR_COMPLIANCE
         CoreLib::Log::Initialize(std::cout);
-#else // NO_LOG_FILES
+#else // GDPR_COMPLIANCE
         CoreLib::Log::Initialize(std::cout,
                                  (boost::filesystem::path(appPath)
                                   / boost::filesystem::path("..")
                                   / boost::filesystem::path("log")).string(),
                                  "JobApplicationSystemServer");
-#endif // NO_LOG_FILES
+#endif // GDPR_COMPLIANCE
 
 
         /// Acquiring process lock

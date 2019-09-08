@@ -1,0 +1,22 @@
+<div style="direction: rtl; max-width: 800px; margin: 0 auto; overflow: hidden; font-family: 'Bitstream Vera Sans', arial, helvetica, sans-serif; font-size: 14px; letter-spacing: 0;">
+    <div style="background: #fff; padding: 24px; line-height: 2.4em;">
+        <h3>
+            لطفا لغو اشتراک خود را تائید نمائید
+        </h3>
+
+        <p>
+            با کلیک بر روی پیوند زیر اشتراک خود در خبر نامه را لغو نمائید:
+        </p>
+
+        <div style="text-align: center;">
+            <a href="${cancel-link}" style="text-decoration: none;">
+                تمایل به لغو اشتراک خود دارم.
+            </a>
+        </div>
+
+        <p>
+            چناچه این ایمیل را به اشتباه دریافت نموده اید، کافیست آن را نادیده بگیرد.
+            اگر بر روی پیوند فوق کلیک ننمائید، اشتراک شما کماکان پابرجا خواهد بود.
+        </p>
+    </div>
+</div>

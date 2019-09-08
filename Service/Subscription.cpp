@@ -1232,31 +1232,63 @@ void Subscription::Impl::SendMessage(const Message &type, const string &uuid, co
                 == CgiEnv::InformationRecord::ClientRecord::LanguageCode::Fa) {
             switch (type) {
             case Message::Confirm:
+#if GDPR_COMPLIANCE
+                file = "../templates/email-confirm-subscription-fa-gdpr-compliant.wtml";
+#else
                 file = "../templates/email-confirm-subscription-fa.wtml";
+#endif // GDPR_COMPLIANCE                file = "../templates/email-confirm-subscription-fa.wtml";
                 break;
             case Message::Confirmed:
+#if GDPR_COMPLIANCE
+                file = "../templates/email-subscription-confirmed-fa-gdpr-compliant.wtml";
+#else
                 file = "../templates/email-subscription-confirmed-fa.wtml";
+#endif // GDPR_COMPLIANCE                file = "../templates/email-confirm-subscription-fa.wtml";
                 break;
             case Message::Cancel:
+#if GDPR_COMPLIANCE
+                file = "../templates/email-cancel-subscription-fa-gdpr-compliant.wtml";
+#else
                 file = "../templates/email-cancel-subscription-fa.wtml";
+#endif // GDPR_COMPLIANCE                file = "../templates/email-confirm-subscription-fa.wtml";
                 break;
             case Message::Cancelled:
+#if GDPR_COMPLIANCE
+                file = "../templates/email-subscription-cancelled-fa-gdpr-compliant.wtml";
+#else
                 file = "../templates/email-subscription-cancelled-fa.wtml";
+#endif // GDPR_COMPLIANCE                file = "../templates/email-confirm-subscription-fa.wtml";
                 break;
             }
         } else {
             switch (type) {
             case Message::Confirm:
+#if GDPR_COMPLIANCE
+                file = "../templates/email-confirm-subscription-gdpr-compliant.wtml";
+#else
                 file = "../templates/email-confirm-subscription.wtml";
+#endif // GDPR_COMPLIANCE                file = "../templates/email-confirm-subscription-fa.wtml";
                 break;
             case Message::Confirmed:
+#if GDPR_COMPLIANCE
+                file = "../templates/email-subscription-confirmed-gdpr-compliant.wtml";
+#else
                 file = "../templates/email-subscription-confirmed.wtml";
+#endif // GDPR_COMPLIANCE                file = "../templates/email-confirm-subscription-fa.wtml";
                 break;
             case Message::Cancel:
+#if GDPR_COMPLIANCE
+                file = "../templates/email-cancel-subscription-gdpr-compliant.wtml";
+#else
                 file = "../templates/email-cancel-subscription.wtml";
+#endif // GDPR_COMPLIANCE                file = "../templates/email-confirm-subscription-fa.wtml";
                 break;
             case Message::Cancelled:
+#if GDPR_COMPLIANCE
+                file = "../templates/email-subscription-cancelled-gdpr-compliant.wtml";
+#else
                 file = "../templates/email-subscription-cancelled.wtml";
+#endif // GDPR_COMPLIANCE                file = "../templates/email-confirm-subscription-fa.wtml";
                 break;
             }
         }
@@ -1283,6 +1315,7 @@ void Subscription::Impl::SendMessage(const Message &type, const string &uuid, co
                 break;
             }
 
+#if !(GDPR_COMPLIANCE)
             replace_all(htmlData, "${client-ip}",
                         cgiEnv->GetInformation().Client.IPAddress);
             replace_all(htmlData, "${client-user-agent}",
@@ -1325,6 +1358,7 @@ void Subscription::Impl::SendMessage(const Message &type, const string &uuid, co
                         lexical_cast<string>(cgiEnv->GetInformation().Client.GeoLocation.ASO));
             replace_all(htmlData, "${client-location-raw-data}",
                         lexical_cast<string>(cgiEnv->GetInformation().Client.GeoLocation.RawData));
+#endif // !(GDPR_COMPLIANCE)
 
             string homePageFields;
             if (cgiEnv->GetInformation().Client.Language.Code

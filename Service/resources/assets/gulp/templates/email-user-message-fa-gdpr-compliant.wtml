@@ -1,0 +1,56 @@
+<div style="direction: rtl; max-width: 800px; margin: 0 auto; overflow: hidden; font-family: 'Bitstream Vera Sans', arial, helvetica, sans-serif; font-size: 12px; font-weight: bold; color: #203070; letter-spacing: 0; line-height: 2.4em;">
+    <div style="background: #fff; padding: 24px; font-weight: bold; color: #203070; letter-spacing: 1px; line-height: 2.4em;">
+        <div>
+            <h3>
+                پیام کاربر
+            </h3>
+
+            <table style="font-size: 12px; margin: 0; padding: 0;">
+                <tr valign="top">
+                    <td>نام فرستنده</td>
+                    <td style="padding-right: 32px; padding-bottom: 16px;">
+                        <span style="color: #900; font-weight: normal;">
+                            ${from}
+                        </span>
+                    </td>
+                </tr>
+
+                <tr valign="top">
+                    <td>پست الکترونیک</td>
+                    <td style="padding-right: 32px; padding-bottom: 16px;">
+                        <span style="color: #900; font-weight: normal;">
+                            ${email}
+                        </span>
+                    </td>
+                </tr>
+
+                <tr valign="top">
+                    <td>صفحه ی وب</td>
+                    <td style="padding-right: 32px; padding-bottom: 16px;">
+                        <span style="color: #900; font-weight: normal;">
+                            ${url}
+                        </span>
+                    </td>
+                </tr>
+
+                <tr valign="top">
+                    <td>موضوع پیام</td>
+                    <td style="padding-right: 32px; padding-bottom: 16px;">
+                        <span style="color: #900; font-weight: normal;">
+                            ${subject}
+                        </span>
+                    </td>
+                </tr>
+
+                <tr valign="top">
+                    <td>متن پیام</td>
+                    <td style="padding-right: 32px; padding-bottom: 16px;">
+                        <span style="color: #900; font-weight: normal;">
+                            ${body}
+                        </span>
+                    </td>
+                </tr>
+            </table>
+        </div>
+    </div>
+</div>

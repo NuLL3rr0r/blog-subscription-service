@@ -1,0 +1,22 @@
+<div style="direction: ltr; max-width: 800px; margin: 0 auto; overflow: hidden; font-family: 'Bitstream Vera Sans', arial, helvetica, sans-serif; font-size: 14px; letter-spacing: 0;">
+    <div style="background: #fff; padding: 24px; line-height: 2.4em;">
+        <h3>
+            Please Confirm Your Subscription
+        </h3>
+
+        <p>
+            Verify your email address by clicking on the following link:
+        </p>
+
+        <div style="text-align: center;">
+            <a href="${confirm-link}" style="text-decoration: none;">
+                Yes, subscribe me to this list.
+            </a>
+        </div>
+
+        <p>
+            If you received this email by mistake, simply ignore it.
+            You won't be subscribed if you don't click the confirmation link above.
+        </p>
+    </div>
+</div>

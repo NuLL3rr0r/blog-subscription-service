@@ -462,9 +462,17 @@ void ContactForm::Impl::SendUserMessageEmail(const std::string &to, const CDate:
     string file;
     if (cgiEnv->GetInformation().Client.Language.Code
             == CgiEnv::InformationRecord::ClientRecord::LanguageCode::Fa) {
-        file = "../templates/email-user-message-fa.wtml";
+#if GDPR_COMPLIANCE
+        file = "../templa-tes/email-user-message-fa-gdpr-compliant.wtml";
+#else
+        file = "../templa-tes/email-user-message-fa.wtml";
+#endif // GDPR_COMPLIANCE
     } else {
+#if GDPR_COMPLIANCE
+        file = "../templates/email-user-message-gdpr-compliant.wtml";
+#else
         file = "../templates/email-user-message.wtml";
+#endif // GDPR_COMPLIANCE
     }
 
     string name(FromLineEdit->text().trim().toUTF8());
@@ -479,6 +487,7 @@ void ContactForm::Impl::SendUserMessageEmail(const std::string &to, const CDate:
         replace_all(htmlData, "${url}", url);
         replace_all(htmlData, "${subject}", subject);
         replace_all(htmlData, "${body}", body);
+#if !(GDPR_COMPLIANCE)
         replace_all(htmlData, "${client-ip}",
                     cgiEnv->GetInformation().Client.IPAddress);
         replace_all(htmlData, "${client-user-agent}",
@@ -513,6 +522,7 @@ void ContactForm::Impl::SendUserMessageEmail(const std::string &to, const CDate:
                     lexical_cast<string>(cgiEnv->GetInformation().Client.GeoLocation.ASO));
         replace_all(htmlData, "${client-location-raw-data}",
                     lexical_cast<string>(cgiEnv->GetInformation().Client.GeoLocation.RawData));
+#endif // !(GDPR_COMPLIANCE)
 
         CoreLib::Mail *mail = new CoreLib::Mail(from, to,
                     (format(tr("home-contact-form-email-subject").toUTF8())
