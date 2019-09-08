@@ -144,12 +144,15 @@ int main(int argc, char **argv)
         CoreLib::CoreLibInitialize(argc, argv);
 
 
-        /// Initializing log system
+#if NO_LOG_FILES
+        CoreLib::Log::Initialize(std::cout);
+#else // NO_LOG_FILES
         CoreLib::Log::Initialize(std::cout,
                                  (boost::filesystem::path(appPath)
                                   / boost::filesystem::path("..")
                                   / boost::filesystem::path("log")).string(),
-                                 "GeoUpdater");
+                                 "GeoIPUpdater");
+#endif // NO_LOG_FILES
 
 
         /// Acquiring process lock
