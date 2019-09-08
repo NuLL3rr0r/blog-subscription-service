@@ -455,6 +455,10 @@ void ContactForm::Impl::GenerateCaptcha()
 
 void ContactForm::Impl::SendUserMessageEmail(const std::string &to, const CDate::Now &n)
 {
+#if GDPR_COMPLIANCE
+    (void)n;
+#endif // GDPR_COMPLIANCE
+
     CgiRoot *cgiRoot = static_cast<CgiRoot *>(WApplication::instance());
     CgiEnv *cgiEnv = cgiRoot->GetCgiEnvInstance();
 
