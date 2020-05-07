@@ -113,19 +113,19 @@ void Log::Initialize(const std::string &outputDirectoryPath,
     s_pimpl->Storage()->LogOutputDirectoryPath = outputDirectoryPath;
     s_pimpl->Storage()->LogOutputFilePrefix = outputFilePrefix;
 
-    if (filesystem::exists(s_pimpl->Storage()->LogOutputDirectoryPath)) {
-        if (!filesystem::is_directory(s_pimpl->Storage()->LogOutputDirectoryPath)) {
-            filesystem::remove(s_pimpl->Storage()->LogOutputDirectoryPath);
+    if (boost::filesystem::exists(s_pimpl->Storage()->LogOutputDirectoryPath)) {
+        if (!boost::filesystem::is_directory(s_pimpl->Storage()->LogOutputDirectoryPath)) {
+            boost::filesystem::remove(s_pimpl->Storage()->LogOutputDirectoryPath);
         }
     }
 
-    if (!filesystem::exists(s_pimpl->Storage()->LogOutputDirectoryPath)) {
-        filesystem::create_directories(s_pimpl->Storage()->LogOutputDirectoryPath);
+    if (!boost::filesystem::exists(s_pimpl->Storage()->LogOutputDirectoryPath)) {
+        boost::filesystem::create_directories(s_pimpl->Storage()->LogOutputDirectoryPath);
     }
 
     s_pimpl->Storage()->LogOutputFilePath =
-            (filesystem::path(s_pimpl->Storage()->LogOutputDirectoryPath)
-             / filesystem::path((format("%1%_%2%.txt")
+            (boost::filesystem::path(s_pimpl->Storage()->LogOutputDirectoryPath)
+             / boost::filesystem::path((format("%1%_%2%.txt")
                                  % s_pimpl->Storage()->LogOutputFilePrefix
                                  % algorithm::replace_all_copy(
                                      algorithm::replace_all_copy(
