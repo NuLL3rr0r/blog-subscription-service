@@ -163,7 +163,7 @@ std::string DateConv::ToGregorian(const int jYear, const int jMonth, const int j
 
     boost::locale::date_time jalali(
             boost::locale::period::year(jYear)
-            + boost::locale::period::month(jMonth + 1)
+            + boost::locale::period::month(jMonth - 1)
             + boost::locale::period::day(jDay),
             locale_jalali);
 
@@ -217,7 +217,7 @@ std::string DateConv::ToJalali(int gYear, int gMonth, int gDay)
 
     boost::locale::date_time gregorian(
             boost::locale::period::year(gYear)
-            + boost::locale::period::month(gMonth + 1)
+            + boost::locale::period::month(gMonth - 1)
             + boost::locale::period::day(gDay),
             locale_gregorian);
 
@@ -255,8 +255,8 @@ std::string DateConv::ToJalali(const std::time_t rawTime, const CDate::Timezone 
         timeInfo = localtime(&rawTime);
     }
 
-    return DateConv::ToJalali(timeInfo->tm_mday,
-            timeInfo->tm_mon + 1, timeInfo->tm_year + 1900);
+    return DateConv::ToJalali(timeInfo->tm_year + 1900,
+            timeInfo->tm_mon + 1, timeInfo->tm_mday);
 }
 
 std::string DateConv::Time(const CDate::Now &now)
