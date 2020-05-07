@@ -69,8 +69,8 @@ const std::string &Pool::StorageStruct::RootInitialPassword() const
         CoreLib::Crypto::Argon2(
                     CoreLib::Crypto::HexStringToString(ROOT_INITIAL_PASSWORD),
                     rootInitialPassowrd,
-                    CoreLib::Crypto::Argon2OpsLimit::Min,
-                    CoreLib::Crypto::Argon2MemLimit::Min);
+                    CoreLib::Crypto::Argon2OpsLimit::Interactive,
+                    CoreLib::Crypto::Argon2MemLimit::Interactive);
         Crypto().Encrypt(rootInitialPassowrd, rootInitialPassowrd);
     }
     return rootInitialPassowrd;

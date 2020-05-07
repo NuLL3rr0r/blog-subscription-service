@@ -55,16 +55,12 @@ public:
 public:
     enum class Argon2OpsLimit : unsigned long long {
         Interactive = crypto_pwhash_OPSLIMIT_INTERACTIVE,
-        Max = crypto_pwhash_OPSLIMIT_MAX,
-        Min = crypto_pwhash_OPSLIMIT_MIN,
         Moderate = crypto_pwhash_OPSLIMIT_MODERATE,
         Sensitive = crypto_pwhash_OPSLIMIT_SENSITIVE
     };
 
     enum class Argon2MemLimit : std::size_t {
         Interactive = crypto_pwhash_MEMLIMIT_INTERACTIVE,
-        Max = crypto_pwhash_MEMLIMIT_MAX,
-        Min = crypto_pwhash_MEMLIMIT_MIN,
         Moderate = crypto_pwhash_MEMLIMIT_MODERATE,
         Sensitive = crypto_pwhash_MEMLIMIT_SENSITIVE
     };

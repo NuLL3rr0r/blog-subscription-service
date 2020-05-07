@@ -691,8 +691,8 @@ void RootLogin::Impl::OnPasswordRecoveryFormSubmitted()
         Random::Characters(Random::Character::Alphanumeric,
                            static_cast<size_t>(Pool::Storage().MaxPasswordLength()), pwd);
         Pool::Crypto().Argon2(pwd, encryptedPwd,
-                                CoreLib::Crypto::Argon2OpsLimit::Min,
-                                CoreLib::Crypto::Argon2MemLimit::Min);
+                                CoreLib::Crypto::Argon2OpsLimit::Interactive,
+                                CoreLib::Crypto::Argon2MemLimit::Interactive);
         Pool::Crypto().Encrypt(encryptedPwd, encryptedPwd);
 
         string token;
