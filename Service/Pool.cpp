@@ -64,26 +64,13 @@ const std::string &Pool::StorageStruct::RootUsername() const
 
 const std::string &Pool::StorageStruct::RootInitialPassword() const
 {
-    /// For an unknown reason
-    /// CoreLib::Crypto::Argon2iOpsLimit::Sensitive
-    /// and
-    /// CoreLib::Crypto::Argon2iMemLimit::Sensitive
-    /// causes segfault on my development VPS under VirtualBox.
-    /// For now use either:
-    /// Interactive (very fast, requires 32 Mb of dedicated RAM)
-    /// or
-    /// Moderate (more secure, fast, requires 128 Mb of dedicated RAM, and takes about 0.7 seconds on a 2.8 Ghz Core i7 CPU)
-    /// Note that Sensitive is also more demanding:
-    /// Deriving a key takes about 3.5 seconds on a 2.8 Ghz Core i7 CPU and requires 512 Mb of dedicated RAM.
-    /// More info:
-    /// https://download.libsodium.org/libsodium/content/password_hashing/the_argon2i_function.html
     static string rootInitialPassowrd;
     if (rootInitialPassowrd == "") {
-        CoreLib::Crypto::Argon2i(
+        CoreLib::Crypto::Argon2(
                     CoreLib::Crypto::HexStringToString(ROOT_INITIAL_PASSWORD),
                     rootInitialPassowrd,
-                    CoreLib::Crypto::Argon2iOpsLimit::Interactive,
-                    CoreLib::Crypto::Argon2iMemLimit::Interactive);
+                    CoreLib::Crypto::Argon2OpsLimit::Min,
+                    CoreLib::Crypto::Argon2MemLimit::Min);
         Crypto().Encrypt(rootInitialPassowrd, rootInitialPassowrd);
     }
     return rootInitialPassowrd;

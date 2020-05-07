@@ -468,10 +468,10 @@ void RootLogin::Impl::OnLoginFormSubmitted()
 
             CDate::Now n(CDate::Timezone::UTC);
 
-            if (Pool::Crypto().Argon2iVerify(PasswordLineEdit->text().toUTF8(), hashedPwd)) {
+            if (Pool::Crypto().Argon2Verify(PasswordLineEdit->text().toUTF8(), hashedPwd)) {
                 success = true;
                 LOG_INFO("Legit login password!", username, cgiEnv->GetInformation().ToJson());
-            } else if (expiry >= n.RawTime() && Pool::Crypto().Argon2iVerify(PasswordLineEdit->text().toUTF8(), hashedRecoveryPwd)) {
+            } else if (expiry >= n.RawTime() && Pool::Crypto().Argon2Verify(PasswordLineEdit->text().toUTF8(), hashedRecoveryPwd)) {
                 success = true;
                 LOG_INFO("Legit recovery password!", username, cgiEnv->GetInformation().ToJson());
 
@@ -690,9 +690,9 @@ void RootLogin::Impl::OnPasswordRecoveryFormSubmitted()
         string encryptedPwd;
         Random::Characters(Random::Character::Alphanumeric,
                            static_cast<size_t>(Pool::Storage().MaxPasswordLength()), pwd);
-        Pool::Crypto().Argon2i(pwd, encryptedPwd,
-                                CoreLib::Crypto::Argon2iOpsLimit::Interactive,
-                                CoreLib::Crypto::Argon2iMemLimit::Interactive);
+        Pool::Crypto().Argon2(pwd, encryptedPwd,
+                                CoreLib::Crypto::Argon2OpsLimit::Min,
+                                CoreLib::Crypto::Argon2MemLimit::Min);
         Pool::Crypto().Encrypt(encryptedPwd, encryptedPwd);
 
         string token;

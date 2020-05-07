@@ -212,7 +212,7 @@ void CmsChangeEmail::Impl::OnEmailChangeFormSubmitted()
             string hashedPwd(row["pwd"].c_str());
             Pool::Crypto().Decrypt(hashedPwd, hashedPwd);
 
-            if (Pool::Crypto().Argon2iVerify(PasswordLineEdit->text().toUTF8(), hashedPwd)) {
+            if (Pool::Crypto().Argon2Verify(PasswordLineEdit->text().toUTF8(), hashedPwd)) {
                 success = true;
             }
         }

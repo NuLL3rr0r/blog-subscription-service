@@ -225,7 +225,7 @@ void CmsChangePassword::Impl::OnPasswordChangeFormSubmitted()
             string hashedPwd(row["pwd"].c_str());
             Pool::Crypto().Decrypt(hashedPwd, hashedPwd);
 
-            if (Pool::Crypto().Argon2iVerify(CurrentPasswordLineEdit->text().toUTF8(), hashedPwd)) {
+            if (Pool::Crypto().Argon2Verify(CurrentPasswordLineEdit->text().toUTF8(), hashedPwd)) {
                 success = true;
             }
         }
@@ -252,9 +252,9 @@ void CmsChangePassword::Impl::OnPasswordChangeFormSubmitted()
         }
 
         string encryptedPwd;
-        Pool::Crypto().Argon2i(NewPasswordLineEdit->text().toUTF8(), encryptedPwd,
-                                CoreLib::Crypto::Argon2iOpsLimit::Sensitive,
-                                CoreLib::Crypto::Argon2iMemLimit::Sensitive);
+        Pool::Crypto().Argon2(NewPasswordLineEdit->text().toUTF8(), encryptedPwd,
+                                CoreLib::Crypto::Argon2OpsLimit::Sensitive,
+                                CoreLib::Crypto::Argon2MemLimit::Sensitive);
         Pool::Crypto().Encrypt(encryptedPwd, encryptedPwd);
 
         CDate::Now n(CDate::Timezone::UTC);

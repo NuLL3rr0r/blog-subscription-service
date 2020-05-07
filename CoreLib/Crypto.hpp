@@ -53,14 +53,18 @@ public:
     typedef unsigned char Byte;
 
 public:
-    enum class Argon2iOpsLimit : unsigned long long {
+    enum class Argon2OpsLimit : unsigned long long {
         Interactive = crypto_pwhash_OPSLIMIT_INTERACTIVE,
+        Max = crypto_pwhash_OPSLIMIT_MAX,
+        Min = crypto_pwhash_OPSLIMIT_MIN,
         Moderate = crypto_pwhash_OPSLIMIT_MODERATE,
         Sensitive = crypto_pwhash_OPSLIMIT_SENSITIVE
     };
 
-    enum class Argon2iMemLimit : std::size_t {
+    enum class Argon2MemLimit : std::size_t {
         Interactive = crypto_pwhash_MEMLIMIT_INTERACTIVE,
+        Max = crypto_pwhash_MEMLIMIT_MAX,
+        Min = crypto_pwhash_MEMLIMIT_MIN,
         Moderate = crypto_pwhash_MEMLIMIT_MODERATE,
         Sensitive = crypto_pwhash_MEMLIMIT_SENSITIVE
     };
@@ -92,10 +96,10 @@ public:
     static int Base64Encode(const char *code, const int length, char *out_plainText);
     static int Base64EncodeBlockEnd(char *out_plainText);
     static void Base64Encode(std::istream &inputStream, std::ostream &outputStream);
-    static bool Argon2i(const std::string &passwd, std::string &out_hashedPasswd,
-                        const Argon2iOpsLimit &opsLimit = Argon2iOpsLimit::Moderate,
-                        const Argon2iMemLimit &memLimit = Argon2iMemLimit::Moderate);
-    static bool Argon2iVerify(const std::string &passwd, const std::string &hashedPasswd);
+    static bool Argon2(const std::string &passwd, std::string &out_hashedPasswd,
+                        const Argon2OpsLimit &opsLimit = Argon2OpsLimit::Moderate,
+                        const Argon2MemLimit &memLimit = Argon2MemLimit::Moderate);
+    static bool Argon2Verify(const std::string &passwd, const std::string &hashedPasswd);
 
     static std::string ByteArrayToString(const unsigned char *array, const size_t length);
     static std::wstring WCharArrayToString(const wchar_t *array, const size_t length);

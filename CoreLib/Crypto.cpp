@@ -255,8 +255,8 @@ void Crypto::Base64Encode(std::istream &inputStream, std::ostream &outputStream)
     encoder.encode(inputStream, outputStream);
 }
 
-bool Crypto::Argon2i(const std::string &passwd, std::string &out_hashedPasswd,
-                     const Argon2iOpsLimit &opsLimit, const Argon2iMemLimit &memLimit)
+bool Crypto::Argon2(const std::string &passwd, std::string &out_hashedPasswd,
+                    const Argon2OpsLimit &opsLimit, const Argon2MemLimit &memLimit)
 {
     out_hashedPasswd.clear();
     char hashed[crypto_pwhash_STRBYTES];
@@ -272,7 +272,7 @@ bool Crypto::Argon2i(const std::string &passwd, std::string &out_hashedPasswd,
     return true;
 }
 
-bool Crypto::Argon2iVerify(const std::string &passwd, const std::string &hashedPasswd)
+bool Crypto::Argon2Verify(const std::string &passwd, const std::string &hashedPasswd)
 {
     if (crypto_pwhash_str_verify(hashedPasswd.c_str(), passwd.c_str(), passwd.size()) != 0) {
         // wrong password
