@@ -86,14 +86,6 @@ public:
 class CoreLib::CDate::DateConv
 {
 public:
-    static std::string CalcToG(const int jYear, const int dayOfYear);
-    static std::string CalcToJ(const int gYear, const int dayOfYear);
-    static bool IsRangeValidG(const int gYear, const int gMonth, const int gDay);
-    static bool IsRangeValidJ(const int jYear, const int jMonth, const int jDay);
-    static int DayOfYearG(const int gYear, const int gMonth, const int gDay);
-    static int DayOfYearJ(const int jYear, const int jMonth, const int jDay);
-    static bool IsLeapYearG(const int gYear);
-    static bool IsLeapYearJ(const int jYear);
     static std::string ToGregorian(const int jYear, const int jMonth, const int jDay);
     static std::string ToGregorian(const CDate::Timezone &tz = CDate::Timezone::Local);
     static std::string ToGregorian(const CDate::Now &now);

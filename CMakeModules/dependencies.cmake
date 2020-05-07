@@ -82,7 +82,7 @@ SET_PROPERTY( CACHE PREFERRED_MAGICK_IMPLEMENTATION PROPERTY STRINGS "GM" "IM" )
 ### Boost ###
 FIND_PACKAGE (Boost 1.55.0
     COMPONENTS
-        date_time filesystem iostreams random regex system thread
+        date_time filesystem iostreams locale random regex system thread
     )
 INCLUDE_DIRECTORIES ( SYSTEM ${Boost_INCLUDE_DIRS} )
 

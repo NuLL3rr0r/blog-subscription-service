@@ -39,6 +39,7 @@
 #include <sstream>
 #include <ctime>
 #include <boost/lexical_cast.hpp>
+#include <boost/locale.hpp>
 #include "CDate.hpp"
 #include "make_unique.hpp"
 
@@ -153,157 +154,96 @@ int Now::Year() const
     return m_pimpl->Year;
 }
 
-std::string DateConv::CalcToG(const int jYear, const int dayOfYear)
-{
-    bool isLeapYear = IsLeapYearJ(jYear);
-    int dayMatch[13] = { !isLeapYear ? 287 : 288, !isLeapYear ? 318 : 319, !isLeapYear && !IsLeapYearJ(jYear + 1) ? 346 : 347, !isLeapYear ? 12 : 13, !isLeapYear ? 42 : 43, !isLeapYear ? 73 : 74, !isLeapYear ? 103 : 104, !isLeapYear ? 134 : 135, !isLeapYear ? 165 : 166, !isLeapYear ? 195 : 196, !isLeapYear ? 226 : 227, !isLeapYear ? 256 : 257, 999 };
-
-    string gDay;
-    string gMonth;
-
-    for (int i = 0; i < 12; ++i)
-        if ((dayOfYear >= dayMatch[i] && dayOfYear < dayMatch[i + 1]) || ((dayOfYear >= dayMatch[i] || dayOfYear < dayMatch[i + 1]) && (i == 2))) {
-            gDay = lexical_cast<string>(dayOfYear >= dayMatch[i] ? dayOfYear - dayMatch[i] + 1 : !isLeapYear ? dayOfYear + 20 : dayOfYear + 19);
-            gMonth = lexical_cast<string>(i + 1);
-            break;
-        }
-
-    return lexical_cast<string>(dayOfYear < dayMatch[0] ? jYear + 621 : jYear + 622) + "/" +
-            (gMonth.size() == 1 ? "0" + gMonth : gMonth)
-            + "/" +
-            (gDay.size() != 1 ? gDay : "0" + gDay);
-}
-
-std::string DateConv::CalcToJ(const int gYear, const int dayOfYear)
-{
-    bool isLeapYear = IsLeapYearG(gYear - 1);
-    int dayMatch[13] = { 80, 111, 142, 173, 204, 235, 266, 296, 326, 356, !isLeapYear ? 21 : 20, !isLeapYear ? 51 : 50, 999 };
-
-    string jDay;
-    string jMonth;
-
-    for (int i = 0; i < 12; ++i)
-        if ((dayOfYear >= dayMatch[i] && dayOfYear < dayMatch[i + 1]) || ((dayOfYear >= dayMatch[i] || dayOfYear < dayMatch[i + 1]) && (i == 9))) {
-            jDay = lexical_cast<string>(dayOfYear >= dayMatch[i] ? dayOfYear - dayMatch[i] + 1 : !isLeapYear ? dayOfYear + 10 : dayOfYear + 11);
-            jMonth = lexical_cast<string>(i + 1);
-            break;
-        }
-
-    return lexical_cast<string>(dayOfYear > 79 ? gYear - 621 : gYear - 622) + "/" +
-            (jMonth.size() == 1 ? "0" + jMonth : jMonth)
-            + "/" +
-            (jDay.size() != 1 ? jDay : "0" + jDay);
-}
-
-bool DateConv::IsRangeValidG(const int gYear, const int gMonth, const int gDay)
-{
-    int gMonths[12] = { 31, !IsLeapYearG(gYear) ? 28 : 29, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31 };
-
-    if ((gYear < 10000) && (gYear > -10000))
-        if ((gMonth < 13) && (gMonth > 0))
-            if ((gDay <= gMonths[gMonth - 1]) && (gDay > 0))
-                return true;
-
-    return false;
-}
-
-bool DateConv::IsRangeValidJ(const int jYear, const int jMonth, const int jDay)
-{
-    int jMonths[12] = { 31, 31, 31, 31, 31, 31, 30, 30, 30, 30, 30, !IsLeapYearJ(jYear) ? 29 : 30 };
-
-    if ((jYear < 10000) && (jYear > -100))
-        if ((jMonth < 13) && (jMonth > 0))
-            if ((jDay <= jMonths[jMonth - 1]) && (jDay > 0))
-                return true;
-
-    return false;
-}
-
-int DateConv::DayOfYearG(const int gYear, const int gMonth, const int gDay)
-{
-    int gMonths[12] = { 31, !IsLeapYearG(gYear) ? 28 : 29, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31 };
-    int result = 0;
-
-    for (int i = 0; i < gMonth - 1; ++i)
-        result += gMonths[i];
-
-    return result + gDay;
-}
-
-int DateConv::DayOfYearJ(const int jYear, const int jMonth, const int jDay)
-{
-    int jMonths[12] = { 31, 31, 31, 31, 31, 31, 30, 30, 30, 30, 30, !IsLeapYearJ(jYear) ? 29 : 30 };
-    int result = 0;
-
-    for (int i = 0; i < jMonth - 1; ++i)
-        result += jMonths[i];
-
-    return result + jDay;
-}
-
-bool DateConv::IsLeapYearG(const int gYear)
-{
-    int modulus = gYear % 4;
-
-    return gYear > 0 && modulus == 0 ? true : gYear < 0 && modulus == 0 ? true : gYear == 0 ? true : false;
-}
-
-bool DateConv::IsLeapYearJ(const int jYear)
-{
-    int modulus = jYear % 4;
-
-    return jYear > 0 && modulus == 3 ? true : jYear < 0 && modulus == -1 ? true : false;
-}
-
 std::string DateConv::ToGregorian(const int jYear, const int jMonth, const int jDay)
 {
-    if (!IsRangeValidJ(jYear, jMonth, jDay))
-        return "";
+    boost::locale::generator generator;
 
-    return CalcToG(jYear, DayOfYearJ(jYear, jMonth, jDay));
+    std::locale locale_gregorian = generator("en_US.UTF-8");
+    std::locale locale_jalali = generator("en_US.UTF-8@calendar=persian");
+
+    boost::locale::date_time jalali(
+            boost::locale::period::year(jYear)
+            + boost::locale::period::month(jMonth + 1)
+            + boost::locale::period::day(jDay),
+            locale_jalali);
+
+    boost::locale::date_time gregorian(jalali.time(), locale_gregorian);
+
+    std::stringstream ss;
+    ss << std::setfill('0') << std::setw(4)
+        << gregorian / boost::locale::period::year()
+        << "/" << std::setfill('0') << std::setw(2)
+        << (gregorian / boost::locale::period::month()) + 1
+        << "/" << std::setfill('0') << std::setw(2)
+        << gregorian / boost::locale::period::day();
+
+    return ss.str();
 }
 
 std::string DateConv::ToGregorian(const CDate::Timezone &tz)
 {
     Now n(tz);
 
-    string m = lexical_cast<string>(n.Month());
-    string d = lexical_cast<string>(n.DayOfMonth());
+    std::stringstream ss;
+    ss << std::setfill('0') << std::setw(4)
+        << n.Year()
+        << "/" << std::setfill('0') << std::setw(2)
+        << n.Month()
+        << "/" << std::setfill('0') << std::setw(2)
+        << n.DayOfMonth();
 
-    return lexical_cast<string>(n.Year()) + "/" +
-            (m.size() == 1 ? "0" + m : m)
-            + "/" +
-            (d.size() != 1 ? d : "0" + d);
+    return ss.str();
 }
 
 std::string DateConv::ToGregorian(const CDate::Now &now)
 {
-    string m = lexical_cast<string>(now.Month());
-    string d = lexical_cast<string>(now.DayOfMonth());
+    std::stringstream ss;
+    ss << std::setfill('0') << std::setw(4)
+        << now.Year()
+        << "/" << std::setfill('0') << std::setw(2)
+        << now.Month()
+        << "/" << std::setfill('0') << std::setw(2)
+        << now.DayOfMonth();
 
-    return lexical_cast<string>(now.Year()) + "/" +
-            (m.size() == 1 ? "0" + m : m)
-            + "/" +
-            (d.size() != 1 ? d : "0" + d);
+    return ss.str();
 }
 
 std::string DateConv::ToJalali(int gYear, int gMonth, int gDay)
 {
-    if (!IsRangeValidG(gYear, gMonth, gDay))
-        return "";
+    boost::locale::generator generator;
 
-    return CalcToJ(gYear, DayOfYearG(gYear, gMonth, gDay));
+    std::locale locale_gregorian = generator("en_US.UTF-8");
+    std::locale locale_jalali = generator("en_US.UTF-8@calendar=persian");
+
+    boost::locale::date_time gregorian(
+            boost::locale::period::year(gYear)
+            + boost::locale::period::month(gMonth + 1)
+            + boost::locale::period::day(gDay),
+            locale_gregorian);
+
+    boost::locale::date_time jalali(gregorian.time(), locale_jalali);
+
+    std::stringstream ss;
+    ss << std::setfill('0') << std::setw(4)
+        << jalali / boost::locale::period::year()
+        << "/" << std::setfill('0') << std::setw(2)
+        << (jalali / boost::locale::period::month()) + 1
+        << "/" << std::setfill('0') << std::setw(2)
+        << jalali / boost::locale::period::day();
+
+    return ss.str();
 }
 
 std::string DateConv::ToJalali(const CDate::Timezone &tz)
 {
     Now n(tz);
-    return CalcToJ(n.Year(), n.DayOfYear());
+
+    return DateConv::ToJalali(n.DayOfMonth(), n.Month(), n.Year());
 }
 
 std::string DateConv::ToJalali(const CDate::Now &now)
 {
-    return CalcToJ(now.Year(), now.DayOfYear());
+    return DateConv::ToJalali(now.DayOfMonth(), now.Month(), now.Year());
 }
 
 std::string DateConv::ToJalali(const std::time_t rawTime, const CDate::Timezone &tz)
@@ -315,19 +255,21 @@ std::string DateConv::ToJalali(const std::time_t rawTime, const CDate::Timezone 
         timeInfo = localtime(&rawTime);
     }
 
-    return CalcToJ(timeInfo->tm_year + 1900, timeInfo->tm_yday + 1);
+    return DateConv::ToJalali(timeInfo->tm_mday,
+            timeInfo->tm_mon + 1, timeInfo->tm_year + 1900);
 }
 
 std::string DateConv::Time(const CDate::Now &now)
 {
-    string s = lexical_cast<string>(now.Seconds());
-    string m = lexical_cast<string>(now.Minutes());
-    string h = lexical_cast<string>(now.Hour());
+    std::stringstream ss;
+    ss << std::setfill('0') << std::setw(2)
+        << now.Hour()
+        << "/" << std::setfill('0') << std::setw(2)
+        << now.Minutes()
+        << "/" << std::setfill('0') << std::setw(2)
+        << now.Seconds();
 
-    return (h.size() == 1 ? "0" + h : h) + ":" +
-            (m.size() == 1 ? "0" + m : m)
-            + ":" +
-            (s.size() != 1 ? s : "0" + s);
+    return ss.str();
 }
 
 std::string DateConv::DateTimeString(const std::time_t rawTime, const CDate::Timezone &tz)
