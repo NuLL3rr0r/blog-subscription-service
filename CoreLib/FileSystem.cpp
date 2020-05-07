@@ -50,11 +50,11 @@ using namespace CoreLib;
 bool FileSystem::DirExists(const std::string &dir)
 {
     try {
-        filesystem::path p(dir);
-        if (filesystem::exists(p)) {
-            if (filesystem::is_directory(p)) {
+        boost::filesystem::path p(dir);
+        if (boost::filesystem::exists(p)) {
+            if (boost::filesystem::is_directory(p)) {
                 return true;
-            }  else if (filesystem::is_regular_file(p)) {
+            }  else if (boost::filesystem::is_regular_file(p)) {
                 return false;
             } else {
                 return false;
@@ -62,7 +62,7 @@ bool FileSystem::DirExists(const std::string &dir)
         } else {
             return false;
         }
-    } catch (const filesystem::filesystem_error &ex) {
+    } catch (const boost::filesystem::filesystem_error &ex) {
         LOG_ERROR(dir, ex.what());
     } catch (...) {
         LOG_ERROR(dir, UNKNOWN_ERROR);
@@ -74,11 +74,11 @@ bool FileSystem::DirExists(const std::string &dir)
 bool FileSystem::FileExists(const std::string &file)
 {
     try {
-        filesystem::path p(file);
-        if (filesystem::exists(p)) {
-            if (filesystem::is_regular_file(p)) {
+        boost::filesystem::path p(file);
+        if (boost::filesystem::exists(p)) {
+            if (boost::filesystem::is_regular_file(p)) {
                 return true;
-            } else if (filesystem::is_directory(p)) {
+            } else if (boost::filesystem::is_directory(p)) {
                 return false;
             } else {
                 return false;
@@ -86,7 +86,7 @@ bool FileSystem::FileExists(const std::string &file)
         } else {
             return false;
         }
-    } catch (const filesystem::filesystem_error &ex) {
+    } catch (const boost::filesystem::filesystem_error &ex) {
         LOG_ERROR(file, ex.what());
     } catch (...) {
         LOG_ERROR(file, UNKNOWN_ERROR);
@@ -98,8 +98,8 @@ bool FileSystem::FileExists(const std::string &file)
 size_t FileSystem::FileSize(const std::string &file)
 {
     try {
-        return filesystem::file_size(file);
-    } catch(const filesystem::filesystem_error &ex) {
+        return boost::filesystem::file_size(file);
+    } catch(const boost::filesystem::filesystem_error &ex) {
         LOG_ERROR(file, ex.what());
     } catch (...) {
         LOG_ERROR(file, UNKNOWN_ERROR);
@@ -111,15 +111,15 @@ size_t FileSystem::FileSize(const std::string &file)
 bool FileSystem::CreateDir(const std::string &dir, const bool parents)
 {
     try {
-        filesystem::path p(dir);
+        boost::filesystem::path p(dir);
         if (parents) {
-            filesystem::create_directories(p);
+            boost::filesystem::create_directories(p);
         } else {
-            filesystem::create_directory(p);
+            boost::filesystem::create_directory(p);
         }
         return true;
     }
-    catch(const filesystem::filesystem_error &ex) {
+    catch(const boost::filesystem::filesystem_error &ex) {
         LOG_ERROR(ex.what());
     }
     catch(...) {
@@ -133,13 +133,13 @@ bool FileSystem::Erase(const std::string &path, const bool recursive)
 {
     try {
         if (recursive) {
-            filesystem::remove_all(path);
+            boost::filesystem::remove_all(path);
         } else {
-            filesystem::remove(path);
+            boost::filesystem::remove(path);
         }
         return true;
     }
-    catch(const filesystem::filesystem_error &ex) {
+    catch(const boost::filesystem::filesystem_error &ex) {
         LOG_ERROR(ex.what());
     }
     catch(...) {
@@ -152,9 +152,9 @@ bool FileSystem::Erase(const std::string &path, const bool recursive)
 bool FileSystem::Move(const std::string &from, const std::string &to)
 {
     try {
-        filesystem::rename(from, to);
+        boost::filesystem::rename(from, to);
         return true;
-    } catch(const filesystem::filesystem_error &ex) {
+    } catch(const boost::filesystem::filesystem_error &ex) {
         LOG_ERROR(from, to, ex.what());
     } catch (...) {
         LOG_ERROR(from, to, UNKNOWN_ERROR);
@@ -166,12 +166,12 @@ bool FileSystem::Move(const std::string &from, const std::string &to)
 bool FileSystem::CopyFile(const std::string &from, const std::string &to, const bool overwrite)
 {
     try {
-        filesystem::copy_file(from, to,
-                              overwrite ? filesystem::copy_option::overwrite_if_exists
-                                        : filesystem::copy_option::fail_if_exists);
+        boost::filesystem::copy_file(from, to,
+                              overwrite ? boost::filesystem::copy_option::overwrite_if_exists
+                                        : boost::filesystem::copy_option::fail_if_exists);
 
         return true;
-    } catch(const filesystem::filesystem_error &ex) {
+    } catch(const boost::filesystem::filesystem_error &ex) {
         LOG_ERROR(from, to, overwrite, ex.what());
     } catch (...) {
         LOG_ERROR(from, to, overwrite, UNKNOWN_ERROR);
