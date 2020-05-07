@@ -20,18 +20,16 @@
 #  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 #  THE SOFTWARE.
 
+if(${CCACHE_PROGRAM})
+    if(${CMAKE_SYSTEM_NAME} STREQUAL FreeBSD)
+        set(CCACHE_TOOLCHAIN_DIR /usr/local/libexec/ccache)
+    elseif(${CMAKE_SYSTEM_NAME} STREQUAL Linux)
+        set(CCACHE_TOOLCHAIN_DIR /usr/lib/ccache/bin)
+    else()
+        set(CCACHE_TOOLCHAIN_DIR "")
+    endif()
 
-FIND_LIBRARY ( KVM_LIBRARY NAMES kvm PATHS /usr/lib /usr/local/lib )
-
-IF ( KVM_LIBRARY )
-    SET ( KVM_FOUND TRUE )
-ENDIF ( KVM_LIBRARY )
-
-
-IF ( KVM_FOUND )
-    MESSAGE ( STATUS "Found kvm library: ${KVM_LIBRARY}" )
-ELSE ( KVM_FOUND )
-    IF ( KVM_FIND_REQUIRED )
-        MESSAGE ( FATAL_ERROR "Could not find kvm." )
-    ENDIF ( KVM_FIND_REQUIRED )
-ENDIF ( KVM_FOUND )
+    message(STATUS "ccache toolchain path: ${CCACHE_TOOLCHAIN_DIR}")
+else()
+    set(CCACHE_TOOLCHAIN_DIR "")
+endif()

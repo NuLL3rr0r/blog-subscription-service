@@ -1,6 +1,6 @@
 #  (The MIT License)
 #
-#  Copyright (c) 2016 - 2019 Mamadou Babaei
+#  Copyright (c) 2016 - 2020 Mamadou Babaei
 #
 #  Permission is hereby granted, free of charge, to any person obtaining a copy
 #  of this software and associated documentation files (the "Software"), to deal
@@ -20,5 +20,18 @@
 #  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 #  THE SOFTWARE.
 
-SET ( SERVICE_EXECUTABLE_RC_FILE "resources/app.rc" )
-SET ( SERVICE_EXECUTABLE_ICON_FILE "resources/app-icon.ico" )
+if(NOT CMAKE_BUILD_TYPE AND NOT CMAKE_CONFIGURATION_TYPES)
+    if(EXISTS "${CMAKE_SOURCE_DIR}/.git")
+        set(CMAKE_BUILD_TYPE "Debug" CACHE
+            STRING "Choose the type of build." FORCE)
+    else()
+        set(CMAKE_BUILD_TYPE "Release" CACHE
+            STRING "Choose the type of build." FORCE)
+    endif()
+
+    message(STATUS
+        "Setting build type to '${CMAKE_BUILD_TYPE}' as none was specified.")
+
+    set_property(CACHE CMAKE_BUILD_TYPE PROPERTY STRINGS
+        "Debug" "Release" "MinSizeRel" "RelWithDebInfo")
+endif()

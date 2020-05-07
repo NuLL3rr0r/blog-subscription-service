@@ -20,18 +20,31 @@
 #  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 #  THE SOFTWARE.
 
+find_program(AWK_PROGRAM awk)
+find_program(CCACHE_PROGRAM ccache)
+find_program(GREP_PROGRAM grep)
+find_program(SH_PROGRAM sh)
 
-FIND_LIBRARY ( KVM_LIBRARY NAMES kvm PATHS /usr/lib /usr/local/lib )
+if(AWK_PROGRAM AND CCACHE_PROGRAM AND GREP_PROGRAM AND SH_PROGRAM)
+    message(STATUS "Found ccache: ${CCACHE_PROGRAM}")
 
-IF ( KVM_LIBRARY )
-    SET ( KVM_FOUND TRUE )
-ENDIF ( KVM_LIBRARY )
+    execute_process(COMMAND
+        ${SH_PROGRAM} -c "${CCACHE_PROGRAM} -s | ${GREP_PROGRAM} \"cache directory\" | ${AWK_PROGRAM} '{print \$3}'"
+        RESULT_VARIABLE CCACHE_CACHE_DIR_RESULT
+        OUTPUT_VARIABLE CCACHE_CACHE_DIR)
 
+    string(REGEX REPLACE "\n$" "" CCACHE_CACHE_DIR "${CCACHE_CACHE_DIR}")
 
-IF ( KVM_FOUND )
-    MESSAGE ( STATUS "Found kvm library: ${KVM_LIBRARY}" )
-ELSE ( KVM_FOUND )
-    IF ( KVM_FIND_REQUIRED )
-        MESSAGE ( FATAL_ERROR "Could not find kvm." )
-    ENDIF ( KVM_FIND_REQUIRED )
-ENDIF ( KVM_FOUND )
+    if(CCACHE_CACHE_DIR_RESULT EQUAL 0)
+        message(STATUS "ccache directory: ${CCACHE_CACHE_DIR}")
+    else()
+        message(STATUS "Could not get ccache directory")
+    endif()
+
+    set_property(GLOBAL PROPERTY RULE_LAUNCH_COMPILE ${CCACHE_PROGRAM})
+    set_property(GLOBAL PROPERTY RULE_LAUNCH_LINK ${CCACHE_PROGRAM})
+else()
+    message(STATUS "Could not find ccache")
+    set(CCACHE_PROGRAM      "")
+    set(CCACHE_CACHE_DIR    "")
+endif()

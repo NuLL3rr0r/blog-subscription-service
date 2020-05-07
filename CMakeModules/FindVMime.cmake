@@ -1,6 +1,6 @@
 #  (The MIT License)
 #
-#  Copyright (c) 2016 - 2019 Mamadou Babaei
+#  Copyright (c) 2016 - 2020 Mamadou Babaei
 #
 #  Permission is hereby granted, free of charge, to any person obtaining a copy
 #  of this software and associated documentation files (the "Software"), to deal
@@ -142,10 +142,10 @@ IF ( VMIME_FOUND )
 
     IF ( ( ${VMIME_VERSION_MAJOR} GREATER_EQUAL 0 AND ${VMIME_VERSION_MINOR} GREATER_EQUAL 9 AND ${VMIME_VERSION_PATCH} GREATER_EQUAL 2 )
             AND ( ${VMIME_API_MAJOR} GREATER_EQUAL 1 AND ${VMIME_API_MINOR} GREATER_EQUAL 0 AND ${VMIME_API_PATCH} GREATER_EQUAL 0 ) )
-        MESSAGE ( STATUS "Using new VMime API" )
+        MESSAGE ( STATUS "Using the new VMime API" )
         SET ( VMIME_API_MODE ${VMIME_NEW_API} )
     ELSE (  )
-        MESSAGE ( STATUS "Using legacy VMime API" )
+        MESSAGE ( STATUS "Using the legacy VMime API" )
         SET ( VMIME_API_MODE ${VMIME_LEGACY_API} )
     ENDIF (  )
 ELSE (  )

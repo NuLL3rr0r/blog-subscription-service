@@ -7,7 +7,7 @@
  *
  * (The MIT License)
  *
- * Copyright (c) 2016 - 2019 Mamadou Babaei
+ * Copyright (c) 2016 - 2020 Mamadou Babaei
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -75,7 +75,8 @@ public:
         return *s1 == *s2 && (*s1 == '\0' || StringsEqual(s1 + 1, s2 + 1));
 #elif CXX_COMPILE_MODE == CXX_COMPILE_MODE_1y \
         || CXX_COMPILE_MODE == CXX_COMPILE_MODE_14 \
-        || CXX_COMPILE_MODE == CXX_COMPILE_MODE_1z
+        || CXX_COMPILE_MODE == CXX_COMPILE_MODE_1z \
+        || CXX_COMPILE_MODE == CXX_COMPILE_MODE_17
         while (*s1 || *s2) {
             if (*s1++ != *s2++) {
                 return false;

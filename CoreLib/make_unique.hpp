@@ -7,7 +7,7 @@
  *
  * (The MIT License)
  *
- * Copyright (c) 2016 - 2019 Mamadou Babaei
+ * Copyright (c) 2016 - 2020 Mamadou Babaei
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -37,10 +37,7 @@
 #define CORELIB_MAKE_UNIQUE_HPP
 
 
-#if CXX_COMPILE_MODE == CXX_COMPILE_MODE_98 \
-    || CXX_COMPILE_MODE == CXX_COMPILE_MODE_03 \
-    || CXX_COMPILE_MODE == CXX_COMPILE_MODE_0x \
-    || CXX_COMPILE_MODE == CXX_COMPILE_MODE_11
+#if 0
 
 #include <memory>
 #include <utility>
@@ -53,10 +50,7 @@ std::unique_ptr<_T> make_unique(_ARGS &&...args)
 }
 }
 
-#endif /* CXX_COMPILE_MODE == CXX_COMPILE_MODE_98 \
-    || CXX_COMPILE_MODE == CXX_COMPILE_MODE_03 \
-    || CXX_COMPILE_MODE == CXX_COMPILE_MODE_0x \
-    || CXX_COMPILE_MODE == CXX_COMPILE_MODE_11 */
+#endif /* 0 */
 
 
 #endif /* CORELIB_MAKE_UNIQUE_HPP */
