@@ -302,7 +302,7 @@ bool Mail::Send(std::string &out_error) const
             for (auto a : m_pimpl->Attachments) {
                 vmime::shared_ptr <vmime::attachment> att = vmime::make_shared <vmime::fileAttachment>
                         (a, vmime::mediaType("application/octet-stream"),
-                         vmime::text(filesystem::path(a).stem().string()));
+                         vmime::text(boost::filesystem::path(a).stem().string()));
                 mb.appendAttachment(att);
             }
         }
