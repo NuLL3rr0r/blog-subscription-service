@@ -249,7 +249,7 @@ bool Archiver::UnZip(const std::string &archive, const std::string &extractionPa
 
         len = static_cast<zip_int64_t>(strlen(sb.name));
         if (sb.name[len - 1] == '/') {
-            string dir((filesystem::path(extractionPath)
+            string dir((boost::filesystem::path(extractionPath)
                         / sb.name).string());
             if (!FileSystem::CreateDir(dir, true)) {
                 out_error.assign((format("Archiver::UnZip: Failed to create directory `%1%'!")
@@ -261,7 +261,7 @@ bool Archiver::UnZip(const std::string &archive, const std::string &extractionPa
 
         boost::filesystem::path p(sb.name);
         if (p.parent_path().string() != "") {
-            string dir((filesystem::path(extractionPath)
+            string dir((boost::filesystem::path(extractionPath)
                         / p.parent_path()).string());
             if (!FileSystem::CreateDir(dir, true)) {
                 out_error.assign((format("Archiver::UnZip: Failed to create directory `%1%'!")
@@ -278,12 +278,12 @@ bool Archiver::UnZip(const std::string &archive, const std::string &extractionPa
         }
 
 #if ! defined ( _WIN32 )
-        fd = open((filesystem::path(extractionPath)
-                   / filesystem::path(sb.name)).string().c_str(),
+        fd = open((boost::filesystem::path(extractionPath)
+                   / boost::filesystem::path(sb.name)).string().c_str(),
                   O_RDWR | O_TRUNC | O_CREAT, 0644);
 #else
-        fd = open((filesystem::path(extractionPath)
-                   / filesystem::path(sb.name)).string().c_str(),
+        fd = open((boost::filesystem::path(extractionPath)
+                   / boost::filesystem::path(sb.name)).string().c_str(),
                   O_RDWR | O_TRUNC | O_CREAT | O_BINARY, 0644);
 #endif  // ! defined ( _WIN32 )
 
