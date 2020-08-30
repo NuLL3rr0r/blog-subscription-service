@@ -349,7 +349,6 @@ void CmsNewsletter::Impl::OnSendConfirmDialogClosed(Wt::StandardButton button)
                 }
 
                 auto conn = Pool::Database().Connection();
-                conn->activate();
                 pqxx::work txn(*conn.get());
 
                 string query((format("SELECT %1% FROM \"%2%\""

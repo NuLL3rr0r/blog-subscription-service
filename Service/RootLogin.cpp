@@ -147,7 +147,6 @@ RootLogin::RootLogin()
 
             try {
                 auto conn = Pool::Database().Connection();
-                conn->activate();
                 pqxx::work txn(*conn.get());
 
                 string query((boost::format("SELECT EXTRACT ( EPOCH FROM expiry::TIMESTAMPTZ ) as expiry"
@@ -423,7 +422,6 @@ void RootLogin::Impl::OnLoginFormSubmitted()
 
     try {
         auto conn = Pool::Database().Connection();
-        conn->activate();
         pqxx::work txn(*conn.get());
 
         string userId;
@@ -656,7 +654,6 @@ void RootLogin::Impl::OnPasswordRecoveryFormSubmitted()
     CgiEnv *cgiEnv = cgiRoot->GetCgiEnvInstance();
 
     auto conn = Pool::Database().Connection();
-    conn->activate();
     pqxx::work txn(*conn.get());
 
     try {
@@ -801,7 +798,6 @@ void RootLogin::Impl::OnGoToHomePageButtonPressed()
         }
 
         auto conn = Pool::Database().Connection();
-        conn->activate();
         pqxx::work txn(*conn.get());
 
         string query((boost::format("SELECT %1% FROM \"%2%\""
@@ -930,7 +926,6 @@ void RootLogin::Impl::PreserveSessionData(const CDate::Now &n, const bool saveLo
 
     try {
         auto conn = Pool::Database().Connection();
-        conn->activate();
         pqxx::work txn(*conn.get());
 
         string token;

@@ -219,7 +219,6 @@ void CmsDashboard::Impl::OnForceTerminateAllSessionsDialogClosed(Wt::StandardBut
         if (button == Ok) {
 
             auto conn = Pool::Database().Connection();
-            conn->activate();
             pqxx::work txn(*conn.get());
 
             string query((boost::format("UPDATE ONLY \"%1%\""

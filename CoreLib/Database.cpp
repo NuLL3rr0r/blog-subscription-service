@@ -130,8 +130,6 @@ Database::Database(const std::string &connectionString) :
         try {
             std::unique_ptr<pqxx::connection> c(
                         std::make_unique<pqxx::connection>(connectionString));
-            c->inhibit_reactivation(false);
-            c->activate();
 
             LOG_INFO((format("Database connection #%1% succeed!") % i).str(), (boost::format("Backend PID: %1%") % c->backendpid()).str(), (boost::format("Socket: %1%") % c->sock()).str(), (boost::format("Host Name: %1%") % c->hostname()).str(), (boost::format("Port Number: %1%") % c->port()).str(), (boost::format("Database Name: %1%") % c->dbname()).str(), (boost::format("User Name: %1%") % c->username()).str());
 
@@ -157,7 +155,6 @@ Database::~Database()
     while (!m_pimpl->Connections.Empty()) {
         try {
             auto c(m_pimpl->Connections.Pool().top().release());
-            c->disconnect();
 
             LOG_INFO((format("Database connection #%1% disconnected successfully!") % i).str(), (boost::format("Backend PID: %1%") % c->backendpid()).str(), (boost::format("Socket: %1%") % c->sock()).str(), (boost::format("Host Name: %1%") % c->hostname()).str(), (boost::format("Port Number: %1%") % c->port()).str(), (boost::format("Database Name: %1%") % c->dbname()).str(), (boost::format("User Name: %1%") % c->username()).str());
 
@@ -181,7 +178,6 @@ SharedObjectPool<pqxx::connection>::ptrType Database::Connection()
         try {
             if (!m_pimpl->Connections.Empty()) {
                 auto c(m_pimpl->Connections.Acquire());
-                c->activate();
 
                 LOG_INFO((format("Acquired connection #%1% successfully!") % connectionNumber).str(), (boost::format("Backend PID: %1%") % c->backendpid()).str(), (boost::format("Socket: %1%") % c->sock()).str(), (boost::format("Host Name: %1%") % c->hostname()).str(), (boost::format("Port Number: %1%") % c->port()).str(), (boost::format("Database Name: %1%") % c->dbname()).str(), (boost::format("User Name: %1%") % c->username()).str());
 
@@ -212,7 +208,6 @@ bool Database::CreateEnum(const std::string &id)
 {
     try {
         auto c = this->Connection();
-        c->activate();
         pqxx::work txn(*c.get());
 
         pqxx::result r = txn.exec((format("SELECT EXISTS ( SELECT typname FROM pg_type WHERE typname = %1% );")
@@ -257,7 +252,6 @@ bool Database::CreateTable(const std::string &id)
 {
     try {
         auto c = this->Connection();
-        c->activate();
         pqxx::work txn(*c.get());
 
         pqxx::result r = txn.exec((format("CREATE TABLE IF NOT EXISTS \"%1%\" ( %2% );")
@@ -284,7 +278,6 @@ bool Database::DropTable(const std::string &id)
 {
     try {
         auto c = this->Connection();
-        c->activate();
         pqxx::work txn(*c.get());
 
         pqxx::result r = txn.exec((format("DROP TABLE IF EXISTS \"%1%\";")
@@ -312,7 +305,6 @@ bool Database::RenameTable(const std::string &id, const std::string &newName)
         auto it = m_pimpl->TableNames.find(id);
         if (it != m_pimpl->TableNames.end()) {
             auto c = this->Connection();
-            c->activate();
             pqxx::work txn(*c.get());
 
             pqxx::result r = txn.exec((format("ALTER TABLE \"%1%\" RENAME TO \"%2%\";")
@@ -344,7 +336,6 @@ bool Database::Insert(const std::string &id,
 {
     try {
         auto c = this->Connection();
-        c->activate();
         pqxx::work txn(*c.get());
 
         stringstream ss;
@@ -389,7 +380,6 @@ bool Database::Update(const std::string &id,
 {
     try {
         auto c = this->Connection();
-        c->activate();
         pqxx::work txn(*c.get());
 
         string processedSet;
@@ -425,7 +415,6 @@ bool Database::Delete(const std::string &id,
 {
     try {
         auto c = this->Connection();
-        c->activate();
         pqxx::work txn(*c.get());
 
         pqxx::result r = txn.exec((format("DELETE FROM ONLY \"%1%\" WHERE \"%2%\"=%3%;")

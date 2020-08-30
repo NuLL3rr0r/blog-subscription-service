@@ -255,7 +255,6 @@ void Subscription::Impl::OnSubscribeFormSubmitted()
         }
 
         auto conn = Pool::Database().Connection();
-        conn->activate();
         pqxx::work txn(*conn.get());
 
         string query((boost::format("SELECT uuid FROM \"%1%\""
@@ -366,7 +365,6 @@ void Subscription::Impl::OnUnsubscribeFormSubmitted()
         }
 
         auto conn = Pool::Database().Connection();
-        conn->activate();
         pqxx::work txn(*conn.get());
 
         string query((boost::format("SELECT inbox FROM \"%1%\""
@@ -609,7 +607,6 @@ Wt::WWidget *Subscription::Impl::GetConfirmationPage()
         }
 
         auto conn = Pool::Database().Connection();
-        conn->activate();
         pqxx::work txn(*conn.get());
 
         string query((boost::format("SELECT inbox, subscription, pending_confirm FROM \"%1%\""
@@ -785,7 +782,6 @@ Wt::WWidget *Subscription::Impl::GetUnsubscribeForm()
         }
 
         auto conn = Pool::Database().Connection();
-        conn->activate();
         pqxx::work txn(*conn.get());
 
         string query((boost::format("SELECT inbox, subscription FROM \"%1%\""
@@ -1009,7 +1005,6 @@ Wt::WWidget *Subscription::Impl::GetCancellationPage()
         }
 
         auto conn = Pool::Database().Connection();
-        conn->activate();
         pqxx::work txn(*conn.get());
 
         string query((boost::format("SELECT inbox, subscription, pending_cancel FROM \"%1%\""
@@ -1179,7 +1174,6 @@ void Subscription::Impl::GetMessageTemplate(WTemplate *tmpl, const Wt::WString &
             }
 
             auto conn = Pool::Database().Connection();
-            conn->activate();
             pqxx::work txn(*conn.get());
 
             string query((boost::format("SELECT %1% FROM \"%2%\""
@@ -1369,7 +1363,6 @@ void Subscription::Impl::SendMessage(const Message &type, const string &uuid, co
             }
 
             auto conn = Pool::Database().Connection();
-            conn->activate();
             pqxx::work txn(*conn.get());
 
             string query((boost::format("SELECT %1% FROM \"%2%\""

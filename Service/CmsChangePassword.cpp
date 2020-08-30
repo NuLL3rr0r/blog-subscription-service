@@ -206,7 +206,6 @@ void CmsChangePassword::Impl::OnPasswordChangeFormSubmitted()
 
     try {
         auto conn = Pool::Database().Connection();
-        conn->activate();
         pqxx::work txn(*conn.get());
 
         bool success = false;

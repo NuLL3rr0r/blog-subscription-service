@@ -379,7 +379,6 @@ void InitializeDatabase()
         LOG_INFO("main: Setting up the database...");
 
         auto conn = Service::Pool::Database().Connection();
-        conn->activate();
         pqxx::work txn(*conn.get());
 
         /// Check the database version

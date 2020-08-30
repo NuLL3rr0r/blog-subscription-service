@@ -496,7 +496,6 @@ void CmsSubscribers::Impl::FillDataTable(const CmsSubscribers::Impl::Table &tabl
         LOG_INFO("Running query...", query, cgiEnv->GetInformation().ToJson());
 
         auto conn = Pool::Database().Connection();
-        conn->activate();
         pqxx::work txn(*conn.get());
 
         result r = txn.exec(query);

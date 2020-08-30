@@ -148,7 +148,6 @@ WWidget *CmsSettings::Layout()
             m_pimpl->SettingsMessageArea = new WText();
 
             auto conn = Pool::Database().Connection();
-            conn->activate();
             pqxx::work txn(*conn.get());
 
             string query((format("SELECT homepage_url_en, homepage_url_fa, homepage_title_en, homepage_title_fa"

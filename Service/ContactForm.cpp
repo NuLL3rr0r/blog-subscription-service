@@ -163,7 +163,6 @@ WWidget *ContactForm::Layout()
                 }
 
                 auto conn = Pool::Database().Connection();
-                conn->activate();
                 pqxx::work txn(*conn.get());
 
                 LOG_INFO("Running query...", query, cgiEnv->GetInformation().ToJson());
@@ -347,7 +346,6 @@ void ContactForm::Impl::OnContactFormSubmitted()
             string recipient = RecipientComboBox->currentText().trim().toUTF8();
 
             auto conn = Pool::Database().Connection();
-            conn->activate();
             pqxx::work txn(*conn.get());
 
             string query((format("SELECT address FROM \"%1%\""
@@ -365,7 +363,6 @@ void ContactForm::Impl::OnContactFormSubmitted()
             }
         } else {
             auto conn = Pool::Database().Connection();
-            conn->activate();
             pqxx::work txn(*conn.get());
 
             string query((format("SELECT email FROM \"%1%\""

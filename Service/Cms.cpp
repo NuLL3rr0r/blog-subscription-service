@@ -294,7 +294,6 @@ void Cms::Impl::ValidateSession()
 
     try {
         auto conn = Pool::Database().Connection();
-        conn->activate();
         pqxx::work txn(*conn.get());
 
         string query((boost::format("SELECT EXTRACT ( EPOCH FROM expiry::TIMESTAMPTZ ) as expiry FROM \"%1%\""

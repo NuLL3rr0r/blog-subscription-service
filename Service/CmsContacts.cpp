@@ -241,7 +241,6 @@ void CmsContacts::Impl::OnAddContactFormSubmitted()
         string recipient(RecipientEnLineEdit->text().trim().toUTF8());
 
         auto conn = Pool::Database().Connection();
-        conn->activate();
         pqxx::work txn(*conn.get());
 
         string query((format("SELECT recipient FROM \"%1%\""
@@ -313,7 +312,6 @@ void CmsContacts::Impl::OnCellSaveButtonPressed(Wt::WInPlaceEdit *inPlaceEdit)
         string recipient(inPlaceEdit->attributeValue("db-key").toUTF8());
 
         auto conn = Pool::Database().Connection();
-        conn->activate();
         pqxx::work txn(*conn.get());
 
         string query((format("SELECT recipient FROM \"%1%\""
@@ -406,7 +404,6 @@ void CmsContacts::Impl::OnSetDefaultCheckBoxStateChanged(Wt::WCheckBox *checkbox
         string recipient(checkbox->attributeValue("db-key").toUTF8());
 
         auto conn = Pool::Database().Connection();
-        conn->activate();
         pqxx::work txn(*conn.get());
 
         string query((format("SELECT recipient FROM \"%1%\""
@@ -465,7 +462,6 @@ void CmsContacts::Impl::OnEraseButtonPressed(Wt::WPushButton *button)
         if (cgiEnv->GetInformation().Client.Language.Code
                 == CgiEnv::InformationRecord::ClientRecord::LanguageCode::Fa) {
             auto conn = Pool::Database().Connection();
-            conn->activate();
             pqxx::work txn(*conn.get());
 
             string query((format("SELECT recipient_fa FROM \"%1%\""
@@ -524,7 +520,6 @@ void CmsContacts::Impl::OnEraseDialogClosed(Wt::StandardButton button)
             string recipient(EraseMessageBox->attributeValue("db-key").toUTF8());
 
             auto conn = Pool::Database().Connection();
-            conn->activate();
             pqxx::work txn(*conn.get());
 
             string query((format("SELECT recipient FROM \"%1%\""
@@ -580,7 +575,6 @@ void CmsContacts::Impl::FillContactsDataTable()
 
     try {
         auto conn = Pool::Database().Connection();
-        conn->activate();
         pqxx::work txn(*conn.get());
 
         string query((format("SELECT recipient, recipient_fa, address, is_default"

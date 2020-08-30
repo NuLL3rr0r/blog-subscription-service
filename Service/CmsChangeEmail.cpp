@@ -193,7 +193,6 @@ void CmsChangeEmail::Impl::OnEmailChangeFormSubmitted()
 
     try {
         auto conn = Pool::Database().Connection();
-        conn->activate();
         pqxx::work txn(*conn.get());
 
         bool success = false;
