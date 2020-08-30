@@ -41,13 +41,18 @@
 #if defined ( __linux )
 #include <dirent.h>
 #endif  // defined ( __linux )
+#if defined ( __linux )
+#include <linux/sysctl.h>
+#endif  // defined ( __linux )
 #if defined ( __FreeBSD__ )
 #include <kvm.h>
 #include <sys/dirent.h>
 #endif  // defined ( __FreeBSD__ )
 #include <sys/fcntl.h>
 #include <sys/param.h>
+#if !defined ( __linux )
 #include <sys/sysctl.h>
+#endif  // !defined ( __linux )
 #include <sys/time.h>
 #include <sys/unistd.h>
 #include <sys/user.h>
