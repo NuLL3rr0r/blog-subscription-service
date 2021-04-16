@@ -1,6 +1,6 @@
 #  (The MIT License)
 #
-#  Copyright (c) 2016 - 2020 Mamadou Babaei
+#  Copyright (c) 2016 - 2021 Mamadou Babaei
 #
 #  Permission is hereby granted, free of charge, to any person obtaining a copy
 #  of this software and associated documentation files (the "Software"), to deal
@@ -38,7 +38,7 @@ SET ( CRYPTO_IV             "45:2b:25:5d:2d:3b:32:3f:41:79:21:29:66:39:73:3e" CA
 SET (INITAL_EN_HOME_PAGE_URL "http://www.babaei.net/" CACHE STRING "" )
 SET (INITAL_FA_HOME_PAGE_URL "http://fa.babaei.net/" CACHE STRING "" )
 SET (INITAL_EN_HOME_PAGE_TITLE "The blog of Mamadou Babaei" CACHE STRING "" )
-SET (INITAL_FA_HOME_PAGE_TITLE "وبلاگ محمد صادق بابائی" CACHE STRING "" )
+SET (INITAL_FA_HOME_PAGE_TITLE "وبلاگ ممدوو بابائی" CACHE STRING "" )
 
 # Either Keyword/Value Connection Strings or Connection URIs,
 # to set more values such as:
